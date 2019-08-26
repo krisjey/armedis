@@ -1,16 +1,22 @@
-# Compiled class file
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
+
+# Ignore Compiled class file
 *.class
 
-# Log file
+# Ignore Log file
 *.log
 
-# BlueJ files
+# Ignore BlueJ files
 *.ctxt
 
-# Mobile Tools for Java (J2ME)
+# Ignore Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
-# Package Files #
+# Ignore Package Files #
 *.jar
 *.war
 *.nar
@@ -19,5 +25,19 @@
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+# Ignore virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+# Ignore gradle build files
+target
+
+# Ignore log folder
+logs
+
+# Ignore eclipse class output folder
+bin
+
+# Ignore eclipse setting files 
+.settings
+.classpath
+.project
