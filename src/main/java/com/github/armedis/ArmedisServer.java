@@ -1,4 +1,4 @@
-package armedis;
+package com.github.armedis;
 
 public class ArmedisServer {
 
