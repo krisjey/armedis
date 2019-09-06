@@ -1,0 +1,26 @@
+# Spring boot logging level
+spring:
+   profiles:
+      active: local # 기본 환경 선택
+      
+# local 환경
+environments:
+   local:
+      servers:
+         redis:
+            seed: 192.168.56.104:7003
+# ----------------
+---
+# Test
+environments:
+   test:
+      servers:
+         redis:
+            seed: 192.168.56.104:7003
+---
+# Prod
+environments:
+   prod:
+      servers:
+         redis:
+            seed: 192.168.56.104:7003

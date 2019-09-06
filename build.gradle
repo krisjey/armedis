@@ -6,17 +6,16 @@
  * User Manual available at https://docs.gradle.org/5.4/userguide/java_library_plugin.html
  */
 
-plugins {
-    id 'java'
-    id 'eclipse'
-    id 'application'
-    id 'org.springframework.boot' version '2.1.7.RELEASE'
-    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
-}
+apply plugin: 'eclipse'
+apply plugin: 'java'
+apply plugin: 'com.google.protobuf'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
 
-repositories {
-    jcenter()
-}
+group = 'com.github.armedis'
+version = '1.0.0-SNAPSHOT'
+description = """An HTTP2/gRPC interface for Redis, Support Redis stand-alone/cluster mode."""
+//mainClassName = "com.github.armedis.ArmedisServer"
 
 ext {
 	javaVersion='1.8'
@@ -30,14 +29,79 @@ tasks.withType(JavaCompile) {
     options.compilerArgs += '-parameters'
 }
 
-group = 'com.github.armedis'
-version = '1.0.0-SNAPSHOT'
-description = """An HTTP2/gRPC interface for Redis, Support Redis stand-alone/cluster mode."""
+eclipse {
+    classpath {
+    	defaultOutputDir = file('classes')
+    	downloadJavadoc = false
+        downloadSources = true
+        
+        file.whenMerged { classpath -> classpath.entries.sort() }
+    }
+}
 
-mainClassName = "com.github.armedis.ArmedisServer"
+buildscript {
+	ext {
+		springBootVersion = '2.1.7.RELEASE'
+	}
+
+	repositories {
+		mavenCentral()
+	}
+
+	dependencies {
+		classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+		classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.10'
+	}
+}
+
+protobuf {
+	protoc {
+		artifact = "com.google.protobuf:protoc:3.9.1"
+
+		generatedFilesBaseDir = "$projectDir/gen-src"
+	}
+
+	plugins {
+		grpc {
+			artifact = 'io.grpc:protoc-gen-grpc-java:1.23.0'
+		}
+	}
+
+	generateProtoTasks {
+		all()*.plugins {
+		grpc {}
+		}
+	}
+}
+
+sourceSets {
+    main {
+        java {
+            // add source folder for protocol buffer gen java file
+            srcDirs 'gen-src/main/java'
+            // add source folder for protocol buffer gen java file
+            srcDirs 'gen-src/main/grpc'
+//            srcDirs 'gen-src/main/resources'
+            srcDirs 'gen-src/test/java'
+//            srcDirs 'gen-src/test/resources'
+        }
+    }
+ }
+
+repositories {
+    jcenter()
+}
+
+ext {
+	javaVersion='1.8'
+}
 
 dependencies {
-	// Adjust the list as you need.
+	implementation 'io.grpc:grpc-netty-shaded:1.23.0'
+	implementation 'io.grpc:grpc-protobuf:1.23.0'
+	implementation 'io.grpc:grpc-stub:1.23.0'
+	
+    // Adjust the list as you need.
     ['armeria',
      'armeria-grpc',
      'armeria-jetty',
@@ -52,6 +116,12 @@ dependencies {
      'armeria-zookeeper'].each {
         compile "com.linecorp.armeria:${it}:0.90.3"
     }
+
+    implementation('com.linecorp.armeria:armeria-spring-boot-autoconfigure:0.90.3')
+
+	implementation('org.springframework.boot:spring-boot-starter')
+	implementation('org.springframework.boot:spring-boot-configuration-processor')
+	implementation("org.apache.commons:commons-text:1.6")
 
     // Logging
     runtime 'ch.qos.logback:logback-classic:1.2.3'

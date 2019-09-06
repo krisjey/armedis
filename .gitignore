@@ -41,3 +41,6 @@ bin
 .settings
 .classpath
 .project
+
+# Ignore protoc generated source file
+gen-src/
