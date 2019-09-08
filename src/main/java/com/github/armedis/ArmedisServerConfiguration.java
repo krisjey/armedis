@@ -33,8 +33,8 @@ import com.linecorp.armeria.spring.ArmeriaSettings.Port;
  * and client.
  */
 @Configuration
-public class ArmeriaServerConfiguration {
-	private static final Logger logger = LoggerFactory.getLogger(ArmeriaServerConfiguration.class);
+public class ArmedisServerConfiguration {
+	private static final Logger logger = LoggerFactory.getLogger(ArmedisServerConfiguration.class);
 
 	private DefaultInstanceInfo instanceInfo;
 

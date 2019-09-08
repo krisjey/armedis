@@ -16,7 +16,7 @@ public class ArmedisServer implements ApplicationRunner {
     private static final Logger logger = LoggerFactory.getLogger(ArmedisServer.class);
 
     @Autowired
-    ArmeriaServerConfiguration armeriaHttpServerConfiguration;
+    ArmedisServerConfiguration armedisHttpServerConfiguration;
 
     public static void main(String[] args) throws IOException {
         long startTime = System.currentTimeMillis();
@@ -32,6 +32,8 @@ public class ArmedisServer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        System.out.println("Spring application loaded!");
+    	String loadedMessage = "Spring application loaded!";
+    	logger.info(loadedMessage);
+        System.out.println(loadedMessage);
     }
 }
