@@ -5,17 +5,27 @@
  * For more details take a look at the Java Libraries chapter in the Gradle
  * User Manual available at https://docs.gradle.org/5.4/userguide/java_library_plugin.html
  */
+buildscript {
+	ext {
+		springBootVersion = '2.1.7.RELEASE'
+	}
+
+	repositories {
+		mavenCentral()
+	}
+
+	dependencies {
+		classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+		classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.10'
+	}
+}
 
 apply plugin: 'eclipse'
 apply plugin: 'java'
 apply plugin: 'com.google.protobuf'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
-
-group = 'com.github.armedis'
-version = '1.0.0-SNAPSHOT'
-description = """An HTTP2/gRPC interface for Redis, Support Redis stand-alone/cluster mode."""
-//mainClassName = "com.github.armedis.ArmedisServer"
+apply plugin: 'application' // gradle task plugin for distTar
 
 ext {
 	javaVersion='1.8'
@@ -39,20 +49,10 @@ eclipse {
     }
 }
 
-buildscript {
-	ext {
-		springBootVersion = '2.1.7.RELEASE'
-	}
-
-	repositories {
-		mavenCentral()
-	}
-
-	dependencies {
-		classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
-		classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.10'
-	}
-}
+group = 'com.github.armedis'
+version = '1.0.0-SNAPSHOT'
+description = """An HTTP2/gRPC interface for Redis, Support Redis stand-alone/cluster mode."""
+mainClassName = "com.github.armedis.ArmedisServer"
 
 protobuf {
 	protoc {
