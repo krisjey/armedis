@@ -45,8 +45,8 @@ public class ArmedisServerConfiguration {
     @Bean
     public ArmeriaServerConfigurator armeriaServerConfigurator(ArmeriaAnnotatedHttpService... services) {
         int listenPort = initializeServicePort();
-//        int listenPort = 8080;
-        changeArmeriaServicePort(listenPort);
+
+        setArmeriaListenPort(listenPort);
 
         try {
             instanceInfo = new DefaultInstanceInfo(String.valueOf(listenPort));
@@ -113,15 +113,15 @@ public class ArmedisServerConfiguration {
     }
 
     /**
-     * README When you using spring boot, You can not disable default port 8080 on programmatically way.<br/>
+     * When you using spring boot with Armeria, You can not disable default port 8080 on programmatically way.<br/>
      * (Using application.xml is working fine)
      * This situation based on class loading order.<br/>
      * So, You have to set the port number to ArmeriaSettings bean, Before initialize Armeria AutoConfiguration class.
      * 
      * @param listenPort
      */
-    private void changeArmeriaServicePort(int listenPort) {
-        // Change default port(8080) to custom port.
+    private void setArmeriaListenPort(int listenPort) {
+        // Change default listen port to custom port.
         List<Port> ports = new ArrayList<>();
         ports.add(new Port().setPort(listenPort).setProtocol(SessionProtocol.HTTP));
         settings.setPorts(ports);

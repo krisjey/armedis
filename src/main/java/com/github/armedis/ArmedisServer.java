@@ -20,6 +20,7 @@ public class ArmedisServer implements ApplicationRunner {
     @Autowired
     ArmedisServerConfiguration armeriaHttpServerConfiguration;
 
+    // TODO 필요 없는 코드 제거하기.!!
     public static void main(String[] args) throws IOException {
         long startTime = System.currentTimeMillis();
         SpringApplication application = new SpringApplication(ArmedisServer.class);
