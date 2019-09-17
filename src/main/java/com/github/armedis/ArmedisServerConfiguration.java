@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.example.demo.service.NewdataServiceImpl;
 import com.github.armedis.config.ConstantNames;
 import com.github.armedis.config.DefaultInstanceInfo;
 import com.github.armedis.service.ArmeriaAnnotatedHttpService;
@@ -22,6 +23,7 @@ import com.linecorp.armeria.common.SessionProtocol;
 import com.linecorp.armeria.server.Server;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.docs.DocService;
+import com.linecorp.armeria.server.grpc.GrpcServiceBuilder;
 import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.spring.ArmeriaServerConfigurator;
 import com.linecorp.armeria.spring.ArmeriaSettings;
@@ -38,6 +40,9 @@ public class ArmedisServerConfiguration {
 
     @Autowired
     ArmeriaSettings settings;
+
+//    @Autowired
+//    NewdataServiceImpl newdataServiceImpl;
 
     /**
      * A user can configure a {@link Server} by providing an {@link ArmeriaServerConfigurator} bean.
@@ -83,6 +88,8 @@ public class ArmedisServerConfiguration {
 //            // Write access log after completing a request.
 //            builder.accessLogWriter(AccessLogWriter.combined(), false);
 
+            // ArmeriaAnnotatedHttpService를 impl 하고 type of 로 갈라서 grpc로 등록하기.
+
             // Add an Armeria annotated HTTP service.
             for (ArmeriaAnnotatedHttpService service : services) {
                 builder.annotatedService(service);
@@ -91,6 +98,12 @@ public class ArmedisServerConfiguration {
             // You can also bind asynchronous RPC services such as Thrift and gRPC:
             // builder.service(THttpService.of(...));
             // builder.service(new GrpcServiceBuilder()...build());
+            
+            // with spring
+//            builder.service(new GrpcServiceBuilder().addService(newdataServiceImpl).build());
+            
+            builder.service(new GrpcServiceBuilder().addService(new NewdataServiceImpl()).build());
+
         };
     }
 
