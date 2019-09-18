@@ -1,44 +1,33 @@
 <configuration>
-	<appender name="stdout"
-		class="ch.qos.logback.core.ConsoleAppender">
+	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{50}:%line -
-				%msg%n</pattern>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{50}:%line - %msg%n</pattern>
 		</encoder>
 	</appender>
 
-	<appender name="FILE"
-		class="ch.qos.logback.core.rolling.RollingFileAppender">
+	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<file>logs/armedis.api.${SERVICE_PORT}.log</file>
-		<rollingPolicy
-			class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>logs/armedis.api.${SERVICE_PORT}.log.%d{yyyy-MM-dd}
-			</fileNamePattern>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>logs/armedis.api.${SERVICE_PORT}.log.%d{yyyy-MM-dd}</fileNamePattern>
 
 			<!-- keep 30 days' worth of history -->
 			<maxHistory>7</maxHistory>
 		</rollingPolicy>
 
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{35}:%line -
-				%msg%n</pattern>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{35}:%line - %msg%n</pattern>
 		</encoder>
 	</appender>
 
 	<!-- Remove remote connection close exception! -->
-	<logger
-		name="com.linecorp.armeria.server.logging.LoggingService"
-		level="ERROR" />
-	<logger name="com.linecorp.armeria.server.HttpServerHandler"
-		level="ERROR" />
-	<logger name="com.afreecatv.pual.api.service.AreYouOkService"
-		level="ERROR" />
+	<logger name="com.linecorp.armeria.server.logging.LoggingService" level="ERROR" />
+	<logger name="com.linecorp.armeria.server.HttpServerHandler" level="ERROR" />
+	<logger name="com.afreecatv.pual.api.service.AreYouOkService" level="ERROR" />
 
 	<logger name="io.netty" level="INFO" />
 	<logger name="org.apache.zookeeper" level="INFO" />
 
-
-	<root level="debug">
+	<root level="INFO">
 		<appender-ref ref="FILE" />
 		<appender-ref ref="stdout" />
 		<!-- -->
