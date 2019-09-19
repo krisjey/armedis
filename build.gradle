@@ -115,9 +115,10 @@ dependencies {
 
     implementation('com.linecorp.armeria:armeria-spring-boot-autoconfigure:0.90.3')
 
-	implementation('org.springframework.boot:spring-boot-starter')
-	implementation('org.springframework.boot:spring-boot-configuration-processor')
-	implementation("org.apache.commons:commons-text:1.6")
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'org.springframework.boot:spring-boot-configuration-processor'
+	implementation 'org.apache.commons:commons-text:1.6'
+	implementation 'io.lettuce:lettuce-core:5.1.8.RELEASE'
 
     // Logging
     runtime 'ch.qos.logback:logback-classic:1.2.3'

@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.example.demo.service.NewdataServiceImpl;
+import com.github.armedis.config.ArmedisConfiguration;
 import com.github.armedis.config.ConstantNames;
 import com.github.armedis.config.DefaultInstanceInfo;
 import com.github.armedis.service.ArmeriaAnnotatedHttpService;
@@ -41,11 +42,15 @@ public class ArmedisServerConfiguration {
     @Autowired
     ArmeriaSettings settings;
 
-//    @Autowired
-//    NewdataServiceImpl newdataServiceImpl;
+    @Autowired
+    ArmedisConfiguration armedisConfiguration;
 
     /**
      * A user can configure a {@link Server} by providing an {@link ArmeriaServerConfigurator} bean.
+     * 
+     * prop check(prop or zookeeper)
+     * redis check
+     * 
      */
     @Bean
     public ArmeriaServerConfigurator armeriaServerConfigurator(ArmeriaAnnotatedHttpService... services) {
@@ -98,10 +103,10 @@ public class ArmedisServerConfiguration {
             // You can also bind asynchronous RPC services such as Thrift and gRPC:
             // builder.service(THttpService.of(...));
             // builder.service(new GrpcServiceBuilder()...build());
-            
+
             // with spring
 //            builder.service(new GrpcServiceBuilder().addService(newdataServiceImpl).build());
-            
+
             builder.service(new GrpcServiceBuilder().addService(new NewdataServiceImpl()).build());
 
         };
@@ -147,13 +152,12 @@ public class ArmedisServerConfiguration {
         // FIXME 이게 없어서 문제 발생 가능.
         String paramServicePort = System.getProperty(ConstantNames.SERVICE_PORT_PARAM_NAME);
         int listenPort = 0;
-        int servicePortFromParam = listenPort = Integer
-                .parseInt(paramServicePort == null ? "0" : paramServicePort); // FIXME 이게 없어서 문제 발생함.
-//        int configServicePort = getConfig (ConstantNames.SERVICE_PORT, 0);
-//        int instanceCount = ConfigReader.getInstance().getIntValue(ConstantNames.SERVICE_INSTANCE_COUNT, 0);
-        // FIXME get configuration value from prop.
-        int configServicePort = 8081;
-        int instanceCount = 1;
+
+        // FIXME 이게 없어서 문제 발생함.
+        int servicePortFromParam = listenPort = Integer.parseInt(paramServicePort == null ? "0" : paramServicePort);
+
+        int configServicePort = armedisConfiguration.getServicePort();
+        int instanceCount = armedisConfiguration.getInstanceCount();
 
         if (instanceCount == 0 || configServicePort == 0) {
             throw new RuntimeException(
