@@ -4,7 +4,10 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import static java.util.Objects.requireNonNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +19,8 @@ import com.example.demo.service.NewdataServiceImpl;
 import com.github.armedis.config.ArmedisConfiguration;
 import com.github.armedis.config.ConstantNames;
 import com.github.armedis.config.DefaultInstanceInfo;
+import com.github.armedis.redis.RedisConnector;
+import com.github.armedis.redis.RedisInstance;
 import com.github.armedis.service.ArmeriaAnnotatedHttpService;
 import com.github.armedis.service.ServerShutdownHook;
 import com.github.armedis.utils.LogStringBuilder;
@@ -58,6 +63,8 @@ public class ArmedisServerConfiguration {
 
         setArmeriaListenPort(listenPort);
 
+        initializeRedisCluster();
+
         try {
             instanceInfo = new DefaultInstanceInfo(String.valueOf(listenPort));
 
@@ -82,7 +89,7 @@ public class ArmedisServerConfiguration {
 
         // Customize the server using the given ServerBuilder. For example:
         return builder -> {
-            initServerBuilder(builder);
+            initializeServerBuilderByConfig(builder);
 
             // Add DocService that enables you to send Thrift and gRPC requests from web browser.
             builder.serviceUnder("/docs", new DocService());
@@ -112,12 +119,25 @@ public class ArmedisServerConfiguration {
         };
     }
 
-    private ServerBuilder initServerBuilder(ServerBuilder serverBuilder) {
+    /**
+     * 일단 돌아가게..
+     */
+    private void initializeRedisCluster() {
+        RedisConnector redisConnector = new RedisConnector(armedisConfiguration.getRedisSeedAddress());
+        Set<RedisInstance> redisNodes = redisConnector.lookupNodes();
+
+        if (redisConnector.isCluster()) {
+            // build cluster pool
+        }
+        else {
+
+        }
+    }
+
+    private ServerBuilder initializeServerBuilderByConfig(ServerBuilder serverBuilder) {
         int requsetTimeout = 5;
         serverBuilder.requestTimeout(Duration.ofSeconds(requsetTimeout));
 
-        // disable http
-//      spring.main.web-environment=false
         int listenPort = Integer.parseInt(getInstanceInfo().getServicePort());
         serverBuilder.http(listenPort);
 

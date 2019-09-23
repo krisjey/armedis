@@ -15,7 +15,7 @@ import com.github.armedis.config.ApplicationPropertiesLoader;
 
 @SpringBootApplication
 public class ArmedisServer implements ApplicationRunner {
-    private static final Logger logger = LoggerFactory.getLogger(ArmedisServer.class);
+    private final Logger logger = LoggerFactory.getLogger(ArmedisServer.class);
 
     @Autowired
     ArmedisServerConfiguration armeriaHttpServerConfiguration;
