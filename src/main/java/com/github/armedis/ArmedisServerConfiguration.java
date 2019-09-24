@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import javax.naming.OperationNotSupportedException;
+
 import static java.util.Objects.requireNonNull;
 
 import org.slf4j.Logger;
@@ -120,17 +122,17 @@ public class ArmedisServerConfiguration {
     }
 
     /**
-     * 일단 돌아가게..
+     * 일단 돌아가게
+     * 먼저 클러스터
      */
     private void initializeRedisCluster() {
         RedisConnector redisConnector = new RedisConnector(armedisConfiguration.getRedisSeedAddress());
-        Set<RedisInstance> redisNodes = redisConnector.lookupNodes();
-
-        if (redisConnector.isCluster()) {
-            // build cluster pool
+        try {
+            // FIXME 연결이 살아있는지 먼저 테스트 후 응답 던지기.
+            Set<RedisInstance> redisNodes = redisConnector.lookupNodes();
         }
-        else {
-
+        catch (OperationNotSupportedException e) {
+            e.printStackTrace();
         }
     }
 
