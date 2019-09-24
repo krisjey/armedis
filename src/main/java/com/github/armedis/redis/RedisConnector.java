@@ -4,22 +4,19 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
+
+import javax.naming.OperationNotSupportedException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.armedis.ArmedisServer;
-
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 
-// @Nullable
-
 public class RedisConnector {
-    private final Logger logger = LoggerFactory.getLogger(ArmedisServer.class);
+    private final Logger logger = LoggerFactory.getLogger(RedisConnector.class);
 
-    private boolean isCluster;
+    private RedisInstanceType redisInstanceType;
 
     private String seedAddresses;
 
@@ -57,53 +54,56 @@ public class RedisConnector {
      * Lookup redis server by seed<br/>
      * Destination is first connected server.
      * @return 
+     * @throws OperationNotSupportedException 
      */
-    public Set<RedisInstance> lookupNodes() {
-        Set<RedisInstance> nodes = null;
+    public Set<RedisInstance> lookupNodes() throws OperationNotSupportedException {
         // get seed connection
-        try (StatefulRedisConnection<String, String> redisSeed = getSeedConnection();) {
+        try (StatefulRedisConnection<String, String> redisSeedConnection = getSeedConnection();) {
             // get nodes
-            nodes = detectRedisServerNodes(redisSeed);
+            actualServers = detectRedisServerNodes(redisSeedConnection);
         }
 
-//        isCluster = connectionDetector.isCluster();
-
-        return nodes;
+        return actualServers;
     }
 
     /**
-     * Detect redis server nodes
+     * Detect redis server nodes by seed connection info
      * @param redisSeed
-     * @return
+     * @return redis server nodes
+     * @throws OperationNotSupportedException 
      */
-    private Set<RedisInstance> detectRedisServerNodes(StatefulRedisConnection<String, String> redisSeedConnection) {
-        Set<RedisInstance> nodes = new HashSet<RedisInstance>();
+    private Set<RedisInstance> detectRedisServerNodes(StatefulRedisConnection<String, String> redisSeedConnection) throws OperationNotSupportedException {
+        Set<RedisInstance> nodes = null;
         // is cluster, master/slave, support sentinel
 
-        System.out.println("Connected to Redis");
+        logger.info("Connected to Redis");
+
+        RedisNodeLookup nodeLookup = null;
 
         RedisCommands<String, String> syncCommands = redisSeedConnection.sync();
         String redisInfo = syncCommands.info();
-
-        System.out.println("1");
-        System.out.println("1");
+        
+        logger.info(syncCommands.role().toString());
 
         // TYPE cluster, none cluster, master, slave
-        for (String item : redisInfo.split("\n")) {
-            System.out.println(item);
-            if (item.startsWith("cluster_enabled")) {
-                if (item.equals("cluster_enabled:0")) {
-                    // stand alone
-                    System.out.println("Stand alone mode");
-                }
-                else {
-                    // cluster
-                    System.out.println("Cluster nodes");
-                }
+        for (String line : redisInfo.split("\\r?\\n")) {
+
+            if (line.startsWith("redis_mode")) {
+                String type = line.split("[:]")[1];
+
+                logger.info("Redis node type [" + type + "]");
+                redisInstanceType = RedisInstanceType.of(type);
+                nodeLookup = RedisLookupFactory.create(redisInstanceType);
+                nodes = nodeLookup.lookup(redisSeedConnection);
             }
         }
-        
-        syncCommands.clusterInf o();
+
+        if (nodeLookup == null) {
+            nodeLookup = RedisLookupFactory.create(RedisInstanceType.NOT_DETECTED);
+            nodes = nodeLookup.lookup(redisSeedConnection);
+        }
+
+        syncCommands.clusterInfo();
 
         return nodes;
     }
