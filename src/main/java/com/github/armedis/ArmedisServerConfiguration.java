@@ -5,11 +5,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.naming.OperationNotSupportedException;
-
-import static java.util.Objects.requireNonNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,8 @@ import com.example.demo.service.NewdataServiceImpl;
 import com.github.armedis.config.ArmedisConfiguration;
 import com.github.armedis.config.ConstantNames;
 import com.github.armedis.config.DefaultInstanceInfo;
+import com.github.armedis.redis.RedisConnectionFactory;
+import com.github.armedis.redis.RedisConnectionInfo;
 import com.github.armedis.redis.RedisConnector;
 import com.github.armedis.redis.RedisInstance;
 import com.github.armedis.service.ArmeriaAnnotatedHttpService;
@@ -52,6 +55,11 @@ public class ArmedisServerConfiguration {
     @Autowired
     ArmedisConfiguration armedisConfiguration;
 
+    @Bean
+    public RedisConnectionInfo createRedisConnectionInfo() {
+        return detectRedisConnection();
+    }
+
     /**
      * A user can configure a {@link Server} by providing an {@link ArmeriaServerConfigurator} bean.
      * 
@@ -64,8 +72,6 @@ public class ArmedisServerConfiguration {
         int listenPort = initializeServicePort();
 
         setArmeriaListenPort(listenPort);
-
-        initializeRedisCluster();
 
         try {
             instanceInfo = new DefaultInstanceInfo(String.valueOf(listenPort));
@@ -122,18 +128,31 @@ public class ArmedisServerConfiguration {
     }
 
     /**
-     * 일단 돌아가게
-     * 먼저 클러스터
+     * Detect redis connection by seed
+     * @return 
      */
-    private void initializeRedisCluster() {
+    private RedisConnectionInfo detectRedisConnection() {
         RedisConnector redisConnector = new RedisConnector(armedisConfiguration.getRedisSeedAddress());
+
+//        BlockingQueue<Object> queue = new LinkedBlockingQueue<Object>();
+//        try {
+//            queue.poll(10, TimeUnit.SECONDS);
+//        }
+//        catch (InterruptedException e1) {
+//            // TODO Auto-generated catch block
+//            e1.printStackTrace();
+//        }
+        
+        Set<RedisInstance> redisNodes = null;
         try {
             // FIXME 연결이 살아있는지 먼저 테스트 후 응답 던지기.
-            Set<RedisInstance> redisNodes = redisConnector.lookupNodes();
+            redisNodes = redisConnector.lookupNodes();
         }
         catch (OperationNotSupportedException e) {
-            e.printStackTrace();
+            logger.info("Does not support impl.");
         }
+
+        return new RedisConnectionInfo(redisNodes, redisConnector.getRedisInstanceType());
     }
 
     private ServerBuilder initializeServerBuilderByConfig(ServerBuilder serverBuilder) {

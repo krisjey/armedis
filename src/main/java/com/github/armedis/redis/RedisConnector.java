@@ -124,4 +124,8 @@ public class RedisConnector {
 
         throw new IllegalArgumentException("Can not connect seed server " + this.seedInfo.toString());
     }
+
+    public RedisInstanceType getRedisInstanceType() {
+        return redisInstanceType;
+    }
 }
