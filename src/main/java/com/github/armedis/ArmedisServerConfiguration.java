@@ -5,10 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import javax.naming.OperationNotSupportedException;
 
@@ -22,12 +19,10 @@ import com.example.demo.service.NewdataServiceImpl;
 import com.github.armedis.config.ArmedisConfiguration;
 import com.github.armedis.config.ConstantNames;
 import com.github.armedis.config.DefaultInstanceInfo;
-import com.github.armedis.redis.RedisConnectionFactory;
-import com.github.armedis.redis.RedisConnectionInfo;
-import com.github.armedis.redis.RedisConnector;
-import com.github.armedis.redis.RedisInstance;
-import com.github.armedis.service.ArmeriaAnnotatedHttpService;
-import com.github.armedis.service.ServerShutdownHook;
+import com.github.armedis.http.service.ArmeriaAnnotatedHttpService;
+import com.github.armedis.redis.RedisNode;
+import com.github.armedis.redis.connection.RedisServerInfo;
+import com.github.armedis.redis.connection.RedisServerDetector;
 import com.github.armedis.utils.LogStringBuilder;
 import com.linecorp.armeria.common.CommonPools;
 import com.linecorp.armeria.common.SessionProtocol;
@@ -49,15 +44,29 @@ public class ArmedisServerConfiguration {
 
     private DefaultInstanceInfo instanceInfo;
 
-    @Autowired
-    ArmeriaSettings settings;
+    private ArmeriaSettings settings;
+
+    private ArmedisConfiguration armedisConfiguration;
 
     @Autowired
-    ArmedisConfiguration armedisConfiguration;
+    public ArmedisServerConfiguration(ArmeriaSettings settings, ArmedisConfiguration armedisConfiguration) {
+        this.settings = settings;
+        this.armedisConfiguration = armedisConfiguration;
+    }
 
     @Bean
-    public RedisConnectionInfo createRedisConnectionInfo() {
-        return detectRedisConnection();
+    public RedisServerInfo detectRedisServer() {
+        RedisServerDetector redisServerDetector = new RedisServerDetector(armedisConfiguration.getRedisSeedAddress());
+
+        Set<RedisNode> redisNodes = null;
+        try {
+            redisNodes = redisServerDetector.lookupNodes();
+        }
+        catch (OperationNotSupportedException e) {
+            logger.info("Does not support impl.");
+        }
+
+        return new RedisServerInfo(redisNodes, redisServerDetector.getRedisInstanceType());
     }
 
     /**
@@ -125,34 +134,6 @@ public class ArmedisServerConfiguration {
             builder.service(new GrpcServiceBuilder().addService(new NewdataServiceImpl()).build());
 
         };
-    }
-
-    /**
-     * Detect redis connection by seed
-     * @return 
-     */
-    private RedisConnectionInfo detectRedisConnection() {
-        RedisConnector redisConnector = new RedisConnector(armedisConfiguration.getRedisSeedAddress());
-
-//        BlockingQueue<Object> queue = new LinkedBlockingQueue<Object>();
-//        try {
-//            queue.poll(10, TimeUnit.SECONDS);
-//        }
-//        catch (InterruptedException e1) {
-//            // TODO Auto-generated catch block
-//            e1.printStackTrace();
-//        }
-        
-        Set<RedisInstance> redisNodes = null;
-        try {
-            // FIXME 연결이 살아있는지 먼저 테스트 후 응답 던지기.
-            redisNodes = redisConnector.lookupNodes();
-        }
-        catch (OperationNotSupportedException e) {
-            logger.info("Does not support impl.");
-        }
-
-        return new RedisConnectionInfo(redisNodes, redisConnector.getRedisInstanceType());
     }
 
     private ServerBuilder initializeServerBuilderByConfig(ServerBuilder serverBuilder) {

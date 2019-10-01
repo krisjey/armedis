@@ -1,4 +1,4 @@
-package com.github.armedis.redis;
+package com.github.armedis.redis.connection;
 
 import static java.util.Objects.requireNonNull;
 
@@ -10,31 +10,34 @@ import javax.naming.OperationNotSupportedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.armedis.redis.RedisNode;
+import com.github.armedis.redis.RedisInstanceType;
+
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 
-public class RedisConnector {
-    private final Logger logger = LoggerFactory.getLogger(RedisConnector.class);
+public class RedisServerDetector {
+    private final Logger logger = LoggerFactory.getLogger(RedisServerDetector.class);
 
     private RedisInstanceType redisInstanceType;
 
     private String seedAddresses;
 
-    private Set<RedisInstance> seedInfo;
+    private Set<RedisNode> seedInfo;
 
-    private Set<RedisInstance> actualServers = new HashSet<>();
+    private Set<RedisNode> actualServers = new HashSet<>();
 
     /**
      * 
      * @param seedAddresses
      */
-    public RedisConnector(String seedAddresses) {
+    public RedisServerDetector(String seedAddresses) {
         this.seedAddresses = requireNonNull(seedAddresses);
         this.seedInfo = createRedisSeedInfo(this.seedAddresses);
     }
 
-    private Set<RedisInstance> createRedisSeedInfo(String seedAddresses) {
-        Set<RedisInstance> seedRedisInfos = new HashSet<RedisInstance>();
+    private Set<RedisNode> createRedisSeedInfo(String seedAddresses) {
+        Set<RedisNode> seedRedisInfos = new HashSet<RedisNode>();
         String[] addresses = seedAddresses.split("[,]");
 
         for (String address : addresses) {
@@ -43,7 +46,7 @@ public class RedisConnector {
                 String host = hostAndPort[0];
                 String port = hostAndPort[1];
 
-                seedRedisInfos.add(new RedisInstance(host, Integer.parseInt(port)));
+                seedRedisInfos.add(new RedisNode(host, Integer.parseInt(port)));
             }
         }
 
@@ -56,7 +59,7 @@ public class RedisConnector {
      * @return 
      * @throws OperationNotSupportedException 
      */
-    public Set<RedisInstance> lookupNodes() throws OperationNotSupportedException {
+    public Set<RedisNode> lookupNodes() throws OperationNotSupportedException {
         // get seed connection
         try (StatefulRedisConnection<String, String> redisSeedConnection = getSeedConnection();) {
             // get nodes
@@ -72,8 +75,8 @@ public class RedisConnector {
      * @return redis server nodes
      * @throws OperationNotSupportedException 
      */
-    private Set<RedisInstance> detectRedisServerNodes(StatefulRedisConnection<String, String> redisSeedConnection) throws OperationNotSupportedException {
-        Set<RedisInstance> nodes = null;
+    private Set<RedisNode> detectRedisServerNodes(StatefulRedisConnection<String, String> redisSeedConnection) throws OperationNotSupportedException {
+        Set<RedisNode> nodes = null;
         // is cluster, master/slave, support sentinel
 
         logger.info("Connected to Redis");
@@ -109,12 +112,12 @@ public class RedisConnector {
     }
 
     private StatefulRedisConnection<String, String> getSeedConnection() {
-        for (RedisInstance seed : this.seedInfo) {
+        for (RedisNode seed : this.seedInfo) {
             try {
-                ConnectionDetector connectionDetector = new ConnectionDetector(seed);
+                RedisSeedConnector redisSeedConnector = new RedisSeedConnector(seed);
                 logger.info("Connected server " + seed.toString());
 
-                return connectionDetector.connect();
+                return redisSeedConnector.connect();
             }
             catch (Exception e) {
                 logger.warn("Can not connect seed server " + seed.toString());

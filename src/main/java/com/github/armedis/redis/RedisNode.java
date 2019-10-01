@@ -4,7 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import io.lettuce.core.RedisURI;
 
-public class RedisInstance {
+public class RedisNode {
     private String host;
     private int port;
 
@@ -14,11 +14,11 @@ public class RedisInstance {
 
     private RedisURI uri;
 
-    public RedisInstance(String host, int port) {
+    public RedisNode(String host, int port) {
         this(requireNonNull(host), port, RedisInstanceType.NOT_DETECTED);
     }
 
-    private RedisInstance(String host, int port, RedisInstanceType instanceType) {
+    private RedisNode(String host, int port, RedisInstanceType instanceType) {
         this.host = host;
         this.port = port;
         this.instanceType = instanceType;

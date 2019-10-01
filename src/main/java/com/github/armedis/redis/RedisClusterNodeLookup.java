@@ -1,4 +1,4 @@
-package com.github.armedis.redis.lookup;
+package com.github.armedis.redis;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -7,8 +7,7 @@ import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.armedis.redis.RedisInstance;
-import com.github.armedis.redis.RedisNodeLookup;
+import com.github.armedis.redis.connection.RedisNodeLookup;
 
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.cluster.models.partitions.ClusterPartitionParser;
@@ -19,8 +18,8 @@ public class RedisClusterNodeLookup implements RedisNodeLookup {
     private final Logger logger = LoggerFactory.getLogger(RedisClusterNodeLookup.class);
 
     @Override
-    public Set<RedisInstance> lookup(StatefulRedisConnection<String, String> redisSeedConnection) {
-        Set<RedisInstance> actualServers = new HashSet<>();
+    public Set<RedisNode> lookup(StatefulRedisConnection<String, String> redisSeedConnection) {
+        Set<RedisNode> actualServers = new HashSet<>();
 
         /**
         3b7db20fb131b992a04016ab5278acb19719ab02 192.168.56.104:7001 master - 0 1569309845320 25 connected 0-5460
@@ -37,7 +36,7 @@ public class RedisClusterNodeLookup implements RedisNodeLookup {
 
             for (RedisClusterNode node : partitions.getPartitions()) {
                 logger.info(node.toString());
-                actualServers.add(new RedisInstance(node.getUri().getHost(), node.getUri().getPort()));
+                actualServers.add(new RedisNode(node.getUri().getHost(), node.getUri().getPort()));
             }
         }
         catch (InterruptedException | ExecutionException e) {

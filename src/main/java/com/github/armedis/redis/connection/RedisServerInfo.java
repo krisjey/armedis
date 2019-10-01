@@ -1,21 +1,24 @@
-package com.github.armedis.redis;
+package com.github.armedis.redis.connection;
 
 import static java.util.Objects.requireNonNull;
 
 import java.util.Set;
 
-public class RedisConnectionInfo {
-    private Set<RedisInstance> redisNodes;
+import com.github.armedis.redis.RedisNode;
+import com.github.armedis.redis.RedisInstanceType;
+
+public class RedisServerInfo {
+    private Set<RedisNode> redisNodes;
     private RedisInstanceType redisInstanceType;
 
-    public RedisConnectionInfo(Set<RedisInstance> redisNodes, RedisInstanceType redisInstanceType) {
+    public RedisServerInfo(Set<RedisNode> redisNodes, RedisInstanceType redisInstanceType) {
         requireNonNull(redisNodes, "Redis server info not detected!");
         requireNonNull(redisInstanceType, "Redis server type not detected!");
         this.redisNodes = redisNodes;
         this.redisInstanceType = redisInstanceType;
     }
 
-    public Set<RedisInstance> getRedisNodes() {
+    public Set<RedisNode> getRedisNodes() {
         return redisNodes;
     }
 

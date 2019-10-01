@@ -1,10 +1,9 @@
-package com.github.armedis.redis;
+package com.github.armedis.redis.connection;
 
 import javax.naming.OperationNotSupportedException;
 
-import com.github.armedis.redis.lookup.RedisClusterNodeLookup;
-import com.github.armedis.redis.lookup.RedisSentinelNodeLookup;
-import com.github.armedis.redis.lookup.RedisStandaloneNodeLookup;
+import com.github.armedis.redis.RedisClusterNodeLookup;
+import com.github.armedis.redis.RedisInstanceType;
 
 public class RedisLookupFactory {
 

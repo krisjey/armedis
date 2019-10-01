@@ -1,4 +1,4 @@
-package com.github.armedis.service;
+package com.github.armedis.http.service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -8,6 +8,7 @@ import java.util.Map;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import com.github.armedis.config.ConstantNames;
+import com.github.armedis.http.service.response.ResponseCode;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.linecorp.armeria.common.HttpResponse;
@@ -29,9 +30,20 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
          */
         public static final String HELLO_WORLD_GET = "/v1/hello/world/{userId}";
 
-        public static final String RUOK_GET = "/v1/ruok";
+        /**
+         * Server active check.
+         */
+        public static final String RUOK = "/v1/ruok";
 
+        /**
+         * Current memory status
+         */
         public static final String FREE_MEMORY_GET = "/v1/free";
+        
+        /**
+         * Current memory status
+         */
+        public static final String TEST_COMMAND = "/v1/{command}/{key}";
     }
 
     private static final Gson GSON_CONVERTER = new Gson();

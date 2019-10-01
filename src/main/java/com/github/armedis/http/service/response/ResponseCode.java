@@ -1,4 +1,4 @@
-package com.github.armedis.service;
+package com.github.armedis.http.service.response;
 
 /**
  * @author krisjey
@@ -71,14 +71,4 @@ public enum ResponseCode {
     public String getMessage() {
         return this.message;
     }
-
-//    public static ResponseCode from(Integer code) {
-//        ResponseCode result = null;
-//        result = RESPONSE_CODE_LIST.get(code);
-//        if (result != null) {
-//            return result;
-//        }
-//
-//        return NOT_EXIST;
-//    }
 }

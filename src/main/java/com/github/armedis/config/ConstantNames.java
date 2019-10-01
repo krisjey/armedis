@@ -1,8 +1,6 @@
 package com.github.armedis.config;
 
 public class ConstantNames {
-    public static final String AF_TICKET = "afTicket";
-
     public static final String SERVICE_PORT_PARAM_NAME = "SERVICE_PORT";
 
     /**
@@ -10,9 +8,17 @@ public class ConstantNames {
      */
     public static final String REQUEST_TIMEOUT = "request.timeout";
 
-    public static final String SERVICE_HTTP_PREFIX_PATH = "service.http.prefix.path";
+    public static final String HTTP_URL_PREFIX = "http.url.prefix";
 
-    public static final String RESULT_MESSAGE = "MESSAGE";
+    public static final String RESULT_MESSAGE = "message";
 
-    public static final String RESULT_CODE = "RESULT";
+    public static final String RESULT_CODE = "resultCode";
+
+    public static final String SERVICE_TRANSACTION_SEQ = "apiSeq";
+
+    public static final String HTTP_REQUEST_START = "requestStart";
+
+    public static final String HTTP_REQUEST_METHOD = "apiRequestMethod";
+
+    public static final String ARMEDIS_INSTANCE_INFO = "serviceInstanceInfo";
 }

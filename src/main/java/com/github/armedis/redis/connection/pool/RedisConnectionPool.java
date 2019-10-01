@@ -1,4 +1,4 @@
-package com.github.armedis.redis.pool;
+package com.github.armedis.redis.connection.pool;
 
 import io.lettuce.core.api.StatefulRedisConnection;
 

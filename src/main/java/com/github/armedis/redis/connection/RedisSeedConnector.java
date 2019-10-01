@@ -1,14 +1,16 @@
-package com.github.armedis.redis;
+package com.github.armedis.redis.connection;
 
 import java.time.Duration;
+
+import com.github.armedis.redis.RedisNode;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 
-public class ConnectionDetector {
-    private RedisInstance redisInstance;
+public class RedisSeedConnector {
+    private RedisNode redisInstance;
 
-    public ConnectionDetector(RedisInstance redisInstance) {
+    public RedisSeedConnector(RedisNode redisInstance) {
         this.redisInstance = redisInstance;
     }
 

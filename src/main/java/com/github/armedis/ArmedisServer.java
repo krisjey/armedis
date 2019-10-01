@@ -13,7 +13,7 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import com.github.armedis.config.ApplicationPropertiesLoader;
-import com.github.armedis.redis.RedisConnectionFactory;
+import com.github.armedis.redis.connection.RedisConnectionFactory;
 
 @SpringBootApplication
 public class ArmedisServer implements ApplicationRunner {
