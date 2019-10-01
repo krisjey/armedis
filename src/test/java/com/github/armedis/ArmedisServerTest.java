@@ -24,11 +24,11 @@ public class ArmedisServerTest {
         // Create connection pool factory
         
         // is valid seed info?
-        String seedHost = "192.168.56.104";
-        int seedPort = 6479;
-
 //        String seedHost = "192.168.56.104";
-//        int seedPort = 7001;
+//        int seedPort = 6479;
+
+        String seedHost = "192.168.56.104";
+        int seedPort = 7001;
 
         RedisURI uri = RedisURI.create(seedHost, seedPort);
         RedisClient redisClient = RedisClient.create(uri);
