@@ -9,16 +9,21 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
+
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import com.github.armedis.config.ApplicationPropertiesLoader;
+import com.github.armedis.redis.connection.RedisConnectionFactory;
 
 @SpringBootApplication
 public class ArmedisServer implements ApplicationRunner {
-    private static final Logger logger = LoggerFactory.getLogger(ArmedisServer.class);
+    private final Logger logger = LoggerFactory.getLogger(ArmedisServer.class);
 
     @Autowired
     ArmedisServerConfiguration armeriaHttpServerConfiguration;
+
+    @Autowired
+    RedisConnectionFactory factory;
 
     // TODO 필요 없는 코드 제거하기.!!
     public static void main(String[] args) throws IOException {
@@ -37,6 +42,8 @@ public class ArmedisServer implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
         String loadedMessage = "Spring application loaded!(run)";
         logger.info(loadedMessage);
+
+        factory.getConnection();
         System.out.println(loadedMessage);
     }
 }

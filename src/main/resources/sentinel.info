@@ -1,0 +1,60 @@
+# Server
+redis_version:3.2.3
+redis_git_sha1:00000000
+redis_git_dirty:0
+redis_build_id:fab3e865ba91827d
+redis_mode:sentinel
+os:Linux 2.6.32-754.22.1.el6.x86_64 x86_64
+arch_bits:64
+multiplexing_api:epoll
+gcc_version:4.4.7
+process_id:4632
+run_id:589752c349691239221e389840a743dcf50f8643
+tcp_port:26501
+uptime_in_seconds:67
+uptime_in_days:0
+hz:18
+lru_clock:9021335
+executable:/work/failover-test/sentinel/./redis-sentinel
+config_file:/work/failover-test/sentinel/./sentinel.conf
+
+# Clients
+connected_clients:1
+client_longest_output_list:0
+client_biggest_input_buf:0
+blocked_clients:0
+
+# CPU
+used_cpu_sys:0.07
+used_cpu_user:0.01
+used_cpu_sys_children:0.00
+used_cpu_user_children:0.00
+
+# Stats
+total_connections_received:1
+total_commands_processed:0
+instantaneous_ops_per_sec:0
+total_net_input_bytes:31
+total_net_output_bytes:32
+instantaneous_input_kbps:0.00
+instantaneous_output_kbps:0.00
+rejected_connections:0
+sync_full:0
+sync_partial_ok:0
+sync_partial_err:0
+expired_keys:0
+evicted_keys:0
+keyspace_hits:0
+keyspace_misses:0
+pubsub_channels:0
+pubsub_patterns:0
+latest_fork_usec:0
+migrate_cached_sockets:0
+
+# Sentinel
+sentinel_masters:1
+sentinel_tilt:0
+sentinel_running_scripts:0
+sentinel_scripts_queue_length:0
+sentinel_simulate_failure_flags:0
+master0:name=failover-master,status=ok,address=192.168.56.104:6379,slaves=1,sentinels=1

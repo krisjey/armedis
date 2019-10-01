@@ -17,7 +17,7 @@ public class NewdataServiceImpl extends NewdataServiceImplBase {
     @Override
     public void unaryEvent(EventRequest request, StreamObserver<EventResponse> responseObserver) {
         logger.info("input= sourceId : " + request.getSourceId() + ", eventId : " + request.getEventId());
-        //
+
         EventResponse eventResponse = EventResponse.newBuilder()
                 .setResult(request.getSourceId() + request.getEventId()).build();
         // unary라 onNext 1회만 호출 가능
@@ -25,14 +25,14 @@ public class NewdataServiceImpl extends NewdataServiceImplBase {
         responseObserver.onNext(eventResponse);
         logger.info("onNext");
         // 1초후 응답 스트림에 대한 완료 보낼 것임
-        try {
-            Thread.sleep(1000);
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Thread.sleep(1000);
+//        }
+//        catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
         responseObserver.onCompleted();
-        logger.info("onCompleted");
+        logger.info("onCompleted unaryEvent");
     }
 
     @Override
@@ -54,6 +54,7 @@ public class NewdataServiceImpl extends NewdataServiceImplBase {
             e.printStackTrace();
         }
         responseObserver.onCompleted();
+        logger.info("onCompleted serverStreamingEvent");
     }
 
     @Override
@@ -100,7 +101,7 @@ public class NewdataServiceImpl extends NewdataServiceImplBase {
 
             @Override
             public void onCompleted() {
-                logger.info("onCompleted");
+                logger.info("onCompleted biStreamingEvent");
                 responseObserver.onCompleted();
             }
         };

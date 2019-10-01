@@ -92,10 +92,6 @@ repositories {
     jcenter()
 }
 
-ext {
-	javaVersion='1.8'
-}
-
 dependencies {
 	implementation 'io.grpc:grpc-netty-shaded:1.23.0'
 	implementation 'io.grpc:grpc-protobuf:1.23.0'
@@ -117,11 +113,14 @@ dependencies {
         compile "com.linecorp.armeria:${it}:0.90.3"
     }
 
-    implementation('com.linecorp.armeria:armeria-spring-boot-autoconfigure:0.90.3')
+    implementation 'com.linecorp.armeria:armeria-spring-boot-autoconfigure:0.90.3'
 
-	implementation('org.springframework.boot:spring-boot-starter')
-	implementation('org.springframework.boot:spring-boot-configuration-processor')
-	implementation("org.apache.commons:commons-text:1.6")
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'org.springframework.boot:spring-boot-configuration-processor'
+	implementation 'org.apache.commons:commons-text:1.6'
+	
+	implementation 'org.apache.commons:commons-pool2:2.7.0'
+	implementation 'io.lettuce:lettuce-core:5.1.8.RELEASE'
 
     // Logging
     runtime 'ch.qos.logback:logback-classic:1.2.3'
@@ -129,4 +128,5 @@ dependencies {
     
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

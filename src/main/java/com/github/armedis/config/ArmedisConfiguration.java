@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 //@ConfigurationProperties("")	// prefix 지정.
 public class ArmedisConfiguration {
 	@Value("${config.redis.seed}")
-	private String redisAddressSeed;
+	private String redisSeedAddress;
 
 	@Value("${server.service.port}")
 	private int servicePort;
@@ -23,12 +23,12 @@ public class ArmedisConfiguration {
 	@Value("${server.service.instanceCount}")
 	private int instanceCount;
 
-	public String getRedisAddressSeed() {
-		return redisAddressSeed;
+	public String getRedisSeedAddress() {
+		return redisSeedAddress;
 	}
 
-	public void setRedisAddressSeed(String redisAddressSeed) {
-		this.redisAddressSeed = redisAddressSeed;
+	public void setRedisSeedAddress(String redisAddressSeed) {
+		this.redisSeedAddress = redisAddressSeed;
 	}
 
 	public int getServicePort() {
