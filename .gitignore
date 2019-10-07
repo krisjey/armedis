@@ -44,4 +44,6 @@ bin
 
 # Ignore protoc generated source file
 gen-src/
+
+# Ignore line of code files.
 /loc/

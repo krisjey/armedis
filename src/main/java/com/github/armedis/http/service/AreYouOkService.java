@@ -11,10 +11,20 @@ import com.linecorp.armeria.server.annotation.Get;
 import com.linecorp.armeria.server.annotation.Path;
 import com.linecorp.armeria.server.annotation.Post;
 
+/**
+ * Service activity api.
+ * @author krisjey
+ *
+ */
 @Component
 public class AreYouOkService extends BaseService {
     private final Logger logger = LoggerFactory.getLogger(AreYouOkService.class);
 
+    /**
+     * Are you ok service for server instance.
+     * @param redisRequest
+     * @return
+     */
     @Get
     @Path(ServiceUrl.RUOK)
     public HttpResponse ruokGet(RedisRequest redisRequest) {

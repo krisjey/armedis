@@ -19,5 +19,4 @@ public class RedisSeedConnector {
         client.setDefaultTimeout(Duration.ofSeconds(2));
         return client.connect();
     }
-
 }

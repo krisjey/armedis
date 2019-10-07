@@ -1,3 +1,4 @@
+
 package com.github.armedis;
 
 import java.time.Duration;
@@ -26,8 +27,11 @@ import com.github.armedis.redis.connection.RedisServerDetector;
 import com.github.armedis.utils.LogStringBuilder;
 import com.linecorp.armeria.common.CommonPools;
 import com.linecorp.armeria.common.SessionProtocol;
+import com.linecorp.armeria.server.Route;
+import com.linecorp.armeria.server.RouteBuilder;
 import com.linecorp.armeria.server.Server;
 import com.linecorp.armeria.server.ServerBuilder;
+import com.linecorp.armeria.server.ServiceBindingBuilder;
 import com.linecorp.armeria.server.docs.DocService;
 import com.linecorp.armeria.server.grpc.GrpcServiceBuilder;
 import com.linecorp.armeria.server.logging.LoggingService;
@@ -56,7 +60,8 @@ public class ArmedisServerConfiguration {
 
     @Bean
     public RedisServerInfo detectRedisServer() {
-        RedisServerDetector redisServerDetector = new RedisServerDetector(armedisConfiguration.getRedisSeedAddress());
+        RedisServerDetector redisServerDetector = new RedisServerDetector(
+                armedisConfiguration.getRedisSeedAddress());
 
         Set<RedisNode> redisNodes = null;
         try {
@@ -85,11 +90,13 @@ public class ArmedisServerConfiguration {
         try {
             instanceInfo = new DefaultInstanceInfo(String.valueOf(listenPort));
 
-            logger.info("Successfully added zookeeper node! [" + instanceInfo.getNodePath() + "] " + instanceInfo.toJsonObject().toString());
+            logger.info("Successfully added zookeeper node! [" + instanceInfo.getNodePath() + "] " +
+                    instanceInfo.toJsonObject().toString());
 
             logger.info(LogStringBuilder.makeReadableLine(1));
             logger.info(LogStringBuilder.makeHeader("Add shutdownhook"));
-            logger.info(LogStringBuilder.makeBody("ClipboardServerShutdownHook added!" + instanceInfo.getNodePath()));
+            logger.info(LogStringBuilder
+                    .makeBody("ClipboardServerShutdownHook added!" + instanceInfo.getNodePath()));
             logger.info(LogStringBuilder.makeReadableLine(1));
             logger.info(LogStringBuilder.makeFooter());
 
@@ -106,6 +113,9 @@ public class ArmedisServerConfiguration {
 
         // Customize the server using the given ServerBuilder. For example:
         return builder -> {
+            // Accept header is a way for a client to specify the media type of the response content it is expecting
+            // Content-type is a way to specify the media type of request being sent from the client to the server.
+
             initializeServerBuilderByConfig(builder);
 
             // Add DocService that enables you to send Thrift and gRPC requests from web browser.
@@ -176,7 +186,8 @@ public class ArmedisServerConfiguration {
         int listenPort = 0;
 
         // FIXME 이게 없어서 문제 발생함.
-        int servicePortFromParam = listenPort = Integer.parseInt(paramServicePort == null ? "0" : paramServicePort);
+        int servicePortFromParam = listenPort = Integer
+                .parseInt(paramServicePort == null ? "0" : paramServicePort);
 
         int configServicePort = armedisConfiguration.getServicePort();
         int instanceCount = armedisConfiguration.getInstanceCount();
@@ -187,7 +198,8 @@ public class ArmedisServerConfiguration {
                             instanceCount + "] but request is [" + servicePortFromParam + "]");
         }
 
-        if (configServicePort <= servicePortFromParam && (configServicePort + instanceCount - 1) >= servicePortFromParam) {
+        if (configServicePort <= servicePortFromParam &&
+                (configServicePort + instanceCount - 1) >= servicePortFromParam) {
             // do nothing
         }
         else {

@@ -77,6 +77,12 @@ protobuf {
 sourceSets {
     main {
         java {
+//          // add source folder order
+//        	srcDirs 'src/main/java'
+//        	srcDirs 'src/main/resources'
+//        	srcDirs 'src/test/java'
+//        	srcDirs 'src/test/resources'
+
             // add source folder for protocol buffer gen java file
             srcDirs 'gen-src/main/java'
             // add source folder for protocol buffer gen java file

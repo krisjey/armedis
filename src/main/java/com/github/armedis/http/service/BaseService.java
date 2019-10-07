@@ -1,3 +1,4 @@
+
 package com.github.armedis.http.service;
 
 import java.time.LocalDateTime;
@@ -17,34 +18,6 @@ import com.linecorp.armeria.common.MediaType;
 
 public class BaseService implements ArmeriaAnnotatedHttpService {
     private static final DateTimeFormatter pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-    /**
-     * EndPoint of API URL Constants.
-     * 
-     * @author krisjey
-     *
-     */
-    protected final class ServiceUrl {
-        /**
-         * dummy api endpoint
-         */
-        public static final String HELLO_WORLD_GET = "/v1/hello/world/{userId}";
-
-        /**
-         * Server active check.
-         */
-        public static final String RUOK = "/v1/ruok";
-
-        /**
-         * Current memory status
-         */
-        public static final String FREE_MEMORY_GET = "/v1/free";
-        
-        /**
-         * Current memory status
-         */
-        public static final String TEST_COMMAND = "/v1/{command}/{key}";
-    }
 
     private static final Gson GSON_CONVERTER = new Gson();
 
@@ -83,7 +56,8 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
         resultData.addProperty(ConstantNames.RESULT_CODE, code.getResultCode());
         resultData.addProperty(ConstantNames.RESULT_MESSAGE, code.getMessage());
 
-        return HttpResponse.of(HttpStatus.valueOf(code.getStatusCode()), MediaType.JSON_UTF_8, resultData.toString());
+        return HttpResponse.of(HttpStatus.valueOf(code.getStatusCode()), MediaType.JSON_UTF_8,
+                resultData.toString());
     }
 
     protected void unescapeText(Map<String, Object> item, String key) {
