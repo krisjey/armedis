@@ -19,6 +19,9 @@ import com.linecorp.armeria.common.MediaType;
 public class BaseService implements ArmeriaAnnotatedHttpService {
     private static final DateTimeFormatter pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    protected static final String COMMAND_URL = "/v1/{command}";
+    protected static final String COMMAND_URL_WITH_KEY = COMMAND_URL + "/{key}";
+
     private static final Gson GSON_CONVERTER = new Gson();
 
     protected HttpResponse buildResponse(Map<String, ?> resultData) {
