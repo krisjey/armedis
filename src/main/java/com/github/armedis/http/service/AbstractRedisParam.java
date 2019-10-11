@@ -1,14 +1,14 @@
+
 package com.github.armedis.http.service;
 
-import com.linecorp.armeria.server.annotation.Default;
+import java.util.Optional;
+
 import com.linecorp.armeria.server.annotation.Param;
 
 public abstract class AbstractRedisParam {
     @Param("key")
-    @Default("")
-    protected String key;
-    
+    protected Optional<String> key;
+
     @Param("command")
-    @Default("")
-    protected String command;
+    protected Optional<String> command;
 }

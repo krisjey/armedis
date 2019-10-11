@@ -1,8 +1,7 @@
 
 package com.github.armedis.http.service;
 
-import com.linecorp.armeria.server.annotation.Default;
-import com.linecorp.armeria.server.annotation.Param;
+import java.util.Optional;
 
 /**
  * Json to redis command object
@@ -16,15 +15,12 @@ import com.linecorp.armeria.server.annotation.Param;
  *
  */
 public class RedisRequest extends AbstractRedisParam {
-    @Param("body")
-    String body;
+    public Optional<String> getCommand() {
+        return command;
+    }
 
     @Override
     public String toString() {
-        return "RedisRequest [body=" + body + ", key=" + key + ", command=" + command + "]";
-    }
-
-    public String getCommand() {
-        return command;
+        return "RedisRequest [key=" + key + ", command=" + command + "]";
     }
 }
