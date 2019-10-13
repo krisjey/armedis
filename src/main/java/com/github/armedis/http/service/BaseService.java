@@ -76,7 +76,7 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
         RedisRequestBuilder builder = RedisRequestBuilder.setCommand(redisCommand);
         
         // build redisRequest by http request param.
-        builder.
+//        builder.
         return null;
     }
 

@@ -1,27 +1,29 @@
 
 package com.github.armedis.http.service.request;
 
+import static java.util.Objects.requireNonNull;
+
 import com.github.armedis.http.service.RedisRequest;
 
 public class RedisRequestBuilder {
-    private RedisRequestFactory factory;
+    private RedisRequestBuilderFactory factory;
+    
     private String command;
-
-    public RedisRequestBuilder setCommand(String command) {
-        this.command = command;
-        
-        return this;
+    
+    public RedisRequestBuilder(String command) {
+        this.command = requireNonNull(command, "Command should be not null!");
     }
-
+    
     public RedisRequest build() {
-        if (uri != null) {
-            return factory.newRequest(uri, HttpClient.class, buildOptions());
-        }
-        else if (path != null) {
-            return factory.newRequest(scheme, endpoint, path, HttpClient.class, buildOptions());
+        if (this.command != null) {
+            //            return factory.newRequest(uri, HttpClient.class, buildOptions());
+//            return factory.newBuilder(this.command);
+            factory.newCommandBuilder(this.command);
+            
+            
         }
         else {
-            return factory.newRequest(scheme, endpoint, HttpClient.class, buildOptions());
+            //            return factory.newRequest(scheme, endpoint, HttpClient.class, buildOptions());
         }
     }
 }
