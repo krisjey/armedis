@@ -10,7 +10,7 @@ public class RedisConnectionPoolImplTest {
     public void test() {
         RedisConnectionPoolImpl impl;
         
-        assertThat(impl.getConnection()).;
+//        assertThat(impl.getConnection()).;
     }
     
 }

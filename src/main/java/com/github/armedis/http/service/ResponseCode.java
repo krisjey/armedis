@@ -1,4 +1,4 @@
-package com.github.armedis.http.service.response;
+package com.github.armedis.http.service;
 
 /**
  * @author krisjey

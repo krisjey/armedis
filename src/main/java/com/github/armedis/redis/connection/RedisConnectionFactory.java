@@ -23,16 +23,16 @@ public class RedisConnectionFactory implements RedisConnectionPool<String, Strin
 
     @Override
     public StatefulRedisConnection<String, String> getConnection() {
-        logger.info(redisConnectionInfo.getRedisInstanceType().toString());
-        logger.info(redisConnectionInfo.getRedisNodes().toString());
+//        logger.info(redisConnectionInfo.getRedisInstanceType().toString());
+//        logger.info(redisConnectionInfo.getRedisNodes().toString());
 
-        RedisClusterClient redisClient = RedisClusterClient.create("redis://password@localhost:7379");
-        StatefulRedisClusterConnection<String, String> con = redisClient.connect();
+//        RedisClusterClient redisClient = RedisClusterClient.create("redis://password@localhost:7379");
+//        StatefulRedisClusterConnection<String, String> con = redisClient.connect();
         
-        RedisCommand command = con.sync();
+//        RedisCommand command = con.sync();
 //        AdvancedClusterCommands<String, String> command = con.sync();
         
-        redisClient.connect();
+//        redisClient.connect();
 
         return null;
     }

@@ -1,27 +1,37 @@
 
 package com.github.armedis.http.service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.armedis.config.ConstantNames;
+import com.github.armedis.http.service.request.RedisRequest;
 import com.github.armedis.http.service.request.RedisRequestBuilder;
-import com.github.armedis.http.service.response.ResponseCode;
-import com.linecorp.armeria.common.HttpRequest;
+import com.github.armedis.http.service.request.RedisRequestBuilderFactory;
+import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
 
 public class BaseService implements ArmeriaAnnotatedHttpService {
+    private static final Logger logger = LoggerFactory.getLogger(BaseService.class);
+
+    // CompositeRouter used.
     private static final DateTimeFormatter pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    private ObjectMapper mapper = new ObjectMapper();
+    protected static final ObjectMapper mapper = new ObjectMapper();
+
+    private static final ObjectNode emptyResult = mapper.createObjectNode();
 
     protected HttpResponse buildResponse(ResponseCode responseCode) {
         return buildResponse(responseCode, null);
@@ -48,19 +58,18 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
      */
     protected final HttpResponse buildResponse(ResponseCode code, ObjectNode resultData) {
         if (resultData == null) {
-            resultData = mapper.createObjectNode();
+            resultData = emptyResult;
         }
 
         resultData.put(ConstantNames.RESULT_CODE, code.getResultCode());
         resultData.put(ConstantNames.RESULT_MESSAGE, code.getMessage());
 
-        return HttpResponse.of(HttpStatus.valueOf(code.getStatusCode()), MediaType.JSON_UTF_8,
-                resultData.toString());
+        return HttpResponse.of(HttpStatus.valueOf(code.getStatusCode()), MediaType.JSON_UTF_8, resultData.toString());
     }
 
-    protected final HttpResponse buildRespnse(RedisRequest redisRequest, ObjectNode resultData) {
+    protected final HttpResponse buildResponse(RedisRequest redisRequest, ObjectNode resultData) {
         if (resultData == null) {
-            resultData = mapper.createObjectNode();
+            resultData = emptyResult;
         }
 
         ResponseCode code = ResponseCode.SUCCESS;
@@ -68,16 +77,50 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
         resultData.put(ConstantNames.RESULT_CODE, code.getResultCode());
         resultData.put(ConstantNames.RESULT_MESSAGE, code.getMessage());
 
-        return HttpResponse.of(HttpStatus.valueOf(code.getStatusCode()), MediaType.JSON_UTF_8,
-                resultData.toString());
+        return HttpResponse.of(HttpStatus.valueOf(code.getStatusCode()), MediaType.JSON_UTF_8, resultData.toString());
     }
 
-    protected final RedisRequest buildRedisRequest(String redisCommand, HttpRequest req, JsonNode body) {
-        RedisRequestBuilder builder = RedisRequestBuilder.setCommand(redisCommand);
-        
-        // build redisRequest by http request param.
-//        builder.
-        return null;
+    protected final RedisRequest buildRedisRequest(String redisCommand, String key, AggregatedHttpRequest httpRequest,
+            JsonNode jsonBody) {
+        RedisRequestBuilder builder = RedisRequestBuilderFactory.createRedisRequestBuilder(redisCommand);
+
+        // Build RedisRequestVO by command name of the HttpRequest param.
+        RedisRequest redisRequest = builder.build(jsonBody, key);
+
+        return redisRequest;
+    }
+
+    protected final RedisRequest buildRedisRequest(String redisCommand, AggregatedHttpRequest httpRequest, JsonNode jsonBody) {
+        RedisRequestBuilder builder = RedisRequestBuilderFactory.createRedisRequestBuilder(redisCommand);
+
+        // Build RedisRequestVO by command name of the HttpRequest param.
+        RedisRequest redisRequest = builder.build(jsonBody);
+
+        return redisRequest;
+    }
+
+    protected final JsonNode getJsonBody(AggregatedHttpRequest httpRequest) {
+        JsonNode jsonBody = null;
+        String content = httpRequest.contentUtf8();
+
+        if (StringUtils.isBlank(content)) {
+            jsonBody = emptyResult;
+        }
+        else {
+            try {
+                jsonBody = mapper.readTree(content);
+            }
+            catch (IOException e) {
+                logger.info("Can not read content from request body data! [" + content + "]");
+                jsonBody = emptyResult;
+            }
+        }
+
+        return jsonBody;
+    }
+
+    protected String parseKeyFromPath(String path) {
+        return StringUtils.substringAfterLast(path, "/");
     }
 
     protected String unixTimestampToDateString(String unixtimestamp) {

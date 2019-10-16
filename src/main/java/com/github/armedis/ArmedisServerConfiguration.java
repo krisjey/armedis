@@ -27,14 +27,10 @@ import com.github.armedis.redis.connection.RedisServerDetector;
 import com.github.armedis.utils.LogStringBuilder;
 import com.linecorp.armeria.common.CommonPools;
 import com.linecorp.armeria.common.SessionProtocol;
-import com.linecorp.armeria.server.Route;
-import com.linecorp.armeria.server.RouteBuilder;
 import com.linecorp.armeria.server.Server;
 import com.linecorp.armeria.server.ServerBuilder;
-import com.linecorp.armeria.server.ServiceBindingBuilder;
 import com.linecorp.armeria.server.docs.DocService;
 import com.linecorp.armeria.server.grpc.GrpcServiceBuilder;
-import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.spring.ArmeriaServerConfigurator;
 import com.linecorp.armeria.spring.ArmeriaSettings;
 import com.linecorp.armeria.spring.ArmeriaSettings.Port;
@@ -122,7 +118,7 @@ public class ArmedisServerConfiguration {
             builder.serviceUnder("/docs", new DocService());
 
 //            // Log every message which the server receives and responds.
-            builder.decorator(LoggingService.newDecorator());
+//            builder.decorator(LoggingService.newDecorator());
 
 //            // Write access log after completing a request.
 //            builder.accessLogWriter(AccessLogWriter.combined(), false);
@@ -134,15 +130,8 @@ public class ArmedisServerConfiguration {
                 builder.annotatedService(service);
             }
 
-            // You can also bind asynchronous RPC services such as Thrift and gRPC:
-            // builder.service(THttpService.of(...));
-            // builder.service(new GrpcServiceBuilder()...build());
-
-            // with spring
-//            builder.service(new GrpcServiceBuilder().addService(newdataServiceImpl).build());
-
+            // TODO Add grpc service 
             builder.service(new GrpcServiceBuilder().addService(new NewdataServiceImpl()).build());
-
         };
     }
 
@@ -178,14 +167,12 @@ public class ArmedisServerConfiguration {
     }
 
     /**
-     * Zookeeper에 등록된 정보와 System properties 정보로 서버의 실행환경을 구성한다.
+     * Configuration 정보를 사용하여 armedis 서버의 runtime 을 구성한다.
      */
     private int initializeServicePort() {
-        // FIXME 이게 없어서 문제 발생 가능.
         String paramServicePort = System.getProperty(ConstantNames.SERVICE_PORT_PARAM_NAME);
         int listenPort = 0;
 
-        // FIXME 이게 없어서 문제 발생함.
         int servicePortFromParam = listenPort = Integer
                 .parseInt(paramServicePort == null ? "0" : paramServicePort);
 

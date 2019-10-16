@@ -1,5 +1,5 @@
 
-package com.github.armedis.http.service;
+package com.github.armedis.http.service.request;
 
 import java.util.Optional;
 
@@ -27,12 +27,26 @@ import java.util.Optional;
  *
  */
 public class RedisRequest extends AbstractRedisParam {
-    public Optional<String> getCommand() {
-        return command;
+    protected String command;
+
+    public String getCommand() {
+        return this.command;
+    }
+
+    public void setCommand(String command) {
+        this.command = command;
+    }
+
+    public Optional<String> getKey() {
+        return this.key;
+    }
+    
+    public void setKey(Optional<String> key) {
+        this.key = key;
     }
 
     @Override
     public String toString() {
-        return "RedisRequest [key=" + key + ", command=" + command + "]";
+        return "RedisRequest [key=" + key + ", command=" + this.command + "]";
     }
 }
