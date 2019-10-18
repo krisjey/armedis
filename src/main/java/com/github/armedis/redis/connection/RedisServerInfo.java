@@ -4,8 +4,8 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Set;
 
-import com.github.armedis.redis.RedisNode;
 import com.github.armedis.redis.RedisInstanceType;
+import com.github.armedis.redis.RedisNode;
 
 public class RedisServerInfo {
     private Set<RedisNode> redisNodes;

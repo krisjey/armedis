@@ -13,6 +13,7 @@ import javax.naming.OperationNotSupportedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -22,8 +23,8 @@ import com.github.armedis.config.ConstantNames;
 import com.github.armedis.config.DefaultInstanceInfo;
 import com.github.armedis.http.service.ArmeriaAnnotatedHttpService;
 import com.github.armedis.redis.RedisNode;
-import com.github.armedis.redis.connection.RedisServerInfo;
 import com.github.armedis.redis.connection.RedisServerDetector;
+import com.github.armedis.redis.connection.RedisServerInfo;
 import com.github.armedis.utils.LogStringBuilder;
 import com.linecorp.armeria.common.CommonPools;
 import com.linecorp.armeria.common.SessionProtocol;
@@ -39,6 +40,7 @@ import com.linecorp.armeria.spring.ArmeriaSettings.Port;
  * An example of a configuration which provides beans for customizing the server and client.
  */
 @Configuration
+@EnableAutoConfiguration
 public class ArmedisServerConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(ArmedisServerConfiguration.class);
 
@@ -54,7 +56,7 @@ public class ArmedisServerConfiguration {
         this.armedisConfiguration = armedisConfiguration;
     }
 
-    @Bean
+    @Bean(name = "configuratedRedisServerInfo")
     public RedisServerInfo detectRedisServer() {
         RedisServerDetector redisServerDetector = new RedisServerDetector(
                 armedisConfiguration.getRedisSeedAddress());
@@ -130,7 +132,7 @@ public class ArmedisServerConfiguration {
                 builder.annotatedService(service);
             }
 
-            // TODO Add grpc service 
+            // TODO Add grpc service
             builder.service(new GrpcServiceBuilder().addService(new NewdataServiceImpl()).build());
         };
     }

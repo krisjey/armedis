@@ -22,8 +22,8 @@
 	<!-- Remove remote connection close exception! -->
 	<logger name="com.linecorp.armeria.server.logging.LoggingService" level="ERROR" />
 	<logger name="com.linecorp.armeria.server.HttpServerHandler" level="ERROR" />
-	<logger name="com.afreecatv.pual.api.service.AreYouOkService" level="ERROR" />
 	<logger name="com.linecorp.armeria.server.Routers" level="DEBUG" />
+	<logger name="org.springframework.beans" level="DEBUG" />
 
 	<logger name="io.netty" level="INFO" />
 	<logger name="org.apache.zookeeper" level="INFO" />

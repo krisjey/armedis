@@ -1,4 +1,7 @@
+
 package com.github.armedis.redis.connection;
+
+import static java.util.Objects.requireNonNull;
 
 import java.time.Duration;
 
@@ -8,14 +11,14 @@ import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 
 public class RedisSeedConnector {
-    private RedisNode redisInstance;
+    private RedisNode seedRedisNodeInfo;
 
-    public RedisSeedConnector(RedisNode redisInstance) {
-        this.redisInstance = redisInstance;
+    public RedisSeedConnector(RedisNode seedRedisNodeInfo) {
+        this.seedRedisNodeInfo = requireNonNull(seedRedisNodeInfo, "Redis seed node info");
     }
 
     public StatefulRedisConnection<String, String> connect() {
-        RedisClient client = RedisClient.create(this.redisInstance.getUri());
+        RedisClient client = RedisClient.create(this.seedRedisNodeInfo.getUri());
         client.setDefaultTimeout(Duration.ofSeconds(2));
         return client.connect();
     }

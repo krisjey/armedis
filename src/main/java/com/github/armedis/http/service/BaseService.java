@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,6 +19,7 @@ import com.github.armedis.config.ConstantNames;
 import com.github.armedis.http.service.request.RedisRequest;
 import com.github.armedis.http.service.request.RedisRequestBuilder;
 import com.github.armedis.http.service.request.RedisRequestBuilderFactory;
+import com.github.armedis.redis.RedisCommandExecutor;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
@@ -32,6 +34,9 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
     protected static final ObjectMapper mapper = new ObjectMapper();
 
     private static final ObjectNode emptyResult = mapper.createObjectNode();
+
+    @Autowired
+    private RedisCommandExecutor executor;
 
     protected HttpResponse buildResponse(ResponseCode responseCode) {
         return buildResponse(responseCode, null);
@@ -121,6 +126,19 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
 
     protected String parseKeyFromPath(String path) {
         return StringUtils.substringAfterLast(path, "/");
+    }
+
+    protected ObjectNode executeCommand(RedisRequest redisRequest) {
+        ObjectNode node = null;
+
+        try {
+            node = executor.execute(redisRequest);
+        }
+        catch (Exception e) {
+            logger.info("Can not execute redis command " + redisRequest.toString());
+        }
+
+        return node;
     }
 
     protected String unixTimestampToDateString(String unixtimestamp) {

@@ -10,8 +10,8 @@ import javax.naming.OperationNotSupportedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.armedis.redis.RedisNode;
 import com.github.armedis.redis.RedisInstanceType;
+import com.github.armedis.redis.RedisNode;
 
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
