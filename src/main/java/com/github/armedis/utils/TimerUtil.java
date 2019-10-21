@@ -1,3 +1,4 @@
+
 package com.github.armedis.utils;
 
 import java.util.Random;
@@ -7,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 public class TimerUtil {
     private static final Random SUDO_RANDOM = new Random();
+
     public static boolean timeToWait(long duration, TimeUnit timeUnit) {
         BlockingQueue<Object> queue = new LinkedBlockingQueue<>();
 

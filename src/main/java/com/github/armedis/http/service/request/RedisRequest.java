@@ -40,7 +40,7 @@ public class RedisRequest extends AbstractRedisParam {
     public Optional<String> getKey() {
         return this.key;
     }
-    
+
     public void setKey(Optional<String> key) {
         this.key = key;
     }

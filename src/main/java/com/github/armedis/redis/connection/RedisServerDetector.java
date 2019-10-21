@@ -1,3 +1,4 @@
+
 package com.github.armedis.redis.connection;
 
 import static java.util.Objects.requireNonNull;
@@ -75,7 +76,8 @@ public class RedisServerDetector {
      * @return redis server nodes
      * @throws OperationNotSupportedException 
      */
-    private Set<RedisNode> detectRedisServerNodes(StatefulRedisConnection<String, String> redisSeedConnection) throws OperationNotSupportedException {
+    private Set<RedisNode> detectRedisServerNodes(StatefulRedisConnection<String, String> redisSeedConnection)
+            throws OperationNotSupportedException {
         Set<RedisNode> nodes = null;
         // is cluster, master/slave, support sentinel
 
@@ -85,7 +87,7 @@ public class RedisServerDetector {
 
         RedisCommands<String, String> syncCommands = redisSeedConnection.sync();
         String redisInfo = syncCommands.info();
-        
+
         logger.info(syncCommands.role().toString());
 
         // TYPE cluster, none cluster, master, slave

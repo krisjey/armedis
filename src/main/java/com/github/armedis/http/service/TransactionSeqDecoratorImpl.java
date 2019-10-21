@@ -1,3 +1,4 @@
+
 package com.github.armedis.http.service;
 
 import java.time.LocalDateTime;
@@ -44,10 +45,11 @@ public class TransactionSeqDecoratorImpl implements DecoratingServiceFunction<Ht
     @Override
     public HttpResponse serve(Service<HttpRequest, HttpResponse> delegate,
             ServiceRequestContext ctx, HttpRequest req) throws Exception {
-        ctx.addAdditionalResponseHeader(ConstantNames.SERVICE_TRANSACTION_SEQ, String.valueOf(TRANSACTION_SEQ_VALUE.incrementAndGet()));
+        ctx.addAdditionalResponseHeader(ConstantNames.SERVICE_TRANSACTION_SEQ,
+                String.valueOf(TRANSACTION_SEQ_VALUE.incrementAndGet()));
         ctx.addAdditionalResponseHeader(ConstantNames.HTTP_REQUEST_START, LocalDateTime.now().format(formatPattern));
         ctx.addAdditionalResponseHeader(ConstantNames.ARMEDIS_INSTANCE_INFO, instanceInfo);
-        
+
         return delegate.serve(ctx, req);
     }
 }

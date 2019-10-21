@@ -1,3 +1,4 @@
+
 package com.github.armedis.spring;
 
 import org.springframework.beans.BeansException;

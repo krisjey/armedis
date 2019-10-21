@@ -1,3 +1,4 @@
+
 package com.github.armedis.config;
 
 public class ConstantNames {

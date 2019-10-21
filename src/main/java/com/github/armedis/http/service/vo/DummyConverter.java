@@ -19,7 +19,7 @@ public class DummyConverter implements RequestConverterFunction {
     }
 
     private String translateToEnglish(String greetingInAnyLanguage) {
-        
+
         return greetingInAnyLanguage;
 
     }
