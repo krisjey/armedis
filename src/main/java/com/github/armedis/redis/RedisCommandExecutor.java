@@ -15,7 +15,7 @@ import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 
 @Component
 public class RedisCommandExecutor {
-    private static final Logger logger = LoggerFactory.getLogger(RedisCommandExecutor.class);
+    private final Logger logger = LoggerFactory.getLogger(RedisCommandExecutor.class);
 
     @Autowired
     private RedisConnectionFactory factory;

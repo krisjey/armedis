@@ -5,10 +5,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
-
-import javax.naming.OperationNotSupportedException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +19,6 @@ import com.github.armedis.config.ArmedisConfiguration;
 import com.github.armedis.config.ConstantNames;
 import com.github.armedis.config.DefaultInstanceInfo;
 import com.github.armedis.http.service.ArmeriaAnnotatedHttpService;
-import com.github.armedis.redis.RedisNode;
-import com.github.armedis.redis.connection.RedisServerDetector;
-import com.github.armedis.redis.connection.RedisServerInfo;
 import com.github.armedis.utils.LogStringBuilder;
 import com.linecorp.armeria.common.CommonPools;
 import com.linecorp.armeria.common.SessionProtocol;
@@ -54,22 +48,6 @@ public class ArmedisServerConfiguration {
     public ArmedisServerConfiguration(ArmeriaSettings settings, ArmedisConfiguration armedisConfiguration) {
         this.settings = settings;
         this.armedisConfiguration = armedisConfiguration;
-    }
-
-    @Bean(name = "configuratedRedisServerInfo")
-    public RedisServerInfo detectRedisServer() {
-        RedisServerDetector redisServerDetector = new RedisServerDetector(
-                armedisConfiguration.getRedisSeedAddress());
-
-        Set<RedisNode> redisNodes = null;
-        try {
-            redisNodes = redisServerDetector.lookupNodes();
-        }
-        catch (OperationNotSupportedException e) {
-            logger.info("Does not support impl.");
-        }
-
-        return new RedisServerInfo(redisNodes, redisServerDetector.getRedisInstanceType());
     }
 
     /**
