@@ -1,17 +1,18 @@
 
-package com.github.armedis.redis.connection;
+package com.github.armedis.redis.connection.pool;
+
+import static java.util.Objects.requireNonNull;
 
 import java.time.Duration;
+import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
-import com.github.armedis.redis.connection.pool.RedisConnectionPool;
-
+import com.github.armedis.redis.RedisNode;
+import com.github.armedis.redis.RedisServerInfoMaker;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
@@ -20,41 +21,32 @@ import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.support.ConnectionPoolSupport;
 
 @Component
-@DependsOn(value = { "configuratedRedisServerInfo" })
 public class RedisConnectionPoolImpl implements RedisConnectionPool<String, String> {
-    @Autowired
-    @Qualifier("configuratedRedisServerInfo")
-    private RedisServerInfo redisServerInfo;
+    private RedisServerInfoMaker redisServerInfoMaker;
 
-    private GenericObjectPool<StatefulRedisClusterConnection<String, String>> connectionPool = buildConnectionPool();
+    private GenericObjectPool<StatefulRedisClusterConnection<String, String>> connectionPool;
+
+    @Autowired
+    public RedisConnectionPoolImpl(RedisServerInfoMaker redisServerInfoMaker) {
+        this.redisServerInfoMaker = redisServerInfoMaker;
+        this.connectionPool = buildConnectionPool();
+    }
 
     private GenericObjectPool<StatefulRedisClusterConnection<String, String>> buildConnectionPool() {
+        requireNonNull(redisServerInfoMaker, "redis server info is null");
         ClusterTopologyRefreshOptions topologyRefreshOptions = ClusterTopologyRefreshOptions.builder()
                 .enablePeriodicRefresh(true)
                 .refreshPeriod(Duration.ofSeconds(5))
                 .enableAllAdaptiveRefreshTriggers()
                 .build();
 
-//        // FIXME redisConnectionInfo is null
-//        Set<RedisNode> nodes = redisConnectionInfo.getRedisNodes();
-
-        // FIXME redisConnectionInfo autowired not working so just work around.
-        String address = "192.168.56.104:7003";
-        String[] splitAddress = address.split("[:]");
-        RedisURI clusterNode = RedisURI.create(splitAddress[0], Integer.parseInt(splitAddress[1]));
-
-        System.out.println(redisServerInfo);
+        Set<RedisNode> nodes = redisServerInfoMaker.detectRedisServer().getRedisNodes();
 
         // cluster node
-//        RedisURI clusterNode = null;
-//        for (RedisNode item : nodes) {
-//            clusterNode = RedisURI.create(item.getHost(), item.getPort());
-//        }
-
-//        String address = this.armedisConfiguration.getRedisSeedAddress();
-//        String[] splitAddress = address.split("[:]");
-//
-//        RedisURI clusterNode = RedisURI.create(splitAddress[0], Integer.parseInt(splitAddress[1]));
+        RedisURI clusterNode = null;
+        for (RedisNode item : nodes) {
+            clusterNode = RedisURI.create(item.getHost(), item.getPort());
+        }
 
         RedisClusterClient clusterClient = RedisClusterClient.create(clusterNode);
         clusterClient.setOptions(ClusterClientOptions.builder()
