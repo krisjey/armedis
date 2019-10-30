@@ -24,12 +24,14 @@ public class RedisCommandExecutor {
         StatefulRedisClusterConnection<String, String> connection = factory.getConnection();
         RedisAdvancedClusterCommands<String, String> commands = connection.sync();
 
+        String addValue = "my name is kris";
         // RedisConnectionFactory로부터 레디스 sync command를 가져온다.
         // RedisRequest로 redis command 객체를 가져온다.
+        commands.set(redisRequest.getKey().get(), addValue);
 
-//        RedidCommandLookup.getCommand(redisRequest);
-        commands.get("hello:kris2");
-        logger.info(commands.get("hello:kris2"));
+        String receivedValue = commands.get(redisRequest.getKey().get());
+
+        logger.info("receivedValue " + receivedValue);
 
         logger.info("Command execute with redisRequest" + redisRequest.toString());
 
