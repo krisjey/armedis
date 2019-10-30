@@ -63,24 +63,7 @@ public class ArmedisServerConfiguration {
 
         setArmeriaListenPort(listenPort);
 
-        try {
-            instanceInfo = new DefaultInstanceInfo(String.valueOf(listenPort));
-
-            logger.info("Successfully added zookeeper node! [" + instanceInfo.getNodePath() + "] " +
-                    instanceInfo.toJsonObject().toString());
-
-            logger.info(LogStringBuilder.makeReadableLine(1));
-            logger.info(LogStringBuilder.makeHeader("Add shutdownhook"));
-            logger.info(LogStringBuilder
-                    .makeBody("ClipboardServerShutdownHook added!" + instanceInfo.getNodePath()));
-            logger.info(LogStringBuilder.makeReadableLine(1));
-            logger.info(LogStringBuilder.makeFooter());
-
-            Runtime.getRuntime().addShutdownHook(new ServerShutdownHook(instanceInfo.getNodePath()));
-        }
-        catch (Exception e) {
-            throw new RuntimeException("Cannot start " + listenPort + " server at initServer", e);
-        }
+        addShutdownHook(listenPort);
 
         logger.info(LogStringBuilder.makeHeader("Product info"));
         logger.info(LogStringBuilder.makeBody(" startup process begin at " + new Date()));
@@ -113,6 +96,28 @@ public class ArmedisServerConfiguration {
             // TODO Add grpc service
             builder.service(new GrpcServiceBuilder().addService(new NewdataServiceImpl()).build());
         };
+    }
+
+    private void addShutdownHook(int listenPort) {
+        try {
+            instanceInfo = new DefaultInstanceInfo(String.valueOf(listenPort));
+
+            // FIXME remove comment.. currently not used zookeeper.
+            logger.info("Successfully added zookeeper node! [" + instanceInfo.getNodePath() + "] " +
+                    instanceInfo.toJsonObject().toString());
+
+            logger.info(LogStringBuilder.makeReadableLine(1));
+            logger.info(LogStringBuilder.makeHeader("Add shutdownhook"));
+            logger.info(LogStringBuilder
+                    .makeBody("ClipboardServerShutdownHook added!" + instanceInfo.getNodePath()));
+            logger.info(LogStringBuilder.makeReadableLine(1));
+            logger.info(LogStringBuilder.makeFooter());
+
+            Runtime.getRuntime().addShutdownHook(new ServerShutdownHook(instanceInfo.getNodePath()));
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Cannot start " + listenPort + " server at initServer", e);
+        }
     }
 
     private ServerBuilder initializeServerBuilderByConfig(ServerBuilder serverBuilder) {
