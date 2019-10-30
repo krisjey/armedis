@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.armedis.http.service.BaseService;
 import com.github.armedis.http.service.request.RedisRequest;
-import com.github.armedis.redis.command.RedisGetRequest;
+import com.github.armedis.redis.command.RedisHgetRequest;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.server.annotation.Consumes;
@@ -44,7 +44,7 @@ public class RedisHgetService extends BaseService {
     @Post
     @Path(COMMAND_URL)
     @Consumes("application/x-www-form-urlencoded")
-    public HttpResponse urlencodedWithoutKey(RedisGetRequest redisRequest) {
+    public HttpResponse urlencodedWithoutKey(RedisHgetRequest redisRequest) {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
         // execute redis command by http request params.
@@ -63,7 +63,7 @@ public class RedisHgetService extends BaseService {
     @Post
     @Path(COMMAND_URL_WITH_KEY)
     @Consumes("application/x-www-form-urlencoded")
-    public HttpResponse urlencodedWithKey(RedisGetRequest redisRequest) {
+    public HttpResponse urlencodedWithKey(RedisHgetRequest redisRequest) {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
         // execute redis command by http request params.
