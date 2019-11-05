@@ -20,23 +20,35 @@ public class RedisServerInfoMaker {
 
     private ArmedisConfiguration armedisConfiguration;
 
+    private RedisServerInfo redisServerInfo;
+
     @Autowired
     public RedisServerInfoMaker(ArmedisConfiguration armedisConfiguration) {
         this.armedisConfiguration = armedisConfiguration;
     }
 
     public RedisServerInfo detectRedisServer() {
-        RedisServerDetector redisServerDetector = new RedisServerDetector(
-                armedisConfiguration.getRedisSeedAddress());
+        if (this.redisServerInfo == null) {
+            RedisServerDetector redisServerDetector = new RedisServerDetector(armedisConfiguration.getRedisSeedAddress());
 
-        Set<RedisNode> redisNodes = null;
-        try {
-            redisNodes = redisServerDetector.lookupNodes();
-        }
-        catch (OperationNotSupportedException e) {
-            logger.info("Does not support impl.");
+            Set<RedisNode> redisNodes = null;
+            try {
+                redisNodes = redisServerDetector.lookupNodes();
+            }
+            catch (OperationNotSupportedException e) {
+                logger.info("Does not support impl.");
+            }
+
+            RedisInstanceType redisInstanceType = redisServerDetector.getRedisInstanceType();
+
+            redisServerInfo = new RedisServerInfo(redisNodes, redisInstanceType);
+            redisInstanceType = redisServerInfo.getRedisInstanceType();
         }
 
-        return new RedisServerInfo(redisNodes, redisServerDetector.getRedisInstanceType());
+        return redisServerInfo;
+    }
+
+    public RedisServerInfo getRedisServerInfo() {
+        return redisServerInfo;
     }
 }
