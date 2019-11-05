@@ -1,3 +1,4 @@
+
 package com.github.armedis;
 
 import static org.assertj.core.api.Assertions.assertThat;

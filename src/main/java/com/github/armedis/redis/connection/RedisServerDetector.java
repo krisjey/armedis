@@ -65,6 +65,7 @@ public class RedisServerDetector {
         try (StatefulRedisConnection<String, String> redisSeedConnection = getSeedConnection();) {
             // get nodes
             actualServers = detectRedisServerNodes(redisSeedConnection);
+            logger.info("Tring to detect server type.");
         }
 
         return actualServers;

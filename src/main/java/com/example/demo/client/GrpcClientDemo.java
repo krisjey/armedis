@@ -1,3 +1,4 @@
+
 package com.example.demo.client;
 
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class GrpcClientDemo {
         EventRequest eventRequest3 = EventRequest.newBuilder()
                 .setSourceId("sourceId3")
                 .setEventId("eventId3").build();
-        
+
         eventRequests.add(eventRequest3);
 
         // Bidirectional Client Streaming

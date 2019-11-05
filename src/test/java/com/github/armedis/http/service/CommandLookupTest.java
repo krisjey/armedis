@@ -1,6 +1,5 @@
-package com.github.armedis.http.service;
 
-import static org.junit.Assert.*;
+package com.github.armedis.http.service;
 
 import org.junit.BeforeClass;
 import org.junit.Test;

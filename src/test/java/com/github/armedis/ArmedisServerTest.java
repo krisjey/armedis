@@ -1,6 +1,5 @@
-package com.github.armedis;
 
-import static org.junit.Assert.*;
+package com.github.armedis;
 
 import java.util.concurrent.ExecutionException;
 
@@ -22,7 +21,7 @@ public class ArmedisServerTest {
     @Test
     public void test() throws InterruptedException, ExecutionException {
         // Create connection pool factory
-        
+
         // is valid seed info?
 //        String seedHost = "192.168.56.104";
 //        int seedPort = 6479;
