@@ -29,12 +29,14 @@ public class AreYouOkService extends BaseService {
     @Get
     @Path(ServiceUrl.RUOK)
     public HttpResponse ruokGet(RedisRequest redisRequest) {
+        logger.info(redisRequest.toString());
         return HttpResponse.of(HttpStatus.OK);
     }
 
     @Post
     @Path(ServiceUrl.RUOK)
     public HttpResponse ruokPost(RedisRequest redisRequest) {
+        logger.info(redisRequest.toString());
         return HttpResponse.of(HttpStatus.OK);
     }
 }

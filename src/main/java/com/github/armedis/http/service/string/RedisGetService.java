@@ -92,7 +92,7 @@ public class RedisGetService extends BaseService {
     @Path(COMMAND_URL)
     @Consumes("application/json")
     public HttpResponse jsonWithoutKey(AggregatedHttpRequest httpRequest) {
-        JsonNode jsonBody = getJsonBody(httpRequest);
+        JsonNode jsonBody = getAsJsonBody(httpRequest);
 
         RedisRequest redisRequest = buildRedisRequest(REDIS_COMMAND, httpRequest, jsonBody);
 
@@ -118,7 +118,7 @@ public class RedisGetService extends BaseService {
     @Path(COMMAND_URL_WITH_KEY)
     @Consumes("application/json")
     public HttpResponse jsonWithKey(AggregatedHttpRequest httpRequest, @Param("key") String key) {
-        JsonNode jsonBody = getJsonBody(httpRequest);
+        JsonNode jsonBody = getAsJsonBody(httpRequest);
 
         RedisRequest redisRequest = buildRedisRequest(REDIS_COMMAND, key, httpRequest, jsonBody);
 

@@ -39,8 +39,6 @@ public class RedisConnectionPoolImpl implements RedisConnectionPool<String, Stri
     public RedisConnectionPoolImpl(RedisServerInfoMaker redisServerInfoMaker) {
         this.redisServerInfoMaker = redisServerInfoMaker;
 
-        // Can not create instance....
-
         RedisInstanceType redisServerInfo = this.redisServerInfoMaker.getRedisServerInfo().getRedisInstanceType();
         switch (redisServerInfo) {
             case STANDALONE:
@@ -71,7 +69,7 @@ public class RedisConnectionPoolImpl implements RedisConnectionPool<String, Stri
                 .enableAllAdaptiveRefreshTriggers()
                 .build();
 
-        Set<RedisNode> nodes = redisServerInfoMaker.detectRedisServer().getRedisNodes();
+        Set<RedisNode> nodes = redisServerInfoMaker.getRedisServerInfo().getRedisNodes();
 
         // cluster node
         RedisURI clusterNode = null;
@@ -105,7 +103,7 @@ public class RedisConnectionPoolImpl implements RedisConnectionPool<String, Stri
                 .enableAllAdaptiveRefreshTriggers()
                 .build();
 
-        Set<RedisNode> nodes = redisServerInfoMaker.detectRedisServer().getRedisNodes();
+        Set<RedisNode> nodes = redisServerInfoMaker.getRedisServerInfo().getRedisNodes();
 
         // cluster node
         RedisURI clusterNode = null;
@@ -132,10 +130,19 @@ public class RedisConnectionPoolImpl implements RedisConnectionPool<String, Stri
     }
 
     @Override
-    public StatefulRedisClusterConnection<String, String> getConnection() throws Exception {
+    public StatefulRedisClusterConnection<String, String> getClusterConnection() throws Exception {
         StatefulRedisClusterConnection<String, String> connection = null;
 
         connection = clusterConnectionPool.borrowObject();
+
+        return connection;
+    }
+
+    @Override
+    public StatefulRedisConnection<String, String> getNonClusterConnection() throws Exception {
+        StatefulRedisConnection<String, String> connection = null;
+
+        connection = singleConnectionPool.borrowObject();
 
         return connection;
     }

@@ -15,7 +15,7 @@ public class RedisRequestBuilderFactory {
 
         switch (redisCommandName) {
             case GET:
-                builder = new RedisGetRequestBuilder(command);
+                builder = new RedisGetRequestBuilder();
                 break;
 
             default:

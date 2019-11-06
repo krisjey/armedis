@@ -27,7 +27,7 @@ public class RedisServerInfoMaker {
         this.armedisConfiguration = armedisConfiguration;
     }
 
-    public RedisServerInfo detectRedisServer() {
+    public RedisServerInfo getRedisServerInfo() {
         if (this.redisServerInfo == null) {
             RedisServerDetector redisServerDetector = new RedisServerDetector(armedisConfiguration.getRedisSeedAddress());
 
@@ -45,10 +45,6 @@ public class RedisServerInfoMaker {
             redisInstanceType = redisServerInfo.getRedisInstanceType();
         }
 
-        return redisServerInfo;
-    }
-
-    public RedisServerInfo getRedisServerInfo() {
         return redisServerInfo;
     }
 }

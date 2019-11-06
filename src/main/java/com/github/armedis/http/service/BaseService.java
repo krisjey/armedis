@@ -104,7 +104,7 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
         return redisRequest;
     }
 
-    protected final JsonNode getJsonBody(AggregatedHttpRequest httpRequest) {
+    protected final JsonNode getAsJsonBody(AggregatedHttpRequest httpRequest) {
         JsonNode jsonBody = null;
         String content = httpRequest.contentUtf8();
 
@@ -128,6 +128,11 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
         return StringUtils.substringAfterLast(path, "/");
     }
 
+    protected String unixTimestampToDateString(String unixtimestamp) {
+        long timeStampValue = NumberUtils.toLong(unixtimestamp);
+        return LocalDateTime.ofEpochSecond(timeStampValue, 0, ZoneOffset.ofHours(9)).format(pattern);
+    }
+
     protected ObjectNode executeCommand(RedisRequest redisRequest) {
         ObjectNode node = null;
 
@@ -139,10 +144,5 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
         }
 
         return node;
-    }
-
-    protected String unixTimestampToDateString(String unixtimestamp) {
-        long timeStapm = NumberUtils.toLong(unixtimestamp);
-        return LocalDateTime.ofEpochSecond(timeStapm, 0, ZoneOffset.ofHours(9)).format(pattern);
     }
 }

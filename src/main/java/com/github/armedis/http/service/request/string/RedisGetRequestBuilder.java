@@ -15,8 +15,8 @@ import com.github.armedis.redis.command.RedisGetRequest;
 public class RedisGetRequestBuilder extends BaseRedisRequestBuilder {
     private static final String COMMAND_NAME = "get";
 
-    public RedisGetRequestBuilder(String command) {
-        super(command);
+    public RedisGetRequestBuilder() {
+        super(COMMAND_NAME);
     }
 
     @Override
@@ -31,5 +31,4 @@ public class RedisGetRequestBuilder extends BaseRedisRequestBuilder {
 
         return redisRequest;
     }
-
 }

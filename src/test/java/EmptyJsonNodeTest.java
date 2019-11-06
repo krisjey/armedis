@@ -16,5 +16,4 @@ public class EmptyJsonNodeTest {
         assertThat(mapper.createObjectNode().toString()).isNotNull();
         System.out.println(mapper.createObjectNode().toString());
     }
-
 }
