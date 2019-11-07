@@ -124,7 +124,7 @@ public class RedisGetService extends BaseService {
 
         logger.info("Json request " + REDIS_COMMAND + " command with key at URL " + redisRequest.toString());
 
-        ObjectNode result = executeCommand(redisRequest);
+        JsonNode result = executeCommand(redisRequest);
 
         return buildResponse(redisRequest, result);
     }

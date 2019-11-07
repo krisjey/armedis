@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.armedis.http.service.request.RedisRequest;
 import com.github.armedis.redis.connection.pool.RedisConnectionPool;
@@ -20,6 +22,8 @@ import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 public class RedisCommandExecutor {
     private final Logger logger = LoggerFactory.getLogger(RedisCommandExecutor.class);
 
+    private final ObjectMapper mapper = new ObjectMapper();
+
     private RedisConnectionPool<String, String> redisConnectionPool;
 
     private RedisInstanceType redisServerInfo;
@@ -30,7 +34,7 @@ public class RedisCommandExecutor {
         this.redisServerInfo = redisServerInfoMaker.getRedisServerInfo().getRedisInstanceType();
     }
 
-    public ObjectNode execute(RedisRequest redisRequest) throws Exception {
+    public JsonNode execute(RedisRequest redisRequest) throws Exception {
         switch (this.redisServerInfo) {
             case STANDALONE:
             case SENTINEL:
@@ -44,8 +48,7 @@ public class RedisCommandExecutor {
         }
     }
 
-    private ObjectNode executeClusterCommand(RedisRequest redisRequest) throws Exception {
-        // TODO redis server type 분기 처리...
+    private JsonNode executeClusterCommand(RedisRequest redisRequest) throws Exception {
         StatefulRedisClusterConnection<String, String> connection = this.redisConnectionPool.getClusterConnection();
         RedisAdvancedClusterCommands<String, String> commands = connection.sync();
 
@@ -57,13 +60,13 @@ public class RedisCommandExecutor {
         String receivedValue = commands.get(redisRequest.getKey().get());
 
         logger.info("receivedValue " + receivedValue);
+        JsonNode result = mapper.valueToTree(receivedValue);
 
         logger.info("Command execute with redisRequest" + redisRequest.toString());
-        return null;
+        return result;
     }
 
-    private ObjectNode executeNonClusterCommand(RedisRequest redisRequest) throws Exception {
-        // TODO redis server type 분기 처리...
+    private JsonNode executeNonClusterCommand(RedisRequest redisRequest) throws Exception {
         StatefulRedisConnection<String, String> connection = this.redisConnectionPool.getNonClusterConnection();
         RedisCommands<String, String> commands = connection.sync();
 
@@ -73,11 +76,12 @@ public class RedisCommandExecutor {
         commands.set(redisRequest.getKey().get(), addValue);
 
         String receivedValue = commands.get(redisRequest.getKey().get());
-
         logger.info("receivedValue " + receivedValue);
 
+        JsonNode result = mapper.valueToTree(receivedValue);
+
         logger.info("Command execute with redisRequest" + redisRequest.toString());
-        // TODO hot to convert to jsonObject
-        return null;
+
+        return result;
     }
 }

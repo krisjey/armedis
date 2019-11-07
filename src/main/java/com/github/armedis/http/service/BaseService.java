@@ -48,7 +48,7 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
      * @param resultData
      * @return
      */
-    protected HttpResponse buildResponse(ObjectNode resultData) {
+    protected HttpResponse buildResponse(JsonNode resultData) {
         return buildResponse(ResponseCode.SUCCESS, resultData);
     }
 
@@ -61,9 +61,9 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
      * @param resultData
      * @return Object of {@link HttpResponse}
      */
-    protected final HttpResponse buildResponse(ResponseCode code, ObjectNode resultData) {
+    protected final HttpResponse buildResponse(ResponseCode code, JsonNode resultData) {
         if (resultData == null) {
-            resultData = emptyResult;
+            resultData = mapper.createObjectNode();
         }
 
         resultData.put(ConstantNames.RESULT_CODE, code.getResultCode());
@@ -133,8 +133,8 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
         return LocalDateTime.ofEpochSecond(timeStampValue, 0, ZoneOffset.ofHours(9)).format(pattern);
     }
 
-    protected ObjectNode executeCommand(RedisRequest redisRequest) {
-        ObjectNode node = null;
+    protected JsonNode executeCommand(RedisRequest redisRequest) {
+        JsonNode node = null;
 
         try {
             node = executor.execute(redisRequest);
