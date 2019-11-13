@@ -6,9 +6,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.armedis.http.service.BaseService;
+import com.github.armedis.http.service.ResponseCode;
 import com.github.armedis.http.service.request.RedisRequest;
+import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.github.armedis.redis.command.RedisGetRequest;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
@@ -48,7 +49,14 @@ public class RedisSetService extends BaseService {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
         // execute redis command by http request params.
-        ObjectNode result = executeCommand(redisRequest);
+        RedisCommandExecuteResult result = null;
+        try {
+            result = executeCommand(redisRequest);
+        }
+        catch (Exception e) {
+            logger.error("Can not execute redis command ", e);
+            return buildResponse(ResponseCode.KNOWEN_ERROR, redisRequest);
+        }
 
         return buildResponse(redisRequest, result);
     }
@@ -67,7 +75,14 @@ public class RedisSetService extends BaseService {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
         // execute redis command by http request params.
-        ObjectNode result = executeCommand(redisRequest);
+        RedisCommandExecuteResult result = null;
+        try {
+            result = executeCommand(redisRequest);
+        }
+        catch (Exception e) {
+            logger.error("Can not execute redis command ", e);
+            return buildResponse(ResponseCode.KNOWEN_ERROR, redisRequest);
+        }
 
         return buildResponse(redisRequest, result);
     }
@@ -92,7 +107,14 @@ public class RedisSetService extends BaseService {
 
         logger.info("Json request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
-        ObjectNode result = executeCommand(redisRequest);
+        RedisCommandExecuteResult result = null;
+        try {
+            result = executeCommand(redisRequest);
+        }
+        catch (Exception e) {
+            logger.error("Can not execute redis command ", e);
+            return buildResponse(ResponseCode.KNOWEN_ERROR, redisRequest);
+        }
 
         return buildResponse(redisRequest, result);
     }
@@ -118,7 +140,14 @@ public class RedisSetService extends BaseService {
 
         logger.info("Json request " + REDIS_COMMAND + " command with key at URL " + redisRequest.toString());
 
-        ObjectNode result = executeCommand(redisRequest);
+        RedisCommandExecuteResult result = null;
+        try {
+            result = executeCommand(redisRequest);
+        }
+        catch (Exception e) {
+            logger.error("Can not execute redis command ", e);
+            return buildResponse(ResponseCode.KNOWEN_ERROR, redisRequest);
+        }
 
         return buildResponse(redisRequest, result);
     }

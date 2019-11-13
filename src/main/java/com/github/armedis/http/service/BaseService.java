@@ -12,14 +12,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.armedis.config.ConstantNames;
 import com.github.armedis.http.service.request.RedisRequest;
 import com.github.armedis.http.service.request.RedisRequestBuilder;
 import com.github.armedis.http.service.request.RedisRequestBuilderFactory;
 import com.github.armedis.redis.RedisCommandExecutor;
+import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
@@ -38,51 +39,60 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
     @Autowired
     private RedisCommandExecutor executor;
 
-    protected HttpResponse buildResponse(ResponseCode responseCode) {
-        return buildResponse(responseCode, null);
+    protected HttpResponse buildResponse(ResponseCode responseCode, RedisRequest redisRequest) {
+        return buildResponse(responseCode, redisRequest, null);
     }
 
-    /**
-     * Wrapper method of {@link #buildResponse(ResponseCode code, String resultData)} using {@link ResponseCode#SUCCESS} parameter.
-     * 
-     * @param resultData
-     * @return
-     */
-    protected HttpResponse buildResponse(JsonNode resultData) {
-        return buildResponse(ResponseCode.SUCCESS, resultData);
+    protected final HttpResponse buildResponse(RedisRequest redisRequest, RedisCommandExecuteResult redisCommandExecuteResult) {
+        return buildResponse(ResponseCode.SUCCESS, redisRequest, redisCommandExecuteResult);
     }
 
     /**
      * Final message builder<br/>
-     * Build {@link HttpResponse} object using {@code resultData} parameter.<br/>
+     * Build {@link HttpResponse} object using {@code redisCommandExecuteResult} parameter.<br/>
      * Actual response writer
      * 
      * @param code
-     * @param resultData
+     * @param redisCommandExecuteResult
      * @return Object of {@link HttpResponse}
      */
-    protected final HttpResponse buildResponse(ResponseCode code, JsonNode resultData) {
-        if (resultData == null) {
-            resultData = mapper.createObjectNode();
+    protected final HttpResponse buildResponse(ResponseCode code, RedisRequest redisRequest, RedisCommandExecuteResult redisCommandExecuteResult) {
+        // 응답 type에 따른 구분 처리.
+        switch (redisRequest.getResponseDataType()) {
+            case JSON:
+                return buildJsonResponse(code, redisCommandExecuteResult);
+
+            case PLAIN_TEXT:
+                return buildPlainTextResponse(code, redisCommandExecuteResult);
+
+            default:
+                // default response type is json
+                String resultMessage = "Can not detect response data type";
+                logger.error(resultMessage);
+                return buildJsonResponse(code, redisCommandExecuteResult);
         }
-
-        resultData.put(ConstantNames.RESULT_CODE, code.getResultCode());
-        resultData.put(ConstantNames.RESULT_MESSAGE, code.getMessage());
-
-        return HttpResponse.of(HttpStatus.valueOf(code.getStatusCode()), MediaType.JSON_UTF_8, resultData.toString());
     }
 
-    protected final HttpResponse buildResponse(RedisRequest redisRequest, ObjectNode resultData) {
-        if (resultData == null) {
-            resultData = emptyResult;
+    private HttpResponse buildPlainTextResponse(ResponseCode code, RedisCommandExecuteResult redisCommandExecuteResult) {
+        String responseData = redisCommandExecuteResult.toResponseString();
+        return HttpResponse.of(HttpStatus.valueOf(code.getStatusCode()), MediaType.PLAIN_TEXT_UTF_8, responseData);
+    }
+
+    private HttpResponse buildJsonResponse(ResponseCode code, RedisCommandExecuteResult redisCommandExecuteResult) {
+        String responseData = null;
+        try {
+            responseData = mapper.writeValueAsString(redisCommandExecuteResult.toObjectNode());
+        }
+        catch (JsonProcessingException e) {
+            logger.error("Can not convert string to JsonNode" + redisCommandExecuteResult.toObjectNode());
         }
 
-        ResponseCode code = ResponseCode.SUCCESS;
+        // README if response value is null then should be error response?
+        if (responseData == null) {
+            responseData = "{}";
+        }
 
-        resultData.put(ConstantNames.RESULT_CODE, code.getResultCode());
-        resultData.put(ConstantNames.RESULT_MESSAGE, code.getMessage());
-
-        return HttpResponse.of(HttpStatus.valueOf(code.getStatusCode()), MediaType.JSON_UTF_8, resultData.toString());
+        return HttpResponse.of(HttpStatus.valueOf(code.getStatusCode()), MediaType.JSON_UTF_8, responseData);
     }
 
     protected final RedisRequest buildRedisRequest(String redisCommand, String key, AggregatedHttpRequest httpRequest,
@@ -102,6 +112,19 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
         RedisRequest redisRequest = builder.build(jsonBody);
 
         return redisRequest;
+    }
+
+    protected RedisCommandExecuteResult executeCommand(RedisRequest redisRequest) {
+        RedisCommandExecuteResult redisCommandExecuteResult = null;
+
+        try {
+            redisCommandExecuteResult = executor.execute(redisRequest);
+        }
+        catch (Exception e) {
+            logger.info("Can not execute redis command " + redisRequest.toString());
+        }
+
+        return redisCommandExecuteResult;
     }
 
     protected final JsonNode getAsJsonBody(AggregatedHttpRequest httpRequest) {
@@ -124,6 +147,7 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
         return jsonBody;
     }
 
+    // TODO remove unnecessary method
     protected String parseKeyFromPath(String path) {
         return StringUtils.substringAfterLast(path, "/");
     }
@@ -131,18 +155,5 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
     protected String unixTimestampToDateString(String unixtimestamp) {
         long timeStampValue = NumberUtils.toLong(unixtimestamp);
         return LocalDateTime.ofEpochSecond(timeStampValue, 0, ZoneOffset.ofHours(9)).format(pattern);
-    }
-
-    protected JsonNode executeCommand(RedisRequest redisRequest) {
-        JsonNode node = null;
-
-        try {
-            node = executor.execute(redisRequest);
-        }
-        catch (Exception e) {
-            logger.info("Can not execute redis command " + redisRequest.toString());
-        }
-
-        return node;
     }
 }

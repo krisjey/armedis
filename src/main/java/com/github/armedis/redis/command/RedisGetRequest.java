@@ -16,5 +16,4 @@ public class RedisGetRequest extends RedisRequest {
 //        logger.info("Created request " + RedisGetRequest.class.getName());
         this.setCommand(COMMAND_NAME);
     }
-
 }

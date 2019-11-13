@@ -26,7 +26,7 @@ import java.util.Optional;
  * @author kris
  *
  */
-public class RedisRequest extends AbstractRedisParam {
+public class RedisRequest extends AbstractRedisParam implements ResponseDataTypes {
     protected String command;
 
     public String getCommand() {
@@ -48,5 +48,10 @@ public class RedisRequest extends AbstractRedisParam {
     @Override
     public String toString() {
         return "RedisRequest [key=" + key + ", command=" + this.command + "]";
+    }
+
+    @Override
+    public ResponseDataType getResponseDataType() {
+        return ResponseDataType.of(this.responseDataType);
     }
 }
