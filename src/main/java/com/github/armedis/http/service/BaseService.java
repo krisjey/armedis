@@ -117,6 +117,7 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
     protected RedisCommandExecuteResult executeCommand(RedisRequest redisRequest) {
         RedisCommandExecuteResult redisCommandExecuteResult = null;
 
+        // 명령에 해당하는 CommandExecutor 가져오기.
         try {
             redisCommandExecuteResult = executor.execute(redisRequest);
         }
@@ -145,15 +146,5 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
         }
 
         return jsonBody;
-    }
-
-    // TODO remove unnecessary method
-    protected String parseKeyFromPath(String path) {
-        return StringUtils.substringAfterLast(path, "/");
-    }
-
-    protected String unixTimestampToDateString(String unixtimestamp) {
-        long timeStampValue = NumberUtils.toLong(unixtimestamp);
-        return LocalDateTime.ofEpochSecond(timeStampValue, 0, ZoneOffset.ofHours(9)).format(pattern);
     }
 }
