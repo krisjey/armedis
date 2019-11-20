@@ -1,5 +1,5 @@
 
-package com.github.armedis.redis;
+package com.github.armedis.redis.command;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
@@ -10,7 +10,8 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.armedis.http.service.request.RedisRequest;
-import com.github.armedis.redis.command.RedisCommandExecuteResult;
+import com.github.armedis.redis.RedisInstanceType;
+import com.github.armedis.redis.RedisServerInfoMaker;
 import com.github.armedis.redis.connection.pool.RedisConnectionPool;
 import com.github.armedis.spring.ApplicationContextProvider;
 
@@ -39,13 +40,13 @@ public class RedisCommandExecutor {
     }
 
     public RedisCommandExecuteResult execute(RedisRequest redisRequest) throws Exception {
-        String beanName = redisRequest.getCommand() + "RedisCommandRunner";
+        String commandRunnerName = RedisCommandRunner.getCommandRunnerName(redisRequest.getCommand());
 
-        Object commandRunner = this.context.getBean(beanName, redisRequest);
+        Object commandRunner = this.context.getBean(commandRunnerName, redisRequest);
 
         // never enter the condition, There is no constructor with redisRequest class.
         if (commandRunner == null) {
-            logger.warn("Can not found request bean name [" + beanName + "] " + redisRequest.toString());
+            logger.warn("Can not found request bean name [" + commandRunnerName + "] " + redisRequest.toString());
             return RedisCommandExecuteResult.getEmptyResult();
         }
 
