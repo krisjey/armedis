@@ -2,6 +2,7 @@
 package com.github.armedis.http.service.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -15,7 +16,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.github.armedis.http.service.BaseServiceTest;
@@ -29,7 +29,7 @@ public class RedisGetServiceTest extends BaseServiceTest {
     public static void setUpBeforeClass() throws Exception {
     }
 
-    @Ignore
+//    @Ignore
     @Test
     public void testSetAndGetCommand() {
         String key = "hello:kris";
@@ -55,6 +55,9 @@ public class RedisGetServiceTest extends BaseServiceTest {
                 assertThat(result.get("resultCode").getAsString()).isEqualTo("200");
                 assertThat(result.get("value").getAsString()).isEqualTo("OK");
             }
+            catch (Exception e) {
+                fail("Can not connect to host");
+            }
 
             // data get from redis.
             HttpGet httpGet = new HttpGet(buildTestUrl("get", key));
@@ -66,6 +69,9 @@ public class RedisGetServiceTest extends BaseServiceTest {
                 assertThat(result).isNotNull();
                 assertThat(result.get("result").getAsString()).isEqualTo("200");
                 assertThat(result.get("value").getAsString()).isEqualTo(setValue);
+            }
+            catch (Exception e) {
+                fail("Can not connect to host");
             }
         }
         catch (IOException e) {
