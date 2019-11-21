@@ -6,18 +6,18 @@
  * User Manual available at https://docs.gradle.org/5.4/userguide/java_library_plugin.html
  */
 buildscript {
-	ext {
-		springBootVersion = '2.1.7.RELEASE'
-	}
+    ext {
+        springBootVersion = '2.1.7.RELEASE'
+    }
 
-	repositories {
-		mavenCentral()
-	}
+    repositories {
+        mavenCentral()
+    }
 
-	dependencies {
-		classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
-		classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.10'
-	}
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.10'
+    }
 }
 
 apply plugin: 'eclipse'
@@ -28,21 +28,22 @@ apply plugin: 'io.spring.dependency-management'
 apply plugin: 'application' // gradle task plugin for distTar
 
 ext {
-	javaVersion='1.8'
+    javaVersion='1.8'
+    armeriaVersion='0.96.0'
 }
 
 tasks.withType(JavaCompile) {
-	options.encoding = 'UTF-8'
-	// source and target compatibility
-	sourceCompatibility = javaVersion
-	targetCompatibility = javaVersion
+    options.encoding = 'UTF-8'
+    // source and target compatibility
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
     options.compilerArgs += '-parameters'
 }
 
 eclipse {
     classpath {
-    	defaultOutputDir = file('classes')
-    	downloadJavadoc = false
+        defaultOutputDir = file('classes')
+        downloadJavadoc = false
         downloadSources = true
         
         file.whenMerged { classpath -> classpath.entries.sort() }
@@ -55,33 +56,33 @@ description = """An HTTP2/gRPC interface for Redis, Support Redis stand-alone/cl
 mainClassName = "com.github.armedis.ArmedisServer"
 
 protobuf {
-	protoc {
-		artifact = "com.google.protobuf:protoc:3.9.1"
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.9.1"
 
-		generatedFilesBaseDir = "$projectDir/gen-src"
-	}
+        generatedFilesBaseDir = "$projectDir/gen-src"
+    }
 
-	plugins {
-		grpc {
-			artifact = 'io.grpc:protoc-gen-grpc-java:1.23.0'
-		}
-	}
+    plugins {
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.23.0'
+        }
+    }
 
-	generateProtoTasks {
-		all()*.plugins {
-		grpc {}
-		}
-	}
+    generateProtoTasks {
+        all()*.plugins {
+        grpc {}
+        }
+    }
 }
 
 sourceSets {
     main {
         java {
 //          // add source folder order
-//        	srcDirs 'src/main/java'
-//        	srcDirs 'src/main/resources'
-//        	srcDirs 'src/test/java'
-//        	srcDirs 'src/test/resources'
+//            srcDirs 'src/main/java'
+//            srcDirs 'src/main/resources'
+//            srcDirs 'src/test/java'
+//            srcDirs 'src/test/resources'
 
             // add source folder for protocol buffer gen java file
             srcDirs 'gen-src/main/java'
@@ -99,34 +100,41 @@ repositories {
 }
 
 dependencies {
-	implementation 'io.grpc:grpc-netty-shaded:1.23.0'
-	implementation 'io.grpc:grpc-protobuf:1.23.0'
-	implementation 'io.grpc:grpc-stub:1.23.0'
-	
+    implementation 'io.grpc:grpc-netty-shaded:1.23.0'
+    implementation 'io.grpc:grpc-protobuf:1.23.0'
+    implementation 'io.grpc:grpc-stub:1.23.0'
+    
     // Adjust the list as you need.
-    ['armeria',
-     'armeria-grpc',
-     'armeria-jetty',
-     'armeria-kafka',
-     'armeria-logback',
-     'armeria-retrofit2',
-     'armeria-rxjava',
-     'armeria-saml',
-     'armeria-thrift',
-     'armeria-tomcat',
-     'armeria-zipkin',
-     'armeria-zookeeper'].each {
-        compile "com.linecorp.armeria:${it}:0.90.3"
+    // You can find full set of sub lib in https://line.github.io/armeria/setup.html#choosing-the-artifacts
+    [
+    'armeria', // The core library.                                                                                                                                        
+    'armeria-brave', // Distributed tracing with Brave. See Zipkin integration.                                                                                    
+    'armeria-grpc', // gRPC client and server support. See Running a gRPC service and Calling a gRPC service.                                    
+//    'armeria-jetty', // Embedded Jetty Servlet container. See Embedding a servlet container.                                                              
+//    'armeria-kafka', // Enables sending access logs to Kafka                                                                                                          
+    'armeria-logback', // Provides Logback Appender implementation that adds request information. See Logging contextual information.   
+//    'armeria-retrofit2', // Allows using Armeria instead of OkHttp as transport layer when using Retrofit. See Retrofit integration.                
+    'armeria-rxjava', // RxJava plugin                                                                                                                                           
+//    'armeria-saml', // SAML support                                                                                                                                          
+    'armeria-spring-boot-autoconfigure', // Spring Boot integration                                                                                                                             
+//    'armeria-spring-boot-webflux-autoconfigure', // Spring Boot WebFlux integration. See Using Armeria with Spring WebFlux.                                                        
+    'armeria-thrift', // Thrift client and server support. See Running a Thrift service and Calling a Thrift service.                                     
+//    'armeria-tomcat', // Embedded Tomcat Servlet container. See Embedding a servlet container.                                                          
+    'armeria-zookeeper' // ZooKeeper-based service discovery. See Service discovery with ZooKeeper.       
+     ].each {
+        implementation "com.linecorp.armeria:${it}:${armeriaVersion}"
     }
 
-    implementation 'com.linecorp.armeria:armeria-spring-boot-autoconfigure:0.90.3'
+    implementation "com.linecorp.armeria:armeria-spring-boot-autoconfigure:${armeriaVersion}"
 
-	implementation 'org.springframework.boot:spring-boot-starter'
-	implementation 'org.springframework.boot:spring-boot-configuration-processor'
-	implementation 'org.apache.commons:commons-text:1.6'
-	
-	implementation 'org.apache.commons:commons-pool2:2.7.0'
-	implementation 'io.lettuce:lettuce-core:5.2.0.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-configuration-processor'
+    implementation 'org.apache.commons:commons-text:1.6'
+
+    implementation 'org.apache.commons:commons-pool2:2.7.0'
+    implementation 'io.lettuce:lettuce-core:5.2.0.RELEASE'
+
+    implementation 'org.apache.httpcomponents:httpclient:4.5.10'
 
     // Logging
     runtime 'ch.qos.logback:logback-classic:1.2.3'
@@ -134,5 +142,5 @@ dependencies {
     
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

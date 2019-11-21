@@ -13,15 +13,15 @@ import com.github.armedis.config.DefaultInstanceInfo;
 import com.github.armedis.spring.ApplicationContextProvider;
 import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
-import com.linecorp.armeria.server.DecoratingServiceFunction;
-import com.linecorp.armeria.server.Service;
+import com.linecorp.armeria.server.DecoratingHttpServiceFunction;
+import com.linecorp.armeria.server.HttpService;
 import com.linecorp.armeria.server.ServiceRequestContext;
 
 /**
  * TransactionSeqDecorator
  * @author krisjey
  */
-public class TransactionSeqDecoratorImpl implements DecoratingServiceFunction<HttpRequest, HttpResponse> {
+public class TransactionSeqDecoratorImpl implements DecoratingHttpServiceFunction {
 
     private static final AtomicLong TRANSACTION_SEQ_VALUE = new AtomicLong();
 
@@ -43,7 +43,7 @@ public class TransactionSeqDecoratorImpl implements DecoratingServiceFunction<Ht
     }
 
     @Override
-    public HttpResponse serve(Service<HttpRequest, HttpResponse> delegate,
+    public HttpResponse serve(HttpService delegate,
             ServiceRequestContext ctx, HttpRequest req) throws Exception {
         ctx.addAdditionalResponseHeader(ConstantNames.SERVICE_TRANSACTION_SEQ,
                 String.valueOf(TRANSACTION_SEQ_VALUE.incrementAndGet()));
