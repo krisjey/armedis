@@ -3,7 +3,7 @@ package com.github.armedis.redis.connection;
 
 import java.util.Set;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 
 import com.github.armedis.redis.RedisNode;
 
@@ -13,7 +13,7 @@ public class RedisSentinelNodeLookup implements RedisNodeLookup {
 
     @Override
     public Set<RedisNode> lookup(StatefulRedisConnection<String, String> redisSeedConnection) {
-        throw new NotImplementedException();
+        throw new NotImplementedException("Currently not implemented yet.");
     }
 
 }
