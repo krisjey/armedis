@@ -2,12 +2,8 @@
 package com.github.armedis.http.service;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +24,6 @@ import com.linecorp.armeria.common.MediaType;
 
 public class BaseService implements ArmeriaAnnotatedHttpService {
     private static final Logger logger = LoggerFactory.getLogger(BaseService.class);
-
-    // CompositeRouter used.
-    private static final DateTimeFormatter pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     protected static final ObjectMapper mapper = new ObjectMapper();
 
