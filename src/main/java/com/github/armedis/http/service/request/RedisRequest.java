@@ -47,7 +47,7 @@ public class RedisRequest extends AbstractRedisParam implements ResponseDataType
 
     @Override
     public String toString() {
-        return "RedisRequest [key=" + key + ", command=" + this.command + "]";
+        return "RedisRequest [key=" + key.get() + ", command=" + this.command + "]";
     }
 
     @Override
