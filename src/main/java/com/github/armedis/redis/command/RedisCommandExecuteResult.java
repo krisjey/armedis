@@ -7,8 +7,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public interface RedisCommandExecuteResult {
     static final ObjectMapper mapper = new ObjectMapper();
 
+    /**
+     * Convert redis execute result to response data. 
+     * @return 
+     */
     String toResponseString();
 
+    /**
+     * Convert redis execute result to response data. 
+     * @return
+     */
     ObjectNode toObjectNode();
 
     static RedisCommandExecuteResult getEmptyResult() {
