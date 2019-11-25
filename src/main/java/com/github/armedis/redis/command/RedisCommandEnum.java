@@ -15,7 +15,7 @@ import com.google.common.collect.ImmutableMap;
  * @author krisjey
  *
  */
-public enum RedisCommandName {
+public enum RedisCommandEnum {
 //    NOT_DETECTED("not_detected", NotDetected.class),
     NOT_DETECTED("not_detected"),
 
@@ -136,7 +136,7 @@ public enum RedisCommandName {
 //        this.redisRequest = redisRequest;
 //    }
 
-    RedisCommandName(String command) {
+    RedisCommandEnum(String command) {
         this.command = command;
         this.name = command;
     }
@@ -149,10 +149,10 @@ public enum RedisCommandName {
         return this.command;
     }
 
-    private static final Map<String, RedisCommandName> redisInstanceTypes;
+    private static final Map<String, RedisCommandEnum> redisInstanceTypes;
     static {
-        final ImmutableMap.Builder<String, RedisCommandName> builder = ImmutableMap.builder();
-        for (RedisCommandName e : values()) {
+        final ImmutableMap.Builder<String, RedisCommandEnum> builder = ImmutableMap.builder();
+        for (RedisCommandEnum e : values()) {
             builder.put(e.getName(), e);
         }
 
@@ -162,12 +162,12 @@ public enum RedisCommandName {
     /**
      * Returns the class of the specified HTTP status code.
      */
-    public static RedisCommandName of(String name) {
+    public static RedisCommandEnum of(String name) {
         name = requireNonNull(name).toLowerCase();
 
-        RedisCommandName type = redisInstanceTypes.get(name);
+        RedisCommandEnum type = redisInstanceTypes.get(name);
         if (type == null) {
-            type = RedisCommandName.NOT_DETECTED;
+            type = RedisCommandEnum.NOT_DETECTED;
         }
 
         return type;

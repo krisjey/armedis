@@ -4,12 +4,12 @@ package com.github.armedis.http.service.request;
 import static java.util.Objects.requireNonNull;
 
 import com.github.armedis.http.service.request.string.RedisGetRequestBuilder;
-import com.github.armedis.redis.command.RedisCommandName;
+import com.github.armedis.redis.command.RedisCommandEnum;
 
 public class RedisRequestBuilderFactory {
 
     public static RedisRequestBuilder createRedisRequestBuilder(String command) {
-        RedisCommandName redisCommandName = RedisCommandName.of(command);
+        RedisCommandEnum redisCommandName = RedisCommandEnum.of(command);
 
         RedisRequestBuilder builder = null;
 

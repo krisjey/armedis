@@ -49,6 +49,7 @@ public class RedisCommandExecutor {
 
         if (commandRunner instanceof RedisCommandRunner) {
             // do nothing.
+            logger.debug(commandRunner.getClass().getSimpleName() + " class loaded!");
         }
         else {
             throw new NotImplementedException("Connection pool not implemented yet " + redisServerInfo.toString());
@@ -57,11 +58,11 @@ public class RedisCommandExecutor {
         switch (this.redisServerInfo) {
             case STANDALONE:
             case SENTINEL:
-                // 요청을 실행할 응답처리 Bean lookup.
+                // Bean lookup and execute on cluster server.
                 return executeNonClusterCommand((RedisCommandRunner) commandRunner);
 
             case CLUSTER:
-                // 요청을 실행할 응답처리 Bean lookup.
+                // Bean lookup and execute on cluster server.
                 return executeClusterCommand((RedisCommandRunner) commandRunner);
 
             default:
@@ -73,9 +74,9 @@ public class RedisCommandExecutor {
         StatefulRedisConnection<String, String> connection = this.redisConnectionPool.getNonClusterConnection();
         RedisCommands<String, String> commands = connection.sync();
 
-        RedisCommandExecuteResult result = commandRunner.run(commands);
+        RedisCommandExecuteResult result = commandRunner.executeAndGet(commands);
 
-//        JsonNode result = mapper.valueToTree(receivedValue);
+        this.redisConnectionPool.returnObject(connection);
 
         logger.info("Command execute with redisRequest " + commandRunner.toString());
 
@@ -86,11 +87,9 @@ public class RedisCommandExecutor {
         StatefulRedisClusterConnection<String, String> connection = this.redisConnectionPool.getClusterConnection();
         RedisAdvancedClusterCommands<String, String> commands = connection.sync();
 
-        commands.decr("");
+        RedisCommandExecuteResult result = commandRunner.executeAndGet(commands);
 
-        RedisCommandExecuteResult result = commandRunner.run(commands);
-
-//        JsonNode result = mapper.valueToTree(receivedValue);
+        this.redisConnectionPool.returnObject(connection);
 
         logger.info("Command execute with redisRequest " + commandRunner.toString());
 

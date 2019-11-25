@@ -37,8 +37,8 @@ public class RedisRequest extends AbstractRedisParam implements ResponseDataType
         this.command = command;
     }
 
-    public Optional<String> getKey() {
-        return this.key;
+    public String getKey() {
+        return this.key.get();
     }
 
     public void setKey(Optional<String> key) {

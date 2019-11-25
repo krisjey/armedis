@@ -146,4 +146,14 @@ public class RedisConnectionPoolImpl implements RedisConnectionPool<String, Stri
 
         return connection;
     }
+
+    @Override
+    public void returnObject(StatefulRedisClusterConnection<String, String> connection) throws Exception {
+        clusterConnectionPool.returnObject(connection);
+    }
+
+    @Override
+    public void returnObject(StatefulRedisConnection<String, String> connection) throws Exception {
+        singleConnectionPool.returnObject(connection);
+    }
 }
