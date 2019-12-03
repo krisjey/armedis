@@ -2,6 +2,7 @@
 package com.github.armedis.redis;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -33,6 +34,11 @@ public class RedisInstanceTypeTest {
         type = RedisInstanceType.of("null");
         assertThat(type).isNotNull();
         assertThat(type).isEqualTo(RedisInstanceType.NOT_DETECTED);
+        
+        assertThatThrownBy(() -> {
+            @SuppressWarnings("unused")
+            RedisInstanceType typeNull = RedisInstanceType.of(null);
+        }).isInstanceOf(NullPointerException.class);
     }
 
 }
