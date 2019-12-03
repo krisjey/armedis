@@ -12,7 +12,7 @@ import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 
-public class ArmedisServerTest {
+public class RedisServerModeTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
