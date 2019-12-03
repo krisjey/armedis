@@ -6,14 +6,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * config.redis.seed=192.168.56.104:7003 server.service.port=8088
+ * Configuration class of Armedis, This class using application.properties file.
  * 
  * @author krisjey
  *
  */
 @Component
 @ConfigurationProperties
-//@ConfigurationProperties("")	// prefix 지정.
 public class ArmedisConfiguration {
     @Value("${config.redis.seed}")
     private String redisSeedAddress;
