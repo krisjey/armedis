@@ -14,41 +14,41 @@ public class ResponseDataTypeTest {
 
     @Test
     public void test() {
-        ResponseDataType json = null;
+        ResponseDataType responseDataType = null;
 
-        json = ResponseDataType.of("");
+        responseDataType = ResponseDataType.of("");
 
-        assertThat(json).isNotNull();
-        assertThat(json).isEqualTo(ResponseDataType.JSON);
+        assertThat(responseDataType).isNotNull();
+        assertThat(responseDataType).isEqualTo(ResponseDataType.JSON);
 
-        json = ResponseDataType.of(null);
+        responseDataType = ResponseDataType.of(null);
 
-        assertThat(json).isNotNull();
-        assertThat(json).isEqualTo(ResponseDataType.JSON);
+        assertThat(responseDataType).isNotNull();
+        assertThat(responseDataType).isEqualTo(ResponseDataType.JSON);
 
-        json = ResponseDataType.of("json");
+        responseDataType = ResponseDataType.of("json");
 
-        assertThat(json).isNotNull();
-        assertThat(json).isEqualTo(ResponseDataType.JSON);
+        assertThat(responseDataType).isNotNull();
+        assertThat(responseDataType).isEqualTo(ResponseDataType.JSON);
 
-        json = ResponseDataType.of("application/json");
+        responseDataType = ResponseDataType.of("application/json");
 
-        assertThat(json).isNotNull();
-        assertThat(json).isEqualTo(ResponseDataType.JSON);
+        assertThat(responseDataType).isNotNull();
+        assertThat(responseDataType).isEqualTo(ResponseDataType.JSON);
 
-        json = ResponseDataType.of("text/plain");
+        responseDataType = ResponseDataType.of("text/plain");
 
-        assertThat(json).isNotNull();
-        assertThat(json).isEqualTo(ResponseDataType.PLAIN_TEXT);
+        assertThat(responseDataType).isNotNull();
+        assertThat(responseDataType).isEqualTo(ResponseDataType.PLAIN_TEXT);
 
-        json = ResponseDataType.of("PLAIN_TEXT");
+        responseDataType = ResponseDataType.of("PLAIN_TEXT");
 
-        assertThat(json).isNotNull();
-        assertThat(json).isEqualTo(ResponseDataType.PLAIN_TEXT);
+        assertThat(responseDataType).isNotNull();
+        assertThat(responseDataType).isEqualTo(ResponseDataType.PLAIN_TEXT);
 
-        json = ResponseDataType.of("TEXT");
+        responseDataType = ResponseDataType.of("TEXT");
 
-        assertThat(json).isNotNull();
-        assertThat(json).isEqualTo(ResponseDataType.PLAIN_TEXT);
+        assertThat(responseDataType).isNotNull();
+        assertThat(responseDataType).isEqualTo(ResponseDataType.PLAIN_TEXT);
     }
 }
