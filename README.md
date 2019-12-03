@@ -6,3 +6,10 @@ An HTTP2/gRPC interface for Redis, Support Redis stand-alone/cluster mode.
 
 # Load map
 ## Redis Http interface, Support redis cluster, stand alone mode.
+
+<!--
+add testcase for service.
+for description
+
+// # https://github.com/moon4311/gradle_boot
+-->
