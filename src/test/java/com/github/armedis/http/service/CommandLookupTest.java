@@ -15,6 +15,7 @@ public class CommandLookupTest {
 
     @Test
     public void test() {
+        // TODO impl..
         String[] beanNames = springContext.getBeanDefinitionNames();
     }
 
