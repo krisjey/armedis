@@ -13,6 +13,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import com.github.armedis.config.ApplicationPropertiesLoader;
 
+/**
+ * @FIXME Speed up Spring Boot startup time!!
+ * EnableAutoConfiguration(exclude = {ActiveMQAutoConfiguration.class, xxx.class,})
+ * @author krisjey
+ */
 @SpringBootApplication
 public class ArmedisServer implements ApplicationRunner {
 
