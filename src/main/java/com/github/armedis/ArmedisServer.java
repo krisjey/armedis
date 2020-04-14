@@ -37,7 +37,7 @@ public class ArmedisServer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        String loadedMessage = "Spring application loaded!(run)";
+        String loadedMessage = "Spring application loaded!(ArmedisServer.run())";
         logger.info(loadedMessage);
 
         System.out.println(loadedMessage);

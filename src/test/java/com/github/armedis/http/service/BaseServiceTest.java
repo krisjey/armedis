@@ -8,14 +8,17 @@ import java.net.UnknownHostException;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 public class BaseServiceTest {
     private static final String LOCAL_IP_ADDR = getLocalIpAddr();
-    private static final int HTTP_PORT = 8081;
+    protected static final String HTTP_PORT = "8081";
 
     private static final Gson jsonParser = new Gson();
+    
+    protected static final ObjectMapper mapper = new ObjectMapper();
 
     private static final String getLocalIpAddr() {
         String localIpAddr = null;

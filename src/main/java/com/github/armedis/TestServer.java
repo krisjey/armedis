@@ -32,8 +32,8 @@ public class TestServer {
     protected static final String COMMAND_URL_WITH_KEY_GLOB = "prefix:" + COMMAND_URL;
 
     public static void main(String[] args) {
-        ServerBuilder sb = new ServerBuilder();
-        sb.http(8082);
+        ServerBuilder sb = Server.builder();
+        sb.http(8081);
 
         sb.serviceUnder("/docs", new DocService());
 

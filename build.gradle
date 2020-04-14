@@ -7,7 +7,7 @@
  */
 buildscript {
     ext {
-        springBootVersion = '2.1.7.RELEASE'
+        springBootVersion = '2.2.6.RELEASE'
     }
 
     repositories {
@@ -28,8 +28,8 @@ apply plugin: 'io.spring.dependency-management'
 apply plugin: 'application' // gradle task plugin for distTar
 
 ext {
-    javaVersion='1.8'
-    armeriaVersion='0.96.0'
+    javaVersion='1.11'
+    armeriaVersion='0.99.2'
 }
 
 tasks.withType(JavaCompile) {
@@ -57,7 +57,7 @@ mainClassName = "com.github.armedis.ArmedisServer"
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.9.1"
+        artifact = "com.google.protobuf:protoc:3.11.1"
 
         generatedFilesBaseDir = "$projectDir/gen-src"
     }
@@ -143,4 +143,5 @@ dependencies {
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:2.3.0'
 }

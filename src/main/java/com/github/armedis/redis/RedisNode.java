@@ -59,4 +59,55 @@ public class RedisNode {
     public String toString() {
         return "RedisInstance [host=" + host + ", port=" + port + "]";
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+
+        result = prime * result + ((host == null) ? 0 : host.hashCode());
+        result = prime * result + port;
+        result = prime * result + ((uri == null) ? 0 : uri.hashCode());
+
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj == null) {
+            return false;
+        }
+
+        if (getClass() != obj.getClass())
+            return false;
+
+        RedisNode other = (RedisNode) obj;
+        if (host == null) {
+            if (other.host != null) {
+                return false;
+            }
+        }
+        else if (!host.equals(other.host)) {
+            return false;
+        }
+
+        if (port != other.port) {
+            return false;
+        }
+
+        if (uri == null) {
+            if (other.uri != null) {
+                return false;
+            }
+        }
+        else if (!uri.equals(other.uri)) {
+            return false;
+        }
+
+        return true;
+    }
 }

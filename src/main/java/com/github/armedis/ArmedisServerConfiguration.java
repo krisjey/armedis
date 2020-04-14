@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.slf4j.Logger;
@@ -25,6 +26,7 @@ import com.linecorp.armeria.common.SessionProtocol;
 import com.linecorp.armeria.server.Server;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.docs.DocService;
+import com.linecorp.armeria.server.grpc.GrpcService;
 import com.linecorp.armeria.server.grpc.GrpcServiceBuilder;
 import com.linecorp.armeria.spring.ArmeriaServerConfigurator;
 import com.linecorp.armeria.spring.ArmeriaSettings;
@@ -94,7 +96,7 @@ public class ArmedisServerConfiguration {
             }
 
             // TODO Add grpc service
-            builder.service(new GrpcServiceBuilder().addService(new NewdataServiceImpl()).build());
+            builder.service(GrpcService.builder().addService(new NewdataServiceImpl()).build());
         };
     }
 
@@ -127,10 +129,10 @@ public class ArmedisServerConfiguration {
         int listenPort = Integer.parseInt(getInstanceInfo().getServicePort());
         serverBuilder.http(listenPort);
 
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) CommonPools.blockingTaskExecutor();
+        ScheduledExecutorService executor = CommonPools.blockingTaskExecutor();
 
         // Disable worker thread shutdown timeout() configuration.
-        executor.allowCoreThreadTimeOut(false);
+        ((ThreadPoolExecutor) executor).allowCoreThreadTimeOut(false);
         serverBuilder.blockingTaskExecutor(executor, true);
 
         return serverBuilder;

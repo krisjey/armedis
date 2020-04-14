@@ -26,7 +26,7 @@ public class ServerShutdownHook extends Thread {
             logger.info("Shutdown server");
         }
         catch (Exception e) {
-            logger.error("Cannot delete node " + nodePath, e);
+            logger.error("Cannot execute ServerShutdownHook " + nodePath, e);
         }
     }
 }
