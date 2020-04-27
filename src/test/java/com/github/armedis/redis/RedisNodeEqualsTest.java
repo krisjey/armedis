@@ -7,7 +7,7 @@ import static org.junit.Assert.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class RedisNodeTest {
+public class RedisNodeEqualsTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {

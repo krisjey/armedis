@@ -48,7 +48,7 @@ public class TestServer {
             @Path("/v1/gets")
             @Consumes("application/json")
             public HttpResponse greetGetWithKey(AggregatedHttpRequest httpRequest) {
-                logger.info("prefix " + httpRequest.contentUtf8());
+                logger.info("prefix [" + httpRequest.contentUtf8() + "]");
                 return HttpResponse.of(HttpStatus.OK, MediaType.JSON_UTF_8, "{\"key\":\"%s\"}", httpRequest.path());
             }
 
@@ -58,7 +58,7 @@ public class TestServer {
             @Consumes("application/json")
             public HttpResponse greetPost(AggregatedHttpRequest httpRequest, @Param("key") String name) {
                 logger.info(name + " with key " + httpRequest.path());
-                return HttpResponse.of(HttpStatus.OK);
+                return HttpResponse.of(HttpStatus.OK, MediaType.JSON_UTF_8, "{\"request param in path\":\"%s\"}", name);
             }
         });
 

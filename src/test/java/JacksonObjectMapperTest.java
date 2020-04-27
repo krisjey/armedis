@@ -59,7 +59,7 @@ public class JacksonObjectMapperTest {
         assertThat(convertResult.asText()).isEqualTo(justStartBrace);
         assertThat(convertResult).isInstanceOf(TextNode.class);
 
-        // just string 
+        // just string
         convertResult = mapper.valueToTree(notClosedJsonString);
         assertThat(convertResult.isTextual()).isTrue();
         assertThat(convertResult.isValueNode()).isTrue();
@@ -70,13 +70,13 @@ public class JacksonObjectMapperTest {
         // JSON 인지 확인.
         // json string
         convertResult = mapper.valueToTree(emptyJsonString);
-        assertThat(convertResult.isTextual()).isTrue(); 
+        assertThat(convertResult.isTextual()).isTrue();
         assertThat(convertResult.isValueNode()).isTrue();
         assertThat(convertResult.size()).isEqualTo(0);
         assertThat(convertResult.asText()).isEqualTo(emptyJsonString);
 
         convertResult = mapper.valueToTree(helloWorldJsonString);
-        assertThat(convertResult.isTextual()).isTrue(); 
+        assertThat(convertResult.isTextual()).isTrue();
         assertThat(convertResult.isValueNode()).isTrue();
         assertThat(convertResult.isObject()).isFalse();
         assertThat(convertResult.isContainerNode()).isFalse();

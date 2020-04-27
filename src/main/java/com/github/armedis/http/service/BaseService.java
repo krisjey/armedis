@@ -115,7 +115,7 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
             redisCommandExecuteResult = executor.execute(redisRequest);
         }
         catch (Exception e) {
-            logger.info("Can not execute redis command " + redisRequest.toString());
+            logger.info("Can not execute redis command " + redisRequest.toString(), e);
         }
 
         return redisCommandExecuteResult;

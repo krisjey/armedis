@@ -27,7 +27,8 @@ import com.linecorp.armeria.server.Server;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.docs.DocService;
 import com.linecorp.armeria.server.grpc.GrpcService;
-import com.linecorp.armeria.server.grpc.GrpcServiceBuilder;
+import com.linecorp.armeria.server.logging.AccessLogWriter;
+import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.spring.ArmeriaServerConfigurator;
 import com.linecorp.armeria.spring.ArmeriaSettings;
 import com.linecorp.armeria.spring.ArmeriaSettings.Port;
@@ -83,10 +84,10 @@ public class ArmedisServerConfiguration {
             builder.serviceUnder("/docs", new DocService());
 
 //            // Log every message which the server receives and responds.
-//            builder.decorator(LoggingService.newDecorator());
+            builder.decorator(LoggingService.newDecorator());
 
 //            // Write access log after completing a request.
-//            builder.accessLogWriter(AccessLogWriter.combined(), false);
+            builder.accessLogWriter(AccessLogWriter.combined(), false);
 
             // ArmeriaAnnotatedHttpService를 impl 하고 type of 로 갈라서 grpc로 등록하기.
 

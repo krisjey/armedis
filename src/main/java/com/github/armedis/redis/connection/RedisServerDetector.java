@@ -80,7 +80,9 @@ public class RedisServerDetector {
     private Set<RedisNode> detectRedisServerNodes(StatefulRedisConnection<String, String> redisSeedConnection)
             throws OperationNotSupportedException {
         Set<RedisNode> nodes = null;
-        // is cluster, master/slave, support sentinel
+        // is cluster, master/slave, support sentinel, can not found.
+        
+        // TODO add exception case.
 
         logger.info("Connected to Redis");
 
@@ -114,6 +116,10 @@ public class RedisServerDetector {
         return nodes;
     }
 
+    /**
+     * Get the first connected server info from the configured server list.
+     * @return
+     */
     private StatefulRedisConnection<String, String> getSeedConnection() {
         for (RedisNode seed : this.seedInfo) {
             try {

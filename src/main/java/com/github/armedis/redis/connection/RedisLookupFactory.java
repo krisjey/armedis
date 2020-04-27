@@ -3,7 +3,6 @@ package com.github.armedis.redis.connection;
 
 import javax.naming.OperationNotSupportedException;
 
-import com.github.armedis.redis.RedisClusterNodeLookup;
 import com.github.armedis.redis.RedisInstanceType;
 
 public class RedisLookupFactory {
@@ -17,7 +16,7 @@ public class RedisLookupFactory {
                 break;
 
             case STANDALONE:
-                lookup = new RedisStandaloneNodeLookup();
+                lookup = new RedisNoneClusterNodeLookup();
                 break;
 
             case SENTINEL:

@@ -58,13 +58,14 @@ public class RedisGetServiceTest extends BaseServiceTest {
         
         AggregatedHttpResponse res;
 
-        res = client.get("/pual/v1/index").aggregate().join();
+        res = client.get("/v1/get/keyname:withkey").aggregate().join();
 
         assertThat(res.status()).isEqualTo(HttpStatus.OK);
+        
         assertThatJson(res.content().toStringUtf8())
                 .as("Check requestUrl of result")
-                .node("requestUrl").isStringEqualTo("/pual/v1/index")
-                .node("value").isStringEqualTo("hello world");
+                .node("result").isPresent()
+                .node("valueTest").isAbsent();
         
         // spring actuator health 체크.
 //        final AggregatedHttpResponse res = client.get("/internal/actuator/health").aggregate().join();
@@ -72,54 +73,6 @@ public class RedisGetServiceTest extends BaseServiceTest {
 //
 //        final Map<String, Object> values = mapper.readValue(res.content().array(), JSON_MAP);
 //        assertThat(values).containsEntry("status", "UP");
-//
-//        String key = "hello:kris";
-
-        // TEST get, put, post
-//
-//        try (CloseableHttpClient hc = HttpClients.createMinimal()) {
-//            String setValue = "hello world";
-//
-//            UrlEncodedFormEntity bodyData = new UrlEncodedFormEntity(
-//                    Collections.singletonList(new BasicNameValuePair("value", setValue)),
-//                    StandardCharsets.UTF_8);
-//
-//            // data set to redis.
-//            HttpPut httpPut = new HttpPut(buildTestUrl("set", key));
-//            httpPut.setEntity(bodyData);
-//            try (CloseableHttpResponse res = hc.execute(httpPut)) {
-//                assertThat(res.getStatusLine().toString()).isEqualTo(HTTP_200_STATUS_LINE);
-//
-//                JsonObject result = parseToJson(EntityUtils.toString(res.getEntity()));
-//
-//                assertThat(result).isNotNull();
-//                assertThat(result.get("resultCode").getAsString()).isEqualTo("200");
-//                assertThat(result.get("value").getAsString()).isEqualTo("OK");
-//            }
-//            catch (Exception e) {
-//                e.printStackTrace();
-//                fail("Can not connect to host");
-//            }
-//
-//            // data get from redis.
-//            HttpGet httpGet = new HttpGet(buildTestUrl("get", key));
-//            try (CloseableHttpResponse res = hc.execute(httpGet)) {
-//                assertThat(res.getStatusLine().toString()).isEqualTo(HTTP_200_STATUS_LINE);
-//
-//                JsonObject result = parseToJson(EntityUtils.toString(res.getEntity()));
-//
-//                assertThat(result).isNotNull();
-//                assertThat(result.get("result").getAsString()).isEqualTo("200");
-//                assertThat(result.get("value").getAsString()).isEqualTo(setValue);
-//            }
-//            catch (Exception e) {
-//                e.printStackTrace();
-//                fail("Can not connect to host");
-//            }
-//        }
-//        catch (IOException e) {
-//            e.printStackTrace();
-//        }
     }
 
 }

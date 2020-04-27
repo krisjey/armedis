@@ -1,5 +1,5 @@
 
-package com.github.armedis.redis;
+package com.github.armedis.redis.connection;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.armedis.redis.RedisNode;
 import com.github.armedis.redis.connection.RedisNodeLookup;
 
 import io.lettuce.core.api.StatefulRedisConnection;

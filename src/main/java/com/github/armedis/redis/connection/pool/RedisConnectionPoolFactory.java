@@ -26,7 +26,7 @@ import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.support.ConnectionPoolSupport;
 
 @Component
-public class RedisConnectionPoolImpl implements RedisConnectionPool<String, String> {
+public class RedisConnectionPoolFactory implements RedisConnectionPool<String, String> {
     private RedisServerInfoMaker redisServerInfoMaker;
 
     // cluster connection pool
@@ -36,7 +36,7 @@ public class RedisConnectionPoolImpl implements RedisConnectionPool<String, Stri
     private GenericObjectPool<StatefulRedisConnection<String, String>> singleConnectionPool;
 
     @Autowired
-    public RedisConnectionPoolImpl(RedisServerInfoMaker redisServerInfoMaker) {
+    public RedisConnectionPoolFactory(RedisServerInfoMaker redisServerInfoMaker) {
         this.redisServerInfoMaker = redisServerInfoMaker;
 
         RedisInstanceType redisServerInfo = this.redisServerInfoMaker.getRedisServerInfo().getRedisInstanceType();
@@ -57,7 +57,6 @@ public class RedisConnectionPoolImpl implements RedisConnectionPool<String, Stri
 
             default:
                 throw new NotImplementedException("Connection pool not implemented " + redisServerInfo.toString());
-
         }
     }
 

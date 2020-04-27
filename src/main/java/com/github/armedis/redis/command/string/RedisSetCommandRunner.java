@@ -10,7 +10,7 @@ import com.github.armedis.redis.command.AbstractRedisCommandRunner;
 import com.github.armedis.redis.command.RedisCommandEnum;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.github.armedis.redis.command.RedisCommandExecuteResultFactory;
-import com.github.armedis.redis.command.RedisGetRequest;
+import com.github.armedis.redis.command.RedisSetRequest;
 import com.github.armedis.redis.command.RequestRedisCommandName;
 
 import io.lettuce.core.api.sync.RedisCommands;
@@ -18,16 +18,16 @@ import io.lettuce.core.cluster.api.sync.RedisClusterCommands;
 
 @Component
 @Scope("prototype")
-@RequestRedisCommandName(RedisCommandEnum.GET)
-public class RedisGetCommandRunner extends AbstractRedisCommandRunner {
-    private final Logger logger = LoggerFactory.getLogger(RedisGetCommandRunner.class);
+@RequestRedisCommandName(RedisCommandEnum.SET)
+public class RedisSetCommandRunner extends AbstractRedisCommandRunner {
+    private final Logger logger = LoggerFactory.getLogger(RedisSetCommandRunner.class);
 
     @SuppressWarnings("unused")
-    private static final boolean classLoaded = detectAnnotation(RedisGetCommandRunner.class);
+    private static final boolean classLoaded = detectAnnotation(RedisSetCommandRunner.class);
 
-    private RedisGetRequest redisRequest;
+    private RedisSetRequest redisRequest;
 
-    public RedisGetCommandRunner(RedisGetRequest redisRequest) {
+    public RedisSetCommandRunner(RedisSetRequest redisRequest) {
         this.redisRequest = redisRequest;
     }
 
@@ -37,7 +37,9 @@ public class RedisGetCommandRunner extends AbstractRedisCommandRunner {
         logger.info(redisRequest.toString());
 
         String key = this.redisRequest.getKey();
-        String result = commands.get(key);
+        String value = this.redisRequest.getValue();
+
+        String result = commands.set(key, value);
 
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
     }
@@ -47,7 +49,8 @@ public class RedisGetCommandRunner extends AbstractRedisCommandRunner {
         logger.info(redisRequest.toString());
 
         String key = this.redisRequest.getKey();
-        String result = commands.get(key);
+        String value = this.redisRequest.getValue();
+        String result = commands.set(key, value);
 
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
     }

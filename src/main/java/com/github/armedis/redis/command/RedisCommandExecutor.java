@@ -49,7 +49,7 @@ public class RedisCommandExecutor {
 
         if (commandRunner instanceof RedisCommandRunner) {
             // do nothing.
-            logger.debug(commandRunner.getClass().getSimpleName() + " class loaded!");
+            logger.debug(commandRunner.getClass().getSimpleName() + " class found!");
         }
         else {
             throw new NotImplementedException("Connection pool not implemented yet " + redisServerInfo.toString());

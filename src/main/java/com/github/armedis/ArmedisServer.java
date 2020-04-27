@@ -39,6 +39,8 @@ public class ArmedisServer implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
         String loadedMessage = "Spring application loaded!(ArmedisServer.run())";
         logger.info(loadedMessage);
+        
+        // print connected redis config.
 
         System.out.println(loadedMessage);
     }

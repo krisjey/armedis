@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_package = "com.github.armedis.demo.redis";
+option java_multiple_files = true;
+
+service RedisGrpc	{
+/** rpc sample
+rpc unaryEvent(EventRequest) returns (EventResponse) {}
+rpc serverStreamingEvent(EventRequest) returns (stream EventResponse) {}
+rpc clientStreamingEvent(stream EventRequest) returns (EventResponse) {}
+rpc biStreamingEvent(stream EventRequest) returns (stream EventResponse) {}
+*/
+
+	// request/response class 정의 필요.
+	rpc get(GetRequest) returns ()
+}
+
+ 
+message GetRequest {
+  string name = 1;
+}

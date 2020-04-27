@@ -29,7 +29,7 @@ apply plugin: 'application' // gradle task plugin for distTar
 
 ext {
     javaVersion='1.11'
-    armeriaVersion='0.99.2'
+    armeriaVersion='0.99.3'
 }
 
 tasks.withType(JavaCompile) {
@@ -79,8 +79,8 @@ sourceSets {
     main {
         java {
 //          // add source folder order
-//            srcDirs 'src/main/java'
-//            srcDirs 'src/main/resources'
+            srcDirs 'src/main/java'
+            srcDirs 'src/main/resources'
 //            srcDirs 'src/test/java'
 //            srcDirs 'src/test/resources'
 
@@ -115,7 +115,7 @@ dependencies {
     'armeria-logback', // Provides Logback Appender implementation that adds request information. See Logging contextual information.   
 //    'armeria-retrofit2', // Allows using Armeria instead of OkHttp as transport layer when using Retrofit. See Retrofit integration.                
     'armeria-rxjava', // RxJava plugin                                                                                                                                           
-//    'armeria-saml', // SAML support                                                                                                                                          
+    'armeria-saml', // SAML support                                                                                                                                          
     'armeria-spring-boot-autoconfigure', // Spring Boot integration                                                                                                                             
 //    'armeria-spring-boot-webflux-autoconfigure', // Spring Boot WebFlux integration. See Using Armeria with Spring WebFlux.                                                        
     'armeria-thrift', // Thrift client and server support. See Running a Thrift service and Calling a Thrift service.                                     

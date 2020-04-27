@@ -10,7 +10,7 @@ import com.github.armedis.http.service.BaseService;
 import com.github.armedis.http.service.ResponseCode;
 import com.github.armedis.http.service.request.RedisRequest;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
-import com.github.armedis.redis.command.RedisGetRequest;
+import com.github.armedis.redis.command.RedisSetRequest;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.server.annotation.Consumes;
@@ -45,7 +45,7 @@ public class RedisSetService extends BaseService {
     @Post
     @Path(COMMAND_URL)
     @Consumes("application/x-www-form-urlencoded")
-    public HttpResponse urlencodedWithoutKey(RedisGetRequest redisRequest) {
+    public HttpResponse urlencodedWithoutKey(RedisSetRequest redisRequest) {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
         // execute redis command by http request params.
@@ -71,7 +71,7 @@ public class RedisSetService extends BaseService {
     @Post
     @Path(COMMAND_URL_WITH_KEY)
     @Consumes("application/x-www-form-urlencoded")
-    public HttpResponse urlencodedWithKey(RedisGetRequest redisRequest) {
+    public HttpResponse urlencodedWithKey(RedisSetRequest redisRequest) {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
         // execute redis command by http request params.
