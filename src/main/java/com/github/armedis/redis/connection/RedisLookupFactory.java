@@ -7,7 +7,7 @@ import com.github.armedis.redis.RedisInstanceType;
 
 public class RedisLookupFactory {
 
-    public static RedisNodeLookup create(RedisInstanceType type) throws OperationNotSupportedException {
+    public static RedisNodeLookup create(RedisInstanceType type, String seedAddresses) throws OperationNotSupportedException {
         RedisNodeLookup lookup = null;
 
         switch (type) {
@@ -16,7 +16,7 @@ public class RedisLookupFactory {
                 break;
 
             case STANDALONE:
-                lookup = new RedisNoneClusterNodeLookup();
+                lookup = new RedisNoneClusterNodeLookup(seedAddresses);
                 break;
 
             case SENTINEL:

@@ -23,6 +23,7 @@ import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
+import io.lettuce.core.masterslave.MasterSlaveTopologyProvider;
 import io.lettuce.core.support.ConnectionPoolSupport;
 
 @Component
@@ -46,6 +47,11 @@ public class RedisConnectionPoolFactory implements RedisConnectionPool<String, S
                 break;
 
             case SENTINEL:
+                /**
+redisCommand.clientList()
+id=2 addr=192.168.56.104:36756 fd=6 name=sentinel-f1359b20-cmd age=5031 idle=0 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=0 qbuf-free=32768 obl=0 oll=0 omem=0 events=r cmd=ping
+id=3 addr=192.168.56.104:37058 fd=7 name=sentinel-f1359b20-pubsub age=5031 idle=2 flags=N db=0 sub=1 psub=0 multi=-1 qbuf=0 qbuf-free=0 obl=0 oll=0 omem=0 events=r cmd=subscribe
+                 */
                 throw new NotImplementedException("Connection pool not implemented " + redisServerInfo.toString());
 
             case CLUSTER:
@@ -53,22 +59,26 @@ public class RedisConnectionPoolFactory implements RedisConnectionPool<String, S
                 break;
 
             case NOT_DETECTED:
-                throw new NotImplementedException("Connection pool not implemented " + redisServerInfo.toString());
+                throw new NotImplementedException("Can not detect connection type " + redisServerInfo.toString());
 
             default:
-                throw new NotImplementedException("Connection pool not implemented " + redisServerInfo.toString());
+                throw new NotImplementedException("Can not detect connection type " + redisServerInfo.toString());
         }
     }
 
     private GenericObjectPool<StatefulRedisConnection<String, String>> buildStandaloneConnectionPool() {
         requireNonNull(redisServerInfoMaker, "redis server info is null");
-        ClusterTopologyRefreshOptions topologyRefreshOptions = ClusterTopologyRefreshOptions.builder()
-                .enablePeriodicRefresh(true)
-                .refreshPeriod(Duration.ofSeconds(5))
-                .enableAllAdaptiveRefreshTriggers()
-                .build();
+
+//        ClusterTopologyRefreshOptions topologyRefreshOptions = ClusterTopologyRefreshOptions.builder()
+//                .enablePeriodicRefresh(true)
+//                .refreshPeriod(Duration.ofSeconds(5))
+//                .enableAllAdaptiveRefreshTriggers()
+//                .build();
 
         Set<RedisNode> nodes = redisServerInfoMaker.getRedisServerInfo().getRedisNodes();
+        
+//        MasterSlaveTopologyProvider topologyRefreshOptions = new MasterSlaveTopologyProvider(connection, redisURI);
+
 
         // cluster node
         RedisURI clusterNode = null;
@@ -77,19 +87,9 @@ public class RedisConnectionPoolFactory implements RedisConnectionPool<String, S
         }
 
         RedisClient redisClient = RedisClient.create(clusterNode);
-        redisClient.setOptions(ClusterClientOptions.builder()
-                .topologyRefreshOptions(topologyRefreshOptions)
-                .build());
-
-        GenericObjectPoolConfig<StatefulRedisConnection<String, String>> poolConfig = new GenericObjectPoolConfig<>();
-        poolConfig.setMaxIdle(10);
-        poolConfig.setMaxTotal(10);
-        poolConfig.setTestOnBorrow(true);
-        poolConfig.setTestOnReturn(true);
-        poolConfig.setBlockWhenExhausted(true);
 
         GenericObjectPool<StatefulRedisConnection<String, String>> pool = ConnectionPoolSupport
-                .createGenericObjectPool(redisClient::connect, poolConfig);
+                .createGenericObjectPool(redisClient::connect, buildBasicConnectionPoolConfig());
 
         return pool;
     }
@@ -115,15 +115,8 @@ public class RedisConnectionPoolFactory implements RedisConnectionPool<String, S
                 .topologyRefreshOptions(topologyRefreshOptions)
                 .build());
 
-        GenericObjectPoolConfig<StatefulRedisClusterConnection<String, String>> poolConfig = new GenericObjectPoolConfig<>();
-        poolConfig.setMaxIdle(10);
-        poolConfig.setMaxTotal(10);
-        poolConfig.setTestOnBorrow(true);
-        poolConfig.setTestOnReturn(true);
-        poolConfig.setBlockWhenExhausted(true);
-
         GenericObjectPool<StatefulRedisClusterConnection<String, String>> pool = ConnectionPoolSupport
-                .createGenericObjectPool(clusterClient::connect, poolConfig);
+                .createGenericObjectPool(clusterClient::connect, buildBasicConnectionPoolConfig());
 
         return pool;
     }
@@ -135,6 +128,17 @@ public class RedisConnectionPoolFactory implements RedisConnectionPool<String, S
         connection = clusterConnectionPool.borrowObject();
 
         return connection;
+    }
+
+    private <T> GenericObjectPoolConfig<T> buildBasicConnectionPoolConfig() {
+        GenericObjectPoolConfig<T> poolConfig = new GenericObjectPoolConfig<>();
+        poolConfig.setMaxIdle(10);
+        poolConfig.setMaxTotal(10);
+        poolConfig.setTestOnBorrow(true);
+        poolConfig.setTestOnReturn(true);
+        poolConfig.setBlockWhenExhausted(true);
+
+        return poolConfig;
     }
 
     @Override

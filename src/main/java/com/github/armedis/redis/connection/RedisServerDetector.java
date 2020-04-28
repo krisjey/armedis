@@ -38,7 +38,7 @@ public class RedisServerDetector {
     }
 
     private Set<RedisNode> createRedisSeedInfo(String seedAddresses) {
-        Set<RedisNode> seedRedisInfos = new HashSet<RedisNode>();
+        Set<RedisNode> seedRedisNodes = new HashSet<RedisNode>();
         String[] addresses = seedAddresses.split("[,]");
 
         for (String address : addresses) {
@@ -47,11 +47,11 @@ public class RedisServerDetector {
                 String host = hostAndPort[0];
                 String port = hostAndPort[1];
 
-                seedRedisInfos.add(new RedisNode(host, Integer.parseInt(port)));
+                seedRedisNodes.add(new RedisNode(host, Integer.parseInt(port)));
             }
         }
 
-        return seedRedisInfos;
+        return seedRedisNodes;
     }
 
     /**
@@ -81,8 +81,6 @@ public class RedisServerDetector {
             throws OperationNotSupportedException {
         Set<RedisNode> nodes = null;
         // is cluster, master/slave, support sentinel, can not found.
-        
-        // TODO add exception case.
 
         logger.info("Connected to Redis");
 
@@ -95,23 +93,20 @@ public class RedisServerDetector {
 
         // TYPE cluster, none cluster, master, slave
         for (String line : redisInfo.split("\\r?\\n")) {
-
             if (line.startsWith("redis_mode")) {
                 String type = line.split("[:]")[1];
 
                 logger.info("Redis node type [" + type + "]");
                 redisInstanceType = RedisInstanceType.of(type);
-                nodeLookup = RedisLookupFactory.create(redisInstanceType);
+                nodeLookup = RedisLookupFactory.create(redisInstanceType, this.seedAddresses);
                 nodes = nodeLookup.lookup(redisSeedConnection);
             }
         }
 
         if (nodeLookup == null) {
-            nodeLookup = RedisLookupFactory.create(RedisInstanceType.NOT_DETECTED);
+            nodeLookup = RedisLookupFactory.create(RedisInstanceType.NOT_DETECTED, this.seedAddresses);
             nodes = nodeLookup.lookup(redisSeedConnection);
         }
-
-        syncCommands.clusterInfo();
 
         return nodes;
     }
