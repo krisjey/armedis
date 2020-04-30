@@ -23,6 +23,7 @@ import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
+import io.lettuce.core.masterreplica.StatefulRedisMasterReplicaConnection;
 import io.lettuce.core.masterslave.MasterSlaveTopologyProvider;
 import io.lettuce.core.support.ConnectionPoolSupport;
 
@@ -30,11 +31,14 @@ import io.lettuce.core.support.ConnectionPoolSupport;
 public class RedisConnectionPoolFactory implements RedisConnectionPool<String, String> {
     private RedisServerInfoMaker redisServerInfoMaker;
 
-    // cluster connection pool
-    private GenericObjectPool<StatefulRedisClusterConnection<String, String>> clusterConnectionPool;
-
     // single connection pool
     private GenericObjectPool<StatefulRedisConnection<String, String>> singleConnectionPool;
+
+    // master connection pool
+    private GenericObjectPool<StatefulRedisMasterReplicaConnection<String, String>> masterSlaveConnectionPool;
+
+    // cluster connection pool
+    private GenericObjectPool<StatefulRedisClusterConnection<String, String>> clusterConnectionPool;
 
     @Autowired
     public RedisConnectionPoolFactory(RedisServerInfoMaker redisServerInfoMaker) {
@@ -48,9 +52,9 @@ public class RedisConnectionPoolFactory implements RedisConnectionPool<String, S
 
             case SENTINEL:
                 /**
-redisCommand.clientList()
-id=2 addr=192.168.56.104:36756 fd=6 name=sentinel-f1359b20-cmd age=5031 idle=0 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=0 qbuf-free=32768 obl=0 oll=0 omem=0 events=r cmd=ping
-id=3 addr=192.168.56.104:37058 fd=7 name=sentinel-f1359b20-pubsub age=5031 idle=2 flags=N db=0 sub=1 psub=0 multi=-1 qbuf=0 qbuf-free=0 obl=0 oll=0 omem=0 events=r cmd=subscribe
+                redisCommand.clientList()
+                id=2 addr=192.168.56.104:36756 fd=6 name=sentinel-f1359b20-cmd age=5031 idle=0 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=0 qbuf-free=32768 obl=0 oll=0 omem=0 events=r cmd=ping
+                id=3 addr=192.168.56.104:37058 fd=7 name=sentinel-f1359b20-pubsub age=5031 idle=2 flags=N db=0 sub=1 psub=0 multi=-1 qbuf=0 qbuf-free=0 obl=0 oll=0 omem=0 events=r cmd=subscribe
                  */
                 throw new NotImplementedException("Connection pool not implemented " + redisServerInfo.toString());
 
@@ -65,20 +69,40 @@ id=3 addr=192.168.56.104:37058 fd=7 name=sentinel-f1359b20-pubsub age=5031 idle=
                 throw new NotImplementedException("Can not detect connection type " + redisServerInfo.toString());
         }
     }
+    
+//    private <T> GenericObjectPool<T> buildConnectionPool()    {
+//        RedisInstanceType redisServerInfo = this.redisServerInfoMaker.getRedisServerInfo().getRedisInstanceType();
+//        switch (redisServerInfo) {
+//            case STANDALONE:
+//                this.singleConnectionPool = buildStandaloneConnectionPool();
+//                break;
+//
+//            case SENTINEL:
+//                /**
+//                redisCommand.clientList()
+//                id=2 addr=192.168.56.104:36756 fd=6 name=sentinel-f1359b20-cmd age=5031 idle=0 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=0 qbuf-free=32768 obl=0 oll=0 omem=0 events=r cmd=ping
+//                id=3 addr=192.168.56.104:37058 fd=7 name=sentinel-f1359b20-pubsub age=5031 idle=2 flags=N db=0 sub=1 psub=0 multi=-1 qbuf=0 qbuf-free=0 obl=0 oll=0 omem=0 events=r cmd=subscribe
+//                 */
+//                throw new NotImplementedException("Connection pool not implemented " + redisServerInfo.toString());
+//
+//            case CLUSTER:
+//                this.clusterConnectionPool = buildClusterConnectionPool();
+//                break;
+//
+//            case NOT_DETECTED:
+//                throw new NotImplementedException("Can not detect connection type " + redisServerInfo.toString());
+//
+//            default:
+//                throw new NotImplementedException("Can not detect connection type " + redisServerInfo.toString());
+//        }
+//    }
 
     private GenericObjectPool<StatefulRedisConnection<String, String>> buildStandaloneConnectionPool() {
         requireNonNull(redisServerInfoMaker, "redis server info is null");
 
-//        ClusterTopologyRefreshOptions topologyRefreshOptions = ClusterTopologyRefreshOptions.builder()
-//                .enablePeriodicRefresh(true)
-//                .refreshPeriod(Duration.ofSeconds(5))
-//                .enableAllAdaptiveRefreshTriggers()
-//                .build();
-
         Set<RedisNode> nodes = redisServerInfoMaker.getRedisServerInfo().getRedisNodes();
-        
-//        MasterSlaveTopologyProvider topologyRefreshOptions = new MasterSlaveTopologyProvider(connection, redisURI);
 
+//        MasterSlaveTopologyProvider masterSlaveTopologyProvider = new MasterSlaveTopologyProvider(connection, redisURI);
 
         // cluster node
         RedisURI clusterNode = null;
