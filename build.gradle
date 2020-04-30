@@ -141,7 +141,13 @@ dependencies {
     runtime 'org.slf4j:log4j-over-slf4j:1.7.28'
     
     // Use JUnit test framework
-    testImplementation 'junit:junit:4.12'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    
+    // json unit
     testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:2.3.0'
+    
+    // It is a workaround for the bug, when execute junit test case under eclipse(2020-03 (4.15.0)). 
+    // java.lang.NoClassDefFoundError: org/junit/platform/engine/EngineDiscoveryListener
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
 }
