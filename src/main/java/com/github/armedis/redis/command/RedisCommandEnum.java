@@ -149,14 +149,14 @@ public enum RedisCommandEnum {
         return this.command;
     }
 
-    private static final Map<String, RedisCommandEnum> redisInstanceTypes;
+    private static final Map<String, RedisCommandEnum> redisCommandNames;
     static {
         final ImmutableMap.Builder<String, RedisCommandEnum> builder = ImmutableMap.builder();
         for (RedisCommandEnum e : values()) {
             builder.put(e.getName(), e);
         }
 
-        redisInstanceTypes = builder.build();
+        redisCommandNames = builder.build();
     }
 
     /**
@@ -165,7 +165,7 @@ public enum RedisCommandEnum {
     public static RedisCommandEnum of(String name) {
         name = requireNonNull(name).toLowerCase();
 
-        RedisCommandEnum type = redisInstanceTypes.get(name);
+        RedisCommandEnum type = redisCommandNames.get(name);
         if (type == null) {
             type = RedisCommandEnum.NOT_DETECTED;
         }
