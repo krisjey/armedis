@@ -9,7 +9,7 @@ public interface RedisConnectionPool<K, V> {
 
     StatefulRedisConnection<K, V> getNonClusterConnection() throws Exception;
 
-    void returnObject(StatefulRedisClusterConnection<String, String> connection) throws Exception;
+    void returnObject(StatefulRedisClusterConnection<K, V> connection) throws Exception;
 
-    void returnObject(StatefulRedisConnection<String, String> connection) throws Exception;
+    void returnObject(StatefulRedisConnection<K, V> connection) throws Exception;
 }

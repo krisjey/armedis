@@ -7,16 +7,13 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import io.lettuce.core.ClientOptions;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.codec.StringCodec;
-import io.lettuce.core.codec.Utf8StringCodec;
 import io.lettuce.core.masterreplica.MasterReplica;
 import io.lettuce.core.masterreplica.StatefulRedisMasterReplicaConnection;
-import io.lettuce.core.masterslave.MasterSlaveTopologyProvider;
 
 public class RedisMasterSlaveTest {
     private static final String TEST_STANDALONE_REDIS_HOST = "192.168.56.104";
@@ -60,12 +57,11 @@ public class RedisMasterSlaveTest {
     @Test
     public void testSlaveSetAndGet() {
         RedisURI redisURI = RedisURI.create("redis://" + TEST_STANDALONE_REDIS_HOST + ":" + TEST_STANDALONE_REDIS_SLAVE_PORT);
-        RedisClient client = RedisClient.create();
-        
+
         StatefulRedisMasterReplicaConnection<String, String> connection = MasterReplica.connect(RedisClient.create(), StringCodec.UTF8, redisURI);
-        
+
 //        MasterSlaveTopologyProvider
-        
+
         RedisCommands<String, String> commands = connection.sync();
 
         String value = null;

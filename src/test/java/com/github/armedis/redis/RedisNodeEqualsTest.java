@@ -2,7 +2,6 @@
 package com.github.armedis.redis;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
