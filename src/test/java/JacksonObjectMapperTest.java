@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 
@@ -30,15 +31,14 @@ public class JacksonObjectMapperTest {
 //        Jsonobject
         JsonNode convertResult = null;
 
-        String nullValue = null;
         String emptyString = "";
         String justStartBrace = "{";
         String notClosedJsonString = "{asdasdf";
         String emptyJsonString = "{}";
         String helloWorldJsonString = "{\"hello\":\"world\"}";
 
-        convertResult = mapper.valueToTree(nullValue);
-        assertThat(convertResult).isNull();
+        convertResult = mapper.valueToTree(null);
+        assertThat(convertResult).isEqualTo(NullNode.getInstance());
 
         // just string
         convertResult = mapper.valueToTree(emptyString);

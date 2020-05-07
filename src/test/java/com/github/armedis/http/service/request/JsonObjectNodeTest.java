@@ -62,11 +62,10 @@ public class JsonObjectNodeTest {
 
     @Test
     public void testHttpResponse() {
-        String data = null;
+        String data = "{}";
 
         HttpResponse response = HttpResponse.of(HttpStatus.OK, MediaType.JSON_UTF_8, data);
         
         assertThat(response).isNotNull();
-
     }
 }
