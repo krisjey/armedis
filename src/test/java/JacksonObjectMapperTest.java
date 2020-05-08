@@ -82,5 +82,15 @@ public class JacksonObjectMapperTest {
         assertThat(convertResult.isContainerNode()).isFalse();
         assertThat(convertResult.size()).isEqualTo(0);
         assertThat(convertResult.asText()).isEqualTo(helloWorldJsonString);
+
+        String from = "asdf";
+        String beforeFrom = from;
+
+        from = "new";
+
+        assertThat(from).isNotEqualTo(beforeFrom);
+
+        assertThat(from).isEqualTo("new");
+        assertThat(beforeFrom).isEqualTo("asdf");
     }
 }

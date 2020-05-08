@@ -35,7 +35,7 @@ public class RedisConnectionPoolFactory implements RedisConnectionPool<String, S
     private GenericObjectPool<StatefulRedisConnection<String, String>> singleConnectionPool;
 
     // master connection pool
-    private GenericObjectPool<StatefulRedisMasterReplicaConnection<String, String>> masterSlaveConnectionPool;
+    private GenericObjectPool<StatefulRedisMasterReplicaConnection<String, String>> masterReplicaConnectionPool;
 
     // cluster connection pool
     private GenericObjectPool<StatefulRedisClusterConnection<String, String>> clusterConnectionPool;

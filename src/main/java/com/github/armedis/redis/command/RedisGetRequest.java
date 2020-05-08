@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import com.github.armedis.http.service.request.RedisRequest;
 
 public class RedisGetRequest extends RedisRequest {
-    private final Logger logger = LoggerFactory.getLogger(RedisGetRequest.class);
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final String COMMAND_NAME = "get";
 

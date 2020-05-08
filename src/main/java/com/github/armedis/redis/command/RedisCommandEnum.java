@@ -16,114 +16,114 @@ import com.google.common.collect.ImmutableMap;
  *
  */
 public enum RedisCommandEnum {
-//    NOT_DETECTED("not_detected", NotDetected.class),
+//  NOT_DETECTED("not_detected", NotDetected.class),
     NOT_DETECTED("not_detected"),
 
     // String commands
     APPEND("append"),
     BITCOUNT("bitcount"),
-    BITFIELD("bitfield"), //
-    BITOP("bitop"), //
-    BITPOS("bitpos"), //
-    DECR("decr"), //
-    DECRBY("decrby"), //
-    GET("get"), //
-    GETBIT("getbit"), //
-    GETRANGE("getrange"), //
-    GETSET("getset"), //
-    INCR("incr"), //
-    INCRBY("incrby"), //
-    INCRBYFLOAT("incrbyfloat"), //
-    MGET("mget"), //
-    MSET("mset"), //
-    MSETNX("msetnx"), //
-    PSETEX("psetex"), //
-    SET("set"), //
-    SETBIT("setbit"), //
-    SETEX("setex"), //
-    SETNX("setnx"), //
-    SETRANGE("setrange"), //
-    STRLEN("strlen"), //
+    BITFIELD("bitfield"),
+    BITOP("bitop"),
+    BITPOS("bitpos"),
+    DECR("decr"),
+    DECRBY("decrby"),
+    GET("get"),
+    GETBIT("getbit"),
+    GETRANGE("getrange"),
+    GETSET("getset"),
+    INCR("incr"),
+    INCRBY("incrby"),
+    INCRBYFLOAT("incrbyfloat"),
+    MGET("mget"),
+    MSET("mset"),
+    MSETNX("msetnx"),
+    PSETEX("psetex"),
+    SET("set"),
+    SETBIT("setbit"),
+    SETEX("setex"),
+    SETNX("setnx"),
+    SETRANGE("setrange"),
+    STRLEN("strlen"),
 
     // hash commands
-    HDEL("hdel"), //
-    HEXISTS("hexists"), //
-    HGET("hget"), //
-    HGETALL("hgetall"), //
-    HINCRBY("hincrby"), //
-    HINCRBYFLOAT("hincrbyfloat"), //
-    HKEYS("hkeys"), //
-    HLEN("hlen"), //
-    HMGET("hmget"), //
-    HMSET("hmset"), //
-    HSET("hset"), //
-    HSETNX("hsetnx"), //
-    HSTRLEN("hstrlen"), //
-    HVALS("hvals"), //
-    HSCAN("hscan"), //
+    HDEL("hdel"),
+    HEXISTS("hexists"),
+    HGET("hget"),
+    HGETALL("hgetall"),
+    HINCRBY("hincrby"),
+    HINCRBYFLOAT("hincrbyfloat"),
+    HKEYS("hkeys"),
+    HLEN("hlen"),
+    HMGET("hmget"),
+    HMSET("hmset"),
+    HSET("hset"),
+    HSETNX("hsetnx"),
+    HSTRLEN("hstrlen"),
+    HVALS("hvals"),
+    HSCAN("hscan"),
 
     // Set commands
-    SADD("sadd"), //
-    SCARD("scard"), //
-    SDIFF(""), //
-    SDIFFSTORE("sdiffstore"), //
-    SINTER("sinter"), //
-    SINTERSTORE("sinterstore"), //
-    SISMEMBER("sismember"), //
-    SMEMBERS("smembers"), //
-    SMOVE("smove"), //
-    SPOP("spop"), //
-    SRANDMEMBER("srandmember"), //
-    SREM("srem"), //
-    SUNION("sunion"), //
-    SUNIONSTORE("sunionstore"), //
-    SSCAN("sscan"), //
+    SADD("sadd"),
+    SCARD("scard"),
+    SDIFF(""),
+    SDIFFSTORE("sdiffstore"),
+    SINTER("sinter"),
+    SINTERSTORE("sinterstore"),
+    SISMEMBER("sismember"),
+    SMEMBERS("smembers"),
+    SMOVE("smove"),
+    SPOP("spop"),
+    SRANDMEMBER("srandmember"),
+    SREM("srem"),
+    SUNION("sunion"),
+    SUNIONSTORE("sunionstore"),
+    SSCAN("sscan"),
 
     // Sorted Set commands
-    BZPOPMIN("bzpopmin"), //
-    BZPOPMAX("bzpopmax"), //
-    ZADD("zadd"), //
-    ZCARD("zcard"), //
-    ZCOUNT("zcount"), //
-    ZINCRBY("zincrby"), //
-    ZINTERSTORE("zinterstore"), //
-    ZLEXCOUNT("zlexcount"), //
-    ZPOPMAX("zpopmax"), //
-    ZPOPMIN("zpopmin"), //
-    ZRANGE("zrange"), //
-    ZRANGEBYLEX("zrangebylex"), //
-    ZREVRANGEBYLEX("zrevrangebylex"), //
-    ZRANGEBYSCORE("zrangebyscore"), //
-    ZRANK("zrank"), //
-    ZREM("zrem"), //
-    ZREMRANGEBYLEX("zremrangebylex"), //
-    ZREMRANGEBYRANK("zremrangebyrank"), //
-    ZREMRANGEBYSCORE("zremrangebyscore"), //
-    ZREVRANGE("zrevrange"), //
-    ZREVRANGEBYSCORE("zrevrangebyscore"), //
-    ZREVRANK("zrevrank"), //
-    ZSCORE("zscore"), //
-    ZUNIONSTORE("zunionstore"), //
-    ZSCAN("zscan"), //
+    BZPOPMIN("bzpopmin"),
+    BZPOPMAX("bzpopmax"),
+    ZADD("zadd"),
+    ZCARD("zcard"),
+    ZCOUNT("zcount"),
+    ZINCRBY("zincrby"),
+    ZINTERSTORE("zinterstore"),
+    ZLEXCOUNT("zlexcount"),
+    ZPOPMAX("zpopmax"),
+    ZPOPMIN("zpopmin"),
+    ZRANGE("zrange"),
+    ZRANGEBYLEX("zrangebylex"),
+    ZREVRANGEBYLEX("zrevrangebylex"),
+    ZRANGEBYSCORE("zrangebyscore"),
+    ZRANK("zrank"),
+    ZREM("zrem"),
+    ZREMRANGEBYLEX("zremrangebylex"),
+    ZREMRANGEBYRANK("zremrangebyrank"),
+    ZREMRANGEBYSCORE("zremrangebyscore"),
+    ZREVRANGE("zrevrange"),
+    ZREVRANGEBYSCORE("zrevrangebyscore"),
+    ZREVRANK("zrevrank"),
+    ZSCORE("zscore"),
+    ZUNIONSTORE("zunionstore"),
+    ZSCAN("zscan"),
 
     // List commands
-    BLPOP("blpop"), //
-    BRPOP("brpop"), //
-    BRPOPLPUSH("brpoplpush"), //
-    LINDEX("lindex"), //
-    LINSERT("linsert"), //
-    LLEN("llen"), //
-    LPOP("lpop"), //
-    LPUSH("lpush"), //
-    LPUSHX("lpushx"), //
-    LRANGE("lrange"), //
-    LREM("lrem"), //
-    LSET("lset"), //
-    LTRIM("ltrim"), //
-    RPOP("rpop"), //
-    RPOPLPUSH("rpoplpush"), //
-    RPUSH("rpush"), //
-    RPUSHX("rpushx"), //
+    BLPOP("blpop"),
+    BRPOP("brpop"),
+    BRPOPLPUSH("brpoplpush"),
+    LINDEX("lindex"),
+    LINSERT("linsert"),
+    LLEN("llen"),
+    LPOP("lpop"),
+    LPUSH("lpush"),
+    LPUSHX("lpushx"),
+    LRANGE("lrange"),
+    LREM("lrem"),
+    LSET("lset"),
+    LTRIM("ltrim"),
+    RPOP("rpop"),
+    RPOPLPUSH("rpoplpush"),
+    RPUSH("rpush"),
+    RPUSHX("rpushx"),
     ;
 
     private String command;

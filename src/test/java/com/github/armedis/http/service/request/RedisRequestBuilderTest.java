@@ -4,19 +4,17 @@ package com.github.armedis.http.service.request;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.armedis.http.service.request.string.RedisGetRequestBuilder;
+import com.github.armedis.http.service.request.string.RedisSetRequestBuilder;
+import com.github.armedis.redis.command.RedisGetRequest;
+import com.github.armedis.redis.command.RedisSetRequest;
 
-public class RedisRequestBuilderTest {
-
-    @Test
-    public void testHset() throws IOException {
-        String command = "hset";
-
-        // Redis RedisRequestBuilder는 RedisRequest 클래스를 생성한다.
+/**
+ * // Redis RedisRequestBuilder는 RedisRequest 클래스를 생성한다.
         // RedisRequest 클래스는 레디스 명령을 실행할 수 있는 모든 값을 가지고 있다.
         // key, command, value들..
 
@@ -31,17 +29,46 @@ public class RedisRequestBuilderTest {
         // json으로 날라오면 command로 json을 validation하자.
 
         // 최종 결과물은 Redis 명령에 따른 VO로 만들자.
+ * @author krisjey
+ *
+ */
+public class RedisRequestBuilderTest {
+    private static final String key = "hello";
 
-        JsonNode jsonNode = new ObjectMapper().readTree("{}");
+    @Test
+    public void testGet() throws IOException {
+        String command = "get";
 
-        // 추상이어야 함.
         RedisRequestBuilder builder = RedisRequestBuilderFactory.createRedisRequestBuilder(command);
+        assertThat(builder).isExactlyInstanceOf(RedisGetRequestBuilder.class);
+
+        JsonNode jsonNode = new ObjectMapper().readTree("{\"key\":\"" + key + "\"}");
         RedisRequest redisRequest = builder.build(jsonNode);
         assertThat(redisRequest).isNotNull();
+        assertThat(redisRequest).isExactlyInstanceOf(RedisGetRequest.class);
 
         assertThat(redisRequest.getCommand()).isEqualTo(command);
-        assertThat(redisRequest).isExactlyInstanceOf(HsetRequest.class);
-
+        assertThat(redisRequest.getKey()).isEqualTo(key);
     }
 
+    // RedisRequestBuilderFactory가 모든 명령을 다 지원하는지.
+
+    @Test
+    public void testSet() throws IOException {
+        String command = "set";
+        String value = "hello value";
+
+        RedisRequestBuilder builder = RedisRequestBuilderFactory.createRedisRequestBuilder(command);
+        assertThat(builder).isExactlyInstanceOf(RedisSetRequestBuilder.class);
+
+        JsonNode jsonNode = new ObjectMapper().readTree("{\"key\":\"" + key + "\", \"value\":\"" + value + "\"}");
+        RedisRequest redisRequest = builder.build(jsonNode);
+        assertThat(redisRequest).isNotNull();
+        assertThat(redisRequest).isExactlyInstanceOf(RedisSetRequest.class);
+
+        assertThat(redisRequest.getCommand()).isEqualTo(command);
+        assertThat(redisRequest.getKey()).isEqualTo(key);
+
+        assertThat(((RedisSetRequest) redisRequest).getValue()).isEqualTo(value);
+    }
 }
