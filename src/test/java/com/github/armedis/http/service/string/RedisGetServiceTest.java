@@ -1,5 +1,6 @@
 
 package com.github.armedis.http.service.string;
+
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -55,22 +56,34 @@ public class RedisGetServiceTest extends BaseServiceTest {
     @Test
     public void testSetAndGetCommand() throws JsonParseException, JsonMappingException, IOException {
         // TODO data 응답 크기 제한 필요.
-        
-        AggregatedHttpResponse res;
 
-        res = client.get("/v1/get/keyname:withkey").aggregate().join();
+        AggregatedHttpResponse res = null;
+        String response = null;
+
+        // set and test.
+        res = client.get("/v1/get/keyname:nokey").aggregate().join();
 
         assertThat(res.status()).isEqualTo(HttpStatus.OK);
-        
-        assertThatJson(res.content().toStringUtf8())
+
+        response = res.content().toStringUtf8();
+
+        assertThat(response).isNotNull();
+
+        assertThatJson(response)
                 .as("Check requestUrl of result")
                 .node("result").isPresent()
                 .node("valueTest").isAbsent();
-        
+
         // spring actuator health 체크.
-//        final AggregatedHttpResponse res = client.get("/internal/actuator/health").aggregate().join();
-//        assertThat(res.status()).isEqualTo(HttpStatus.OK);
-//
+        res = client.get("/actuator").aggregate().join();
+        assertThat(res.status()).isEqualTo(HttpStatus.OK);
+
+        response = res.content().toStringUtf8();
+
+        assertThatJson(response)
+                .as("Check requestUrl of result")
+                .node("_links").isPresent();
+
 //        final Map<String, Object> values = mapper.readValue(res.content().array(), JSON_MAP);
 //        assertThat(values).containsEntry("status", "UP");
     }
