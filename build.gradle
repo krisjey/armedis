@@ -126,9 +126,11 @@ dependencies {
     }
 
     implementation "com.linecorp.armeria:armeria-spring-boot-autoconfigure:${armeriaVersion}"
+    implementation "com.linecorp.armeria:armeria-spring-boot-actuator-starter:${armeriaVersion}"
 
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-configuration-processor'
+
     implementation 'org.apache.commons:commons-text:1.6'
 
     implementation 'org.apache.commons:commons-pool2:2.7.0'
