@@ -29,6 +29,8 @@ for description
 
 4. support topology provider for each type of redis, except single node.
 
+5. Add circuit breaker feature.
+
 ----------- known issue ----------
 * READONLY You can't write against a read only slave.
 Need RedisServerDetector debugging
