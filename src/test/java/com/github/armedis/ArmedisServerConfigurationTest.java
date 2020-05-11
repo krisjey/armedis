@@ -3,6 +3,8 @@ package com.github.armedis;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Random;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,7 +14,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.github.armedis.config.ArmedisConfiguration;
 
-//@RunWith(SpringRunner.class)
+// if use junit4 then just use RunWith annotation.
+@RunWith(SpringRunner.class)
 @SpringBootTest
 public class ArmedisServerConfigurationTest {
 
@@ -21,7 +24,9 @@ public class ArmedisServerConfigurationTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        System.setProperty("SERVICE_PORT", "8081");
+        Random rnd = new Random();
+        Integer portNumber = rnd.nextInt(1000) + 8001;
+        System.setProperty("SERVICE_PORT", String.valueOf(portNumber));
     }
 
     @Test
