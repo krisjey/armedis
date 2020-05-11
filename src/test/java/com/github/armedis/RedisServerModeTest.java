@@ -5,6 +5,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
@@ -18,6 +19,7 @@ public class RedisServerModeTest {
     public static void setUpBeforeClass() throws Exception {
     }
 
+//    @Disabled
     @Test
     public void test() throws InterruptedException, ExecutionException {
         // Create connection pool factory

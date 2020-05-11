@@ -64,13 +64,15 @@ public class RedisServerDetector {
         // get seed connection
         try (StatefulRedisConnection<String, String> redisSeedConnection = getSeedConnection();) {
             // get nodes
-            actualServers = detectRedisServerNodes(redisSeedConnection);
             logger.info("Tring to detect server type.");
+            actualServers = detectRedisServerNodes(redisSeedConnection);
+            logger.info("Detected servers " + actualServers.toString());
         }
 
         return actualServers;
     }
 
+    // FIXME standalone, cluster로 먼저 구분하고 standalone이면 (single, master-replica, sentinel 구분 필요.)
     /**
      * Detect redis server nodes by seed connection info
      * @param redisSeed
@@ -89,7 +91,7 @@ public class RedisServerDetector {
         RedisCommands<String, String> syncCommands = redisSeedConnection.sync();
         String redisInfo = syncCommands.info();
 
-        logger.info(syncCommands.role().toString());
+        logger.info("Role " + syncCommands.role().toString());
 
         // TYPE cluster, none cluster, master, slave
         for (String line : redisInfo.split("\\r?\\n")) {
