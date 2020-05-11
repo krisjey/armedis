@@ -124,6 +124,24 @@ public enum RedisCommandEnum {
     RPOPLPUSH("rpoplpush"),
     RPUSH("rpush"),
     RPUSHX("rpushx"),
+    
+    // TODO add HyperLogLog command
+//    PFADD("pfadd"),
+//    PFCOUNT("pfcount"),
+//    PFMERGE("pfmerge"),
+    
+    // TODO add GEO command
+//    GEOADD("geoadd"),
+//    GEODIST("geodist"),
+//    GEOHASH("geohash"),
+//    GEOPOS("geopos"),
+//    GEORADIUS("georadius"),
+//    GEORADIUSBYMEMBER("georadiusbymember"),
+    
+    // TODO PUB/SUB command by GRPC/Thrift 
+    // TODO Streams command by GRPC/Thrift
+    
+    // TODO Should be added support version of every Redis commands. and then check current redis version.
     ;
 
     private String command;
