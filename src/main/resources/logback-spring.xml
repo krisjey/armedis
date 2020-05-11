@@ -11,7 +11,7 @@
 			<fileNamePattern>logs/armedis.api.${SERVICE_PORT}.log.%d{yyyy-MM-dd}</fileNamePattern>
 
 			<!-- keep 30 days' worth of history -->
-			<maxHistory>7</maxHistory>
+			<maxHistory>30</maxHistory>
 		</rollingPolicy>
 
 		<encoder>
@@ -30,8 +30,8 @@
 			<fileNamePattern>logs/access.log.%d{yyyy-MM-dd}
 			</fileNamePattern>
 
-			<!-- keep 7 days' worth of history -->
-			<maxHistory>7</maxHistory>
+			<!-- keep 30 days' worth of history -->
+			<maxHistory>30</maxHistory>
 		</rollingPolicy>
 	</appender>
 
