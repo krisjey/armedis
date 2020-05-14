@@ -12,7 +12,7 @@ rpc biStreamingEvent(stream EventRequest) returns (stream EventResponse) {}
 */
 
 	// request/response class 정의 필요.
-	rpc get(GetRequest) returns ()
+//	rpc get(GetRequest) returns ()
 }
 
  

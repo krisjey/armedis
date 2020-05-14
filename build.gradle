@@ -20,19 +20,51 @@ buildscript {
     }
 }
 
-apply plugin: 'eclipse'
+plugins {
+    id 'org.ajoberstar.grgit' version '4.0.2'
+    id "com.gorylenko.gradle-git-properties" version "2.2.2"  // add git information to actuator endpoint
+}
+
 apply plugin: 'java'
+apply plugin: 'eclipse'
 apply plugin: 'com.google.protobuf'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'application' // gradle task plugin for distTar
 
 ext {
-    javaVersion='1.11'
+    javaVersion='1.10'
     armeriaVersion='0.99.3'
+
+	hashVersion = "1.0.0-${grgit.head().abbreviatedId}"
+	print "current hash version $hashVersion"
+	
+	print grgit.branch.current.name
 }
 
+// gradle-git-properties plugin configuration.
+// https://github.com/n0mer/gradle-git-properties
+gitProperties {
+    gitPropertiesName = "git.properties"
+
+    // Customize directory using gitPropertiesResourceDir config
+    // The directory in this config key is also added as a classpath entry
+    // (so the git.properties file will be included in the final JAR file)
+    gitPropertiesResourceDir = "$projectDir/src/main/resources"
+    
+    // control of the content of 'git.properties'
+    keys = ['git.branch','git.commit.id','git.commit.time']
+    
+    // customProperty 'greeting', 'Hello' // expression
+    // customProperty 'my_custom_git_id', { it.head().id } // closure, 'it' is an instance of org.ajoberstar.grgit.Grgit
+    // customProperty 'project_version', { project.version } // closure
+}
+
+generateGitProperties.dependsOn 'compileJava'
+
 tasks.withType(JavaCompile) {
+	javaCompile -> println "Hello, " + javaCompile.name
+    
     options.encoding = 'UTF-8'
     // source and target compatibility
     sourceCompatibility = javaVersion
@@ -127,6 +159,8 @@ dependencies {
 
     implementation "com.linecorp.armeria:armeria-spring-boot-autoconfigure:${armeriaVersion}"
     implementation "com.linecorp.armeria:armeria-spring-boot-actuator-starter:${armeriaVersion}"
+    
+    implementation "org.springframework.boot:spring-boot-starter-actuator" 
 
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-configuration-processor'
