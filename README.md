@@ -31,6 +31,19 @@ for description
 
 5. Add circuit breaker feature.
 
+6. Add spring actuator feature and configuration.
+	- done.
+
+7. What the difference in applying gradle plugin
+plugins vs apply plugin  
+apply plugin: 'someplugin1'
+
+plugins {
+   id 'org.hidetake.ssh' version '1.1.2'
+}
+
+https://stackoverflow.com/questions/32352816/what-the-difference-in-applying-gradle-plugin
+	
 ----------- known issue ----------
 * READONLY You can't write against a read only slave.
 Need RedisServerDetector debugging
