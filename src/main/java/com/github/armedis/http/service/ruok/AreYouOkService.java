@@ -1,10 +1,12 @@
 
-package com.github.armedis.http.service;
+package com.github.armedis.http.service.ruok;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import com.github.armedis.http.service.BaseService;
+import com.github.armedis.http.service.ServiceUrl;
 import com.github.armedis.http.service.request.RedisRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
@@ -28,15 +30,15 @@ public class AreYouOkService extends BaseService {
      */
     @Get
     @Path(ServiceUrl.RUOK)
-    public HttpResponse ruokGet(RedisRequest redisRequest) {
-        logger.info(redisRequest.toString());
+    public HttpResponse ruokGet() {
+        logger.info("Ruok service GET");
         return HttpResponse.of(HttpStatus.OK);
     }
 
     @Post
     @Path(ServiceUrl.RUOK)
     public HttpResponse ruokPost(RedisRequest redisRequest) {
-        logger.info(redisRequest.toString());
+        logger.info("Ruok service POST");
         return HttpResponse.of(HttpStatus.OK);
     }
 }
