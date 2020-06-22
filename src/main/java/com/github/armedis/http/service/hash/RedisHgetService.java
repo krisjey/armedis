@@ -55,7 +55,7 @@ public class RedisHgetService extends BaseService {
         }
         catch (Exception e) {
             logger.error("Can not execute redis command ", e);
-            return buildResponse(ResponseCode.KNOWEN_ERROR, redisRequest);
+            return buildResponse(ResponseCode.UNKNOWN_ERROR, redisRequest);
         }
 
         return buildResponse(redisRequest, result);
@@ -81,7 +81,7 @@ public class RedisHgetService extends BaseService {
         }
         catch (Exception e) {
             logger.error("Can not execute redis command ", e);
-            return buildResponse(ResponseCode.KNOWEN_ERROR, redisRequest);
+            return buildResponse(ResponseCode.UNKNOWN_ERROR, redisRequest);
         }
 
         return buildResponse(redisRequest, result);
@@ -113,7 +113,7 @@ public class RedisHgetService extends BaseService {
         }
         catch (Exception e) {
             logger.error("Can not execute redis command ", e);
-            return buildResponse(ResponseCode.KNOWEN_ERROR, redisRequest);
+            return buildResponse(ResponseCode.UNKNOWN_ERROR, redisRequest);
         }
 
         return buildResponse(redisRequest, result);
@@ -146,7 +146,7 @@ public class RedisHgetService extends BaseService {
         }
         catch (Exception e) {
             logger.error("Can not execute redis command ", e);
-            return buildResponse(ResponseCode.KNOWEN_ERROR, redisRequest);
+            return buildResponse(ResponseCode.UNKNOWN_ERROR, redisRequest);
         }
 
         return buildResponse(redisRequest, result);

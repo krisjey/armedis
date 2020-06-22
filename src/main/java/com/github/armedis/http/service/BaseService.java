@@ -19,7 +19,6 @@ import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.github.armedis.redis.command.RedisCommandExecutor;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
-import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
 
 public class BaseService implements ArmeriaAnnotatedHttpService {
@@ -68,7 +67,7 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
 
     private HttpResponse buildPlainTextResponse(ResponseCode code, RedisCommandExecuteResult redisCommandExecuteResult) {
         String responseData = redisCommandExecuteResult.toResponseString();
-        return HttpResponse.of(HttpStatus.valueOf(code.getStatusCode()), MediaType.PLAIN_TEXT_UTF_8, responseData);
+        return HttpResponse.of(code.getStatusCode(), MediaType.PLAIN_TEXT_UTF_8, responseData);
     }
 
     private HttpResponse buildJsonResponse(ResponseCode code, RedisCommandExecuteResult redisCommandExecuteResult) {
@@ -85,7 +84,7 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
             responseData = "{}";
         }
 
-        return HttpResponse.of(HttpStatus.valueOf(code.getStatusCode()), MediaType.JSON_UTF_8, responseData);
+        return HttpResponse.of(code.getStatusCode(), MediaType.JSON_UTF_8, responseData);
     }
 
     protected final RedisRequest buildRedisRequest(String redisCommand, String key, AggregatedHttpRequest httpRequest,

@@ -19,12 +19,12 @@ public interface RedisCommandExecuteResult {
      */
     ObjectNode toObjectNode();
 
-    static RedisCommandExecuteResult getEmptyResult() {
+    static RedisCommandExecuteResult getEmptyResult(String responseString) {
         return new RedisCommandExecuteResult() {
 
             @Override
             public String toResponseString() {
-                return "500";
+                return responseString;
             }
 
             @Override

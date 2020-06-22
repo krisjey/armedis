@@ -1,9 +1,10 @@
 syntax = "proto3";
 
-option java_package = "com.github.armedis.demo.redis";
+option java_package = "com.github.armedis.grpc.serive";
+option java_outer_classname = "RedisGrpc";
 option java_multiple_files = true;
 
-service RedisGrpc	{
+service RedisService	{
 /** rpc sample
 rpc unaryEvent(EventRequest) returns (EventResponse) {}
 rpc serverStreamingEvent(EventRequest) returns (stream EventResponse) {}
@@ -12,10 +13,16 @@ rpc biStreamingEvent(stream EventRequest) returns (stream EventResponse) {}
 */
 
 	// request/response class 정의 필요.
-//	rpc get(GetRequest) returns ()
+	rpc Get(GetRequest) returns (GetResponse) {}
 }
 
  
 message GetRequest {
-  string name = 1;
+  string command = 1;
+  string key = 2;
+}
+
+message GetResponse {
+  string code = 1;
+  string result = 2;
 }

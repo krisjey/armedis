@@ -44,7 +44,7 @@ public class RedisCommandExecutor {
         if (commandRunner == null) {
             logger.warn("Can not found request bean name [" + commandRunnerName + "] " + redisRequest.toString());
             // TODO make suitable respone. add message.
-            return RedisCommandExecuteResult.getEmptyResult();
+            return RedisCommandExecuteResult.getEmptyResult("500");
         }
 
         if (commandRunner instanceof RedisCommandRunner) {

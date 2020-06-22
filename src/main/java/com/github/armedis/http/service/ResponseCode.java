@@ -1,6 +1,8 @@
 
 package com.github.armedis.http.service;
 
+import com.linecorp.armeria.common.HttpStatus;
+
 /**
  * @author krisjey
  */
@@ -13,12 +15,7 @@ public enum ResponseCode {
     /**
      * Unknown Server error.
      */
-    KNOWEN_ERROR(200, -1, "UnKnown error!"),
-
-    /**
-     * Unknown Server error.
-     */
-    DATA_NOT_EXIST(200, -3001, "Data not exist!"),
+    UNKNOWN_ERROR(200, -1, "UnKnown error!"),
 
     /**
      * Unauthorized error
@@ -41,12 +38,12 @@ public enum ResponseCode {
     NOT_EXIST(500, -999, "Error Code Not exist!"),
     ;
 
-    private final int statusCode;
+    private final HttpStatus statusCode;
     private final int resultCode;
     private final String message;
 
     /**
-     * if use jRebel then you faced up a problem..
+     * README if use jRebel then you faced up a problem..
      */
 //    private static final Map<Integer, ResponseCode> RESPONSE_CODE_LIST = new HashMap<>();
 //    static {
@@ -56,7 +53,7 @@ public enum ResponseCode {
 //    }
 
     private ResponseCode(int statusCode, int resultCode, String message) {
-        this.statusCode = statusCode;
+        this.statusCode = HttpStatus.valueOf(statusCode);
         this.resultCode = resultCode;
         this.message = message;
     }
@@ -65,7 +62,7 @@ public enum ResponseCode {
         return this.resultCode;
     }
 
-    public Integer getStatusCode() {
+    public HttpStatus getStatusCode() {
         return this.statusCode;
     }
 

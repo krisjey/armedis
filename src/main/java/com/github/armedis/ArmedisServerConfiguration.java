@@ -15,7 +15,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.example.demo.service.NewdataServiceImpl;
 import com.github.armedis.config.ArmedisConfiguration;
 import com.github.armedis.config.ConstantNames;
 import com.github.armedis.config.DefaultInstanceInfo;
@@ -26,7 +25,6 @@ import com.linecorp.armeria.common.SessionProtocol;
 import com.linecorp.armeria.server.Server;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.docs.DocService;
-import com.linecorp.armeria.server.grpc.GrpcService;
 import com.linecorp.armeria.server.logging.AccessLogWriter;
 import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.spring.ArmeriaServerConfigurator;
@@ -97,7 +95,7 @@ public class ArmedisServerConfiguration {
             }
 
             // TODO Add grpc service
-            builder.service(GrpcService.builder().addService(new NewdataServiceImpl()).build());
+//            builder.service(GrpcService.builder().addService(new NewdataServiceImpl()).build());
         };
     }
 
