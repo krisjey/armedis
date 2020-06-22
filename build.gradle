@@ -8,6 +8,7 @@
 buildscript {
     ext {
         springBootVersion = '2.2.6.RELEASE'
+        protobufGradlePlugin = '0.8.12'
     }
 
     repositories {
@@ -16,7 +17,7 @@ buildscript {
 
     dependencies {
         classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.10'
+        classpath "com.google.protobuf:protobuf-gradle-plugin:${protobufGradlePlugin}"
     }
 }
 
@@ -25,22 +26,21 @@ plugins {
     id "com.gorylenko.gradle-git-properties" version "2.2.2"  // add git information to actuator endpoint
 }
 
+ext {
+    javaVersion='1.8'
+    armeriaVersion='0.99.3'
+    lettuceVersion='5.3.0.RELEASE'
+    
+    protocVersion='3.11.1'
+    grpcJavaPluginVersion='1.30.1'
+}
+
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'com.google.protobuf'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'application' // gradle task plugin for distTar
-
-ext {
-    javaVersion='1.10'
-    armeriaVersion='0.99.3'
-
-	hashVersion = "1.0.0-${grgit.head().abbreviatedId}"
-	print "current hash version $hashVersion"
-	
-	print grgit.branch.current.name
-}
 
 // gradle-git-properties plugin configuration.
 // https://github.com/n0mer/gradle-git-properties
@@ -60,7 +60,24 @@ gitProperties {
     // customProperty 'project_version', { project.version } // closure
 }
 
+ext {
+	hashVersion = "1.0.0-${grgit.head().abbreviatedId}"
+	print "current hash version $hashVersion"
+	
+	print grgit.branch.current.name
+}
+
+// generateGitProperties task runs after the compileJava task
 generateGitProperties.dependsOn 'compileJava'
+
+//tasks['clean'].doLast({
+//	delete fileTree("${projectDir}/gen-src") { include '**/*.java' }
+//})
+
+// same with tasks['clean'].doLast({ ...
+clean {
+     delete fileTree("${projectDir}/gen-src") { include '**/*.java' }
+}
 
 tasks.withType(JavaCompile) {
 	javaCompile -> println "Hello, " + javaCompile.name
@@ -89,53 +106,57 @@ mainClassName = "com.github.armedis.ArmedisServer"
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.11.1"
+        artifact = "com.google.protobuf:protoc:${protocVersion}"
 
+        // Set the location of generated source code by protoc compiler
         generatedFilesBaseDir = "$projectDir/gen-src"
     }
 
     plugins {
         grpc {
-            artifact = 'io.grpc:protoc-gen-grpc-java:1.23.0'
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcJavaPluginVersion}"
         }
     }
 
     generateProtoTasks {
         all()*.plugins {
-        grpc {}
+            grpc {}
         }
     }
 }
 
+// Add source dir for generated source code of gRPC
 sourceSets {
     main {
         java {
-//          // add source folder order
-            srcDirs 'src/main/java'
-            srcDirs 'src/main/resources'
-//            srcDirs 'src/test/java'
-//            srcDirs 'src/test/resources'
+            // add source folder order
+//            srcDirs 'src/main/java'
 
             // add source folder for protocol buffer gen java file
             srcDirs 'gen-src/main/java'
             // add source folder for protocol buffer gen java file
             srcDirs 'gen-src/main/grpc'
-//            srcDirs 'gen-src/main/resources'
-            srcDirs 'gen-src/test/java'
-//            srcDirs 'gen-src/test/resources'
+        }
+        resources {
+//        	srcDirs 'src/main/resources'
         }
     }
- }
+    test {
+    	java {
+//	    	srcDirs 'src/test/java'
+    	}
+    }
+}
 
 repositories {
     jcenter()
 }
 
 dependencies {
-    implementation 'io.grpc:grpc-netty-shaded:1.23.0'
-    implementation 'io.grpc:grpc-protobuf:1.23.0'
-    implementation 'io.grpc:grpc-stub:1.23.0'
-    
+    implementation "io.grpc:grpc-netty-shaded:${grpcJavaPluginVersion}"
+    implementation "io.grpc:grpc-protobuf:${grpcJavaPluginVersion}"
+    implementation "io.grpc:grpc-stub:${grpcJavaPluginVersion}"
+
     // Adjust the list as you need.
     // You can find full set of sub lib in https://line.github.io/armeria/setup.html#choosing-the-artifacts
     [
@@ -162,15 +183,15 @@ dependencies {
     
     implementation "org.springframework.boot:spring-boot-starter-actuator" 
 
-    implementation 'org.springframework.boot:spring-boot-starter'
-    implementation 'org.springframework.boot:spring-boot-configuration-processor'
+    implementation "org.springframework.boot:spring-boot-starter"
+    implementation "org.springframework.boot:spring-boot-configuration-processor"
 
-    implementation 'org.apache.commons:commons-text:1.6'
+    implementation "org.apache.commons:commons-text:1.6"
 
-    implementation 'org.apache.commons:commons-pool2:2.7.0'
-    implementation 'io.lettuce:lettuce-core:5.3.0.RELEASE'
+    implementation "org.apache.commons:commons-pool2:2.7.0"
+    implementation "io.lettuce:lettuce-core:${lettuceVersion}"
 
-    implementation 'org.apache.httpcomponents:httpclient:4.5.10'
+    implementation "org.apache.httpcomponents:httpclient:4.5.10"
 
     // Logging
     runtime 'ch.qos.logback:logback-classic:1.2.3'
@@ -184,6 +205,5 @@ dependencies {
     
     // It is a workaround for the bug, when execute junit test case under eclipse(2020-03 (4.15.0)). 
     // java.lang.NoClassDefFoundError: org/junit/platform/engine/EngineDiscoveryListener
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
+    // testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
