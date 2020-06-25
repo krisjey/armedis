@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Configuration;
 import com.github.armedis.config.ArmedisConfiguration;
 import com.github.armedis.config.ConstantNames;
 import com.github.armedis.config.DefaultInstanceInfo;
+import com.github.armedis.grpc.service.string.RedisGetGrpcService;
 import com.github.armedis.http.service.ArmeriaAnnotatedHttpService;
 import com.github.armedis.utils.LogStringBuilder;
 import com.linecorp.armeria.common.CommonPools;
@@ -25,6 +26,8 @@ import com.linecorp.armeria.common.SessionProtocol;
 import com.linecorp.armeria.server.Server;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.docs.DocService;
+import com.linecorp.armeria.server.grpc.GrpcService;
+import com.linecorp.armeria.server.grpc.GrpcServiceBuilder;
 import com.linecorp.armeria.server.logging.AccessLogWriter;
 import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.spring.ArmeriaServerConfigurator;
@@ -95,7 +98,10 @@ public class ArmedisServerConfiguration {
             }
 
             // TODO Add grpc service
-//            builder.service(GrpcService.builder().addService(new NewdataServiceImpl()).build());
+//            GrpcServiceBuilder grpcServiceBuilder = GrpcService.builder();
+//            grpcServiceBuilder.addService(new RedisGetGrpcService());
+
+            builder.service(GrpcService.builder().addService(new RedisGetGrpcService()).build());
         };
     }
 
