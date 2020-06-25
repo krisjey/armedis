@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+
+// default value of optimize_for field is SPEED
+// option optimize_for = SPEED;
+
+option java_package = "com.github.armedis.grpc.service.hash";
+
+option java_outer_classname = "RedisHashGrpc";
+
+service RedisHashService    {
+    // request/response class 정의 필요.
+    rpc Get(HashRequest) returns (HashResponse) {}
+}
+
+message HashRequest {
+    string key = 2;
+}
+
+message HashResponse {
+  string code = 1;
+  string result = 2;
+}

@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+
+// default value of optimize_for field is SPEED
+// option optimize_for = SPEED;
+
+option java_package = "com.github.armedis.grpc.service.string";
+
+option java_outer_classname = "RedisStringGrpc";
+
+service RedisStringService    {
+    rpc Get(GetRequest) returns (GetResponse) {}
+    rpc GetSet(GetRequest) returns (GetResponse) {}
+}
+
+message GetRequest {
+    string key = 2;
+}
+
+message GetResponse {
+	string code = 1;
+	string result = 2;
+} 

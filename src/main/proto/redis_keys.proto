@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+
+// default value of optimize_for field is SPEED
+// option optimize_for = SPEED;
+
+option java_package = "com.github.armedis.grpc.service.keys";
+
+option java_outer_classname = "RedisKeysGrpc";
+
+service RedisKeysService    {
+    // request/response class 정의 필요.
+    rpc Get(KeysRequest) returns (KeysResponse) {}
+}
+message KeysRequest {
+    string key = 2;
+}
+
+message KeysResponse {
+  string code = 1;
+  string result = 2;
+}

@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+
+// default value of optimize_for field is SPEED
+// option optimize_for = SPEED;
+
+option java_package = "com.github.armedis.grpc.service.pubsub";
+
+option java_outer_classname = "RedisPubsubGrpc";
+
+service RedisPubsubService    {
+    // request/response class 정의 필요.
+    rpc Get(PubsubRequest) returns (PubsubResponse) {} 
+}
+
+message PubsubRequest {
+    string key = 2;
+}
+
+message PubsubResponse {
+  string code = 1;
+  string result = 2;
+}
