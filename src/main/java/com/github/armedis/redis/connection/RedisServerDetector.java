@@ -5,8 +5,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.naming.OperationNotSupportedException;
+ 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,9 +57,9 @@ public class RedisServerDetector {
      * Lookup redis server by seed<br/>
      * Destination is first connected server.
      * @return 
-     * @throws OperationNotSupportedException 
+     * @throws UnsupportedOperationException 
      */
-    public Set<RedisNode> lookupNodes() throws OperationNotSupportedException {
+    public Set<RedisNode> lookupNodes() throws UnsupportedOperationException {
         // get seed connection
         try (StatefulRedisConnection<String, String> redisSeedConnection = getSeedConnection();) {
             // get nodes
@@ -77,10 +76,10 @@ public class RedisServerDetector {
      * Detect redis server nodes by seed connection info
      * @param redisSeed
      * @return redis server nodes
-     * @throws OperationNotSupportedException 
+     * @throws UnsupportedOperationException 
      */
     private Set<RedisNode> detectRedisServerNodes(StatefulRedisConnection<String, String> redisSeedConnection)
-            throws OperationNotSupportedException {
+            throws UnsupportedOperationException {
         Set<RedisNode> nodes = null;
         // is cluster, master/slave, support sentinel, can not found.
 
