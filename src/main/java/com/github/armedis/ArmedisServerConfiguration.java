@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 import com.github.armedis.config.ArmedisConfiguration;
 import com.github.armedis.config.ConstantNames;
 import com.github.armedis.config.DefaultInstanceInfo;
-import com.github.armedis.grpc.service.string.RedisGetGrpcService;
+import com.github.armedis.grpc.service.string.RedisStringGrpcService;
 import com.github.armedis.http.service.ArmeriaAnnotatedHttpService;
 import com.github.armedis.utils.LogStringBuilder;
 import com.linecorp.armeria.common.CommonPools;
@@ -97,11 +97,12 @@ public class ArmedisServerConfiguration {
                 builder.annotatedService(service);
             }
 
-            // TODO Add grpc service
-//            GrpcServiceBuilder grpcServiceBuilder = GrpcService.builder();
-//            grpcServiceBuilder.addService(new RedisGetGrpcService());
-
-            builder.service(GrpcService.builder().addService(new RedisGetGrpcService()).build());
+            // multiple class is fail.
+            // Can not split RedisStringService by redis command.
+            // services.put(service.getServiceDescriptor().getName(), service);
+            GrpcServiceBuilder grpcServiceBuilder = GrpcService.builder();
+            grpcServiceBuilder.addService(new RedisStringGrpcService());
+            builder.service(grpcServiceBuilder.build());
         };
     }
 

@@ -17,8 +17,8 @@ import io.grpc.stub.StreamObserver;
  *
  */
 @Service
-public class RedisGetGrpcService extends RedisStringServiceImplBase {
-    private static final Logger logger = LoggerFactory.getLogger(RedisGetGrpcService.class);
+public class RedisStringGrpcService extends RedisStringServiceImplBase {
+    private static final Logger logger = LoggerFactory.getLogger(RedisStringGrpcService.class);
 
     @Override
     public void get(GetRequest getRequest, StreamObserver<GetResponse> responseObserver) {
@@ -38,7 +38,23 @@ public class RedisGetGrpcService extends RedisStringServiceImplBase {
 //        }
 
 //        Redisgrpc
-        logger.info("Unary message " + getRequest.getKey());
+        logger.info("Unary message get " + getRequest.getKey());
+        GetResponse response = GetResponse.newBuilder()
+                .setCode("200")
+                .setResult("hello world " + getRequest.getKey())
+                .build();
+
+        // Server Streaming이면 responseObserver.onNext()를 두 번 이상 호출할 수 있다.
+        responseObserver.onNext(response);
+
+        // 응답 완료
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getSet(GetRequest getRequest, StreamObserver<GetResponse> responseObserver) {
+//      Redisgrpc
+        logger.info("Unary message getSet " + getRequest.getKey());
         GetResponse response = GetResponse.newBuilder()
                 .setCode("200")
                 .setResult("hello world " + getRequest.getKey())
