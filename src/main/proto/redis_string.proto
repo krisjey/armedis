@@ -11,8 +11,19 @@ option java_outer_classname = "RedisStringGrpc";
 
 service RedisStringService    {
     rpc Get(GetRequest) returns (GetResponse) {}
+    rpc Set(SetRequest) returns (SetResponse) {}
     rpc GetSet(GetRequest) returns (GetResponse) {}
 }
+
+message SetRequest {
+    string key = 2;
+    string value = 3;
+}
+
+message SetResponse {
+	string code = 1;
+	string result = 2;
+} 
 
 message GetRequest {
     string key = 2;
