@@ -21,6 +21,21 @@ public class RedisStringGrpcService extends RedisStringServiceImplBase {
     private static final Logger logger = LoggerFactory.getLogger(RedisStringGrpcService.class);
 
     @Override
+    public void set(SetRequest setRequest, StreamObserver<SetResponse> responseObserver) {
+    	logger.info("Unary message get " + setRequest.getKey());
+        SetResponse response = SetResponse.newBuilder()
+                .setCode("200")
+                .setResult("hello world " + setRequest.getKey())
+                .build();
+
+        // Server Streaming이면 responseObserver.onNext()를 두 번 이상 호출할 수 있다.
+        responseObserver.onNext(response);
+
+        // 응답 완료
+        responseObserver.onCompleted();
+    }
+
+    @Override
     public void get(GetRequest getRequest, StreamObserver<GetResponse> responseObserver) {
 
         // client 어떻게 생성하나?
