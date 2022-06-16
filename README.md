@@ -47,4 +47,6 @@ https://stackoverflow.com/questions/32352816/what-the-difference-in-applying-gra
 ----------- known issue ----------
 * READONLY You can't write against a read only slave.
 Need RedisServerDetector debugging
+
+http://192.168.56.1:8080/v1/get/hello
 -->
