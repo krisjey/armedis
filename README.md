@@ -7,6 +7,8 @@ An HTTP2/gRPC interface for Redis, Support Redis stand-alone/cluster mode.
 # Load map
 ## Redis Http interface, Support redis cluster, stand alone mode.
 
+-DSERVICE_PORT=8080 -Dservice.instanceCount=1
+
 <!--
 add testcase for service.
 for description
