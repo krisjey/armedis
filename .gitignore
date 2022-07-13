@@ -47,3 +47,4 @@ gen-src/
 
 # Ignore line of code files.
 /loc/
+/classes/
