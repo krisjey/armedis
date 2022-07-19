@@ -9,6 +9,8 @@ import java.util.Set;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +31,7 @@ import io.lettuce.core.support.ConnectionPoolSupport;
 
 @Component
 public class RedisConnectionPoolFactory implements RedisConnectionPool<String, String> {
+    private final Logger logger = LoggerFactory.getLogger(RedisConnectionPoolFactory.class);
     private RedisServerInfoMaker redisServerInfoMaker;
 
     // single connection pool
@@ -44,6 +47,10 @@ public class RedisConnectionPoolFactory implements RedisConnectionPool<String, S
     public RedisConnectionPoolFactory(RedisServerInfoMaker redisServerInfoMaker) {
         this.redisServerInfoMaker = redisServerInfoMaker;
 
+        buildConnectonPool();
+    }
+
+    private void buildConnectonPool() {
         RedisInstanceType redisServerInfo = this.redisServerInfoMaker.getRedisServerInfo().getRedisInstanceType();
         switch (redisServerInfo) {
             case STANDALONE:
@@ -69,7 +76,7 @@ public class RedisConnectionPoolFactory implements RedisConnectionPool<String, S
                 throw new NotImplementedException("Can not detect connection type " + redisServerInfo.toString());
         }
     }
-    
+
 //    private <T> GenericObjectPool<T> buildConnectionPool()    {
 //        RedisInstanceType redisServerInfo = this.redisServerInfoMaker.getRedisServerInfo().getRedisInstanceType();
 //        switch (redisServerInfo) {
@@ -105,12 +112,12 @@ public class RedisConnectionPoolFactory implements RedisConnectionPool<String, S
 //        MasterSlaveTopologyProvider masterSlaveTopologyProvider = new MasterSlaveTopologyProvider(connection, redisURI);
 
         // cluster node
-        RedisURI clusterNode = null;
+        RedisURI redisNode = null;
         for (RedisNode item : nodes) {
-            clusterNode = RedisURI.create(item.getHost(), item.getPort());
+            redisNode = RedisURI.create(item.getHost(), item.getPort());
         }
 
-        RedisClient redisClient = RedisClient.create(clusterNode);
+        RedisClient redisClient = RedisClient.create(redisNode);
 
         GenericObjectPool<StatefulRedisConnection<String, String>> pool = ConnectionPoolSupport
                 .createGenericObjectPool(redisClient::connect, buildBasicConnectionPoolConfig());
@@ -137,6 +144,7 @@ public class RedisConnectionPoolFactory implements RedisConnectionPool<String, S
         RedisClusterClient clusterClient = RedisClusterClient.create(clusterNode);
         clusterClient.setOptions(ClusterClientOptions.builder()
                 .topologyRefreshOptions(topologyRefreshOptions)
+                .autoReconnect(true)
                 .build());
 
         GenericObjectPool<StatefulRedisClusterConnection<String, String>> pool = ConnectionPoolSupport
@@ -157,10 +165,11 @@ public class RedisConnectionPoolFactory implements RedisConnectionPool<String, S
     private <T> GenericObjectPoolConfig<T> buildBasicConnectionPoolConfig() {
         GenericObjectPoolConfig<T> poolConfig = new GenericObjectPoolConfig<>();
         poolConfig.setMaxIdle(10);
-        poolConfig.setMaxTotal(10);
+        poolConfig.setMaxTotal(100);
         poolConfig.setTestOnBorrow(true);
         poolConfig.setTestOnReturn(true);
-        poolConfig.setBlockWhenExhausted(true);
+        // block set 되면 pool이 망가져서 처리안됨.
+        poolConfig.setBlockWhenExhausted(false);
 
         return poolConfig;
     }
