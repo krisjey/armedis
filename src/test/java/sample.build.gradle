@@ -7,8 +7,10 @@
  */
 buildscript {
     ext {
-    	ideJavaVersion='17'
-        javaVersion='17'
+    	ideJavaVersion="17"
+        sourceVersion="17"
+        targetVersion="17"
+        
         armeriaVersion='0.99.7'
         nettyVersion='4.1.50.Final'
         
@@ -28,11 +30,9 @@ buildscript {
 
     repositories {
         mavenCentral()
-        google()
         gradlePluginPortal()
         maven { url "https://jitpack.io" }
         maven { url "https://plugins.gradle.org/m2/" }
-        maven { url "https://maven.aliyun.com/repository/jcenter" }
     }
 
     dependencies {
@@ -81,8 +81,8 @@ tasks.withType(JavaCompile) {
 
     options.encoding = 'UTF-8'
     // source and target compatibility
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
+    sourceCompatibility = sourceVersion
+    targetCompatibility = targetVersion
 
     options.compilerArgs += '-parameters'
 }
