@@ -10,14 +10,14 @@ buildscript {
     	ideJavaVersion="17"
         sourceVersion="17"
         targetVersion="17"
-        
+
         armeriaVersion='0.99.7'
-        nettyVersion='4.1.50.Final'
-        
-        springBootVersion = '2.3.1.RELEASE'
-        springDependencyManagementVersion = '1.0.9.RELEASE'
+        nettyVersion='4.1.84.Final'
+
+        springBootVersion = '2.7.5'
+        springDependencyManagementVersion = '1.1.0'
         protobufGradlePlugin = '0.8.12'
-        
+
         lettuceVersion='5.3.0.RELEASE'
         
         protocVersion='3.11.1'
@@ -43,6 +43,7 @@ buildscript {
 
 plugins {
     id "java"
+    id "idea"
     id "eclipse"
     id "io.spring.dependency-management" version "${springDependencyManagementVersion}"
     id "org.springframework.boot" version "${springBootVersion}"
@@ -166,7 +167,6 @@ configurations {
 
 dependencyManagement {
     imports {
-        mavenBom "io.micrometer:micrometer-bom:1.5.1"
         mavenBom "io.netty:netty-bom:${nettyVersion}"
         mavenBom "com.linecorp.armeria:armeria-bom:${armeriaVersion}"
     }
@@ -220,7 +220,13 @@ dependencies {
     implementation "ch.qos.logback:logback-core:${logbackVersion}"
 
     // Use JUnit test framework
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation ('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.jupiter', module: 'junit-jupiter-engine'
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    
+    // Use Junit4
+    testImplementation 'junit:junit:4.13'
 
     // json unit
     testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:2.3.0'
