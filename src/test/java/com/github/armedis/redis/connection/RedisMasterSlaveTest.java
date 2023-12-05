@@ -3,9 +3,9 @@ package com.github.armedis.redis.connection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.springframework.test.context.event.annotation.BeforeTestClass;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
@@ -20,11 +20,11 @@ public class RedisMasterSlaveTest {
     private static final int TEST_STANDALONE_REDIS_MASTER_PORT = 6379;
     private static final int TEST_STANDALONE_REDIS_SLAVE_PORT = 6380;
 
-    @BeforeClass
+    @BeforeTestClass
     public static void setUpBeforeClass() throws Exception {
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testMasterSetAndGet() {
         RedisClient client = RedisClient.create("redis://" + TEST_STANDALONE_REDIS_HOST + ":" + TEST_STANDALONE_REDIS_MASTER_PORT);

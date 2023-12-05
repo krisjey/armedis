@@ -3,9 +3,8 @@ package com.github.armedis;
 
 import java.util.concurrent.ExecutionException;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.springframework.test.context.event.annotation.BeforeTestClass;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
@@ -15,7 +14,7 @@ import io.lettuce.core.api.async.RedisAsyncCommands;
 
 public class RedisServerModeTest {
 
-    @BeforeClass
+    @BeforeTestClass
     public static void setUpBeforeClass() throws Exception {
     }
 
