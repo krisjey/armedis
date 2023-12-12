@@ -30,7 +30,7 @@ public class DefaultInstanceInfo {
     private String servicePort;
 
     public DefaultInstanceInfo(String servicePort) {
-        this.servicePort = StringUtils.defaultString(servicePort, NO_SERVICE_PORT);
+        this.servicePort = StringUtils.defaultIfEmpty(servicePort, NO_SERVICE_PORT);
     }
 
     public String getHost() {
