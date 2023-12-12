@@ -7,16 +7,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.inject.Inject;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.event.annotation.BeforeTestClass;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -27,7 +23,8 @@ import com.linecorp.armeria.common.AggregatedHttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.server.Server;
 
-@RunWith(SpringRunner.class)
+import jakarta.inject.Inject;
+
 @ActiveProfiles("testbed")
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
 public class RedisGetServiceTest extends BaseServiceTest {
@@ -36,7 +33,7 @@ public class RedisGetServiceTest extends BaseServiceTest {
 
     private WebClient client;
 
-    @Before
+    @BeforeAll
     public void setup() {
         client = WebClient.of("http://localhost:" + server.activePort().localAddress().getPort());
     }
@@ -47,7 +44,7 @@ public class RedisGetServiceTest extends BaseServiceTest {
     private static final TypeReference<Map<String, Object>> JSON_MAP = new TypeReference<Map<String, Object>>() {
     };
 
-    @BeforeClass
+    @BeforeTestClass
     public static void setUpBeforeClass() throws Exception {
         System.setProperty("SERVICE_PORT", HTTP_PORT);
     }

@@ -5,24 +5,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Random;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.event.annotation.BeforeTestClass;
 
 import com.github.armedis.redis.command.RedisCommandRunner;
 
-//if use junit4 then just use RunWith annotation.
-@RunWith(SpringRunner.class)
 @SpringBootTest
 public class CommandLookupTest {
     @Autowired
     private ApplicationContext springContext;
 
-    @BeforeClass
+    @BeforeTestClass
     public static void setUpBeforeClass() throws Exception {
         Random rnd = new Random();
         Integer portNumber = rnd.nextInt(1000) + 8001;

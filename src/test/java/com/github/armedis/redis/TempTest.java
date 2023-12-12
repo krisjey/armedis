@@ -6,12 +6,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.springframework.test.context.event.annotation.BeforeTestClass;
+
 
 public class TempTest {
 
-    @BeforeClass
+    @BeforeTestClass
     public static void setUpBeforeClass() throws Exception {
     }
 

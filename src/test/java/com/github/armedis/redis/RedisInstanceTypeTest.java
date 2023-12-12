@@ -4,12 +4,12 @@ package com.github.armedis.redis;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.springframework.test.context.event.annotation.BeforeTestClass;
 
 public class RedisInstanceTypeTest {
 
-    @BeforeClass
+    @BeforeTestClass
     public static void setUpBeforeClass() throws Exception {
     }
 

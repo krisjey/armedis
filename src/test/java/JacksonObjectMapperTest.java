@@ -1,8 +1,9 @@
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.test.context.event.annotation.BeforeTestClass;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +14,8 @@ import com.fasterxml.jackson.databind.node.TextNode;
 public class JacksonObjectMapperTest {
     ObjectMapper mapper = new ObjectMapper();
 
-    @BeforeClass
+    @DisplayName("테스트 시작전")
+    @BeforeTestClass
     public static void setUpBeforeClass() throws Exception {
     }
 
