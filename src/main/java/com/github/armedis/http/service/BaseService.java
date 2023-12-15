@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.armedis.http.service.request.RedisRequest;
 import com.github.armedis.http.service.request.RedisRequestBuilder;
 import com.github.armedis.http.service.request.RedisRequestBuilderFactory;
+import com.github.armedis.http.service.stats.RedisStatInfoBucket;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.github.armedis.redis.command.RedisCommandExecutor;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
@@ -22,121 +23,129 @@ import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.MediaType;
 
 public class BaseService implements ArmeriaAnnotatedHttpService {
-    private static final Logger logger = LoggerFactory.getLogger(BaseService.class);
+	private static final Logger logger = LoggerFactory.getLogger(BaseService.class);
 
-    protected static final ObjectMapper mapper = new ObjectMapper();
+	protected static final ObjectMapper mapper = new ObjectMapper();
 
-    private static final ObjectNode emptyResult = mapper.createObjectNode();
+	private static final ObjectNode emptyResult = mapper.createObjectNode();
 
-    @Autowired
-    private RedisCommandExecutor executor;
+	@Autowired
+	private RedisCommandExecutor executor;
 
-    protected HttpResponse buildResponse(ResponseCode responseCode, RedisRequest redisRequest) {
-        return buildResponse(responseCode, redisRequest, null);
+	@Autowired
+	private RedisStatInfoBucket redisStatInfoBucket;
+
+    protected HttpResponse buildStatResponse(ResponseCode responseCode) {
+    	return buildJsonResponse(responseCode, redisStatInfoBucket.getStats());
     }
 
-    protected final HttpResponse buildResponse(RedisRequest redisRequest, RedisCommandExecuteResult redisCommandExecuteResult) {
-        return buildResponse(ResponseCode.SUCCESS, redisRequest, redisCommandExecuteResult);
-    }
+	protected HttpResponse buildResponse(ResponseCode responseCode, RedisRequest redisRequest) {
+		return buildResponse(responseCode, redisRequest, null);
+	}
 
-    /**
-     * Final message builder<br/>
-     * Build {@link HttpResponse} object using {@code redisCommandExecuteResult} parameter.<br/>
-     * Actual response writer
-     * 
-     * @param code
-     * @param redisCommandExecuteResult
-     * @return Object of {@link HttpResponse}
-     */
-    protected final HttpResponse buildResponse(ResponseCode code, RedisRequest redisRequest, RedisCommandExecuteResult redisCommandExecuteResult) {
-        // 응답 type에 따른 구분 처리.
-        switch (redisRequest.getResponseDataType()) {
-            case JSON:
-                return buildJsonResponse(code, redisCommandExecuteResult);
+	protected final HttpResponse buildResponse(RedisRequest redisRequest,
+			RedisCommandExecuteResult redisCommandExecuteResult) {
+		return buildResponse(ResponseCode.SUCCESS, redisRequest, redisCommandExecuteResult);
+	}
 
-            case PLAIN_TEXT:
-                return buildPlainTextResponse(code, redisCommandExecuteResult);
+	/**
+	 * Final message builder<br/>
+	 * Build {@link HttpResponse} object using {@code redisCommandExecuteResult}
+	 * parameter.<br/>
+	 * Actual response writer
+	 * 
+	 * @param code
+	 * @param redisCommandExecuteResult
+	 * @return Object of {@link HttpResponse}
+	 */
+	protected final HttpResponse buildResponse(ResponseCode code, RedisRequest redisRequest,
+			RedisCommandExecuteResult redisCommandExecuteResult) {
+		// 응답 type에 따른 구분 처리.
+		switch (redisRequest.getResponseDataType()) {
+		case JSON:
+			return buildJsonResponse(code, redisCommandExecuteResult.toObjectNode());
 
-            default:
-                // default response type is json
-                String resultMessage = "Can not detect response data type";
-                logger.error(resultMessage);
-                return buildJsonResponse(code, redisCommandExecuteResult);
-        }
-    }
+		case PLAIN_TEXT:
+			return buildPlainTextResponse(code, redisCommandExecuteResult);
 
-    private HttpResponse buildPlainTextResponse(ResponseCode code, RedisCommandExecuteResult redisCommandExecuteResult) {
-        String responseData = redisCommandExecuteResult.toResponseString();
-        return HttpResponse.of(code.getStatusCode(), MediaType.PLAIN_TEXT_UTF_8, responseData);
-    }
+		default:
+			// default response type is json
+			String resultMessage = "Can not detect response data type";
+			logger.error(resultMessage);
+			return buildJsonResponse(code, redisCommandExecuteResult.toObjectNode());
+		}
+	}
 
-    private HttpResponse buildJsonResponse(ResponseCode code, RedisCommandExecuteResult redisCommandExecuteResult) {
-        String responseData = null;
-        try {
-            responseData = mapper.writeValueAsString(redisCommandExecuteResult.toObjectNode());
-        }
-        catch (JsonProcessingException e) {
-            logger.error("Can not convert string to JsonNode" + redisCommandExecuteResult.toObjectNode());
-        }
+	private HttpResponse buildPlainTextResponse(ResponseCode code,
+			RedisCommandExecuteResult redisCommandExecuteResult) {
+		String responseData = redisCommandExecuteResult.toResponseString();
+		return HttpResponse.of(code.getStatusCode(), MediaType.PLAIN_TEXT_UTF_8, responseData);
+	}
 
-        // README if response value is null then should be error response?
-        if (responseData == null) {
-            responseData = "{}";
-        }
+	private HttpResponse buildJsonResponse(ResponseCode code, ObjectNode objectNode) {
+		String responseData = null;
+		try {
+			responseData = mapper.writeValueAsString(objectNode);
+		} catch (JsonProcessingException e) {
+			logger.error("Can not convert string to JsonNode" + objectNode);
+		}
 
-        return HttpResponse.of(code.getStatusCode(), MediaType.JSON_UTF_8, responseData);
-    }
+		// TODO if response value is null then should be error response?
+		if (responseData == null) {
+			responseData = "{}";
+		}
 
-    protected final RedisRequest buildRedisRequest(String redisCommand, String key, AggregatedHttpRequest httpRequest,
-            JsonNode jsonBody) {
-        RedisRequestBuilder builder = RedisRequestBuilderFactory.createRedisRequestBuilder(redisCommand);
+		return HttpResponse.of(code.getStatusCode(), MediaType.JSON_UTF_8, responseData);
+	}
 
-        // Build RedisRequestVO by command name of the HttpRequest param.
-        RedisRequest redisRequest = builder.build(jsonBody, key);
+	protected final RedisRequest buildRedisRequest(String redisCommand, String key, AggregatedHttpRequest httpRequest,
+			JsonNode jsonBody) {
+		RedisRequestBuilder builder = RedisRequestBuilderFactory.createRedisRequestBuilder(redisCommand);
 
-        return redisRequest;
-    }
+		// Build RedisRequestVO by command name of the HttpRequest param.
+		RedisRequest redisRequest = builder.build(jsonBody, key);
 
-    protected final RedisRequest buildRedisRequest(String redisCommand, AggregatedHttpRequest httpRequest, JsonNode jsonBody) {
-        RedisRequestBuilder builder = RedisRequestBuilderFactory.createRedisRequestBuilder(redisCommand);
+		return redisRequest;
+	}
 
-        // Build RedisRequestVO by command name of the HttpRequest param.
-        RedisRequest redisRequest = builder.build(jsonBody);
+	protected final RedisRequest buildRedisRequest(String redisCommand, AggregatedHttpRequest httpRequest,
+			JsonNode jsonBody) {
+		RedisRequestBuilder builder = RedisRequestBuilderFactory.createRedisRequestBuilder(redisCommand);
 
-        return redisRequest;
-    }
+		// Build RedisRequestVO by command name of the HttpRequest param.
+		RedisRequest redisRequest = builder.build(jsonBody);
 
-    protected RedisCommandExecuteResult executeCommand(RedisRequest redisRequest) {
-        RedisCommandExecuteResult redisCommandExecuteResult = null;
+		return redisRequest;
+	}
 
-        // 명령에 해당하는 CommandExecutor 가져오기.
-        try {
-            redisCommandExecuteResult = executor.execute(redisRequest);
-        }
-        catch (Exception e) {
-            logger.info("Can not execute redis command " + redisRequest.toString(), e);
-        }
+	protected RedisCommandExecuteResult executeCommand(RedisRequest redisRequest) {
+		RedisCommandExecuteResult redisCommandExecuteResult = null;
 
-        return redisCommandExecuteResult;
-    }
+		// 명령에 해당하는 CommandExecutor 가져오기.
+		try {
+			redisCommandExecuteResult = executor.execute(redisRequest);
+		} catch (Exception e) {
+			logger.info("Can not execute redis command " + redisRequest.toString(), e);
+		}
 
-    protected final JsonNode getAsJsonBody(AggregatedHttpRequest httpRequest) {
-        JsonNode jsonBody = null;
-        String content = httpRequest.contentUtf8();
+		return redisCommandExecuteResult;
+	}
 
-        if (StringUtils.isBlank(content)) {
-            jsonBody = emptyResult;
-        }
-        else {
-            try {
-                jsonBody = mapper.readTree(content);
-            }
-            catch (IOException e) {
-                logger.info("Can not read content from request body data! [" + content + "]");
-                jsonBody = emptyResult;
-            }
-        }
+	protected final JsonNode getAsJsonBody(AggregatedHttpRequest httpRequest) {
+		JsonNode jsonBody = null;
+		String content = httpRequest.contentUtf8();
 
-        return jsonBody;
-    }
+		if (StringUtils.isBlank(content)) {
+			jsonBody = emptyResult;
+		} else {
+			try {
+				jsonBody = mapper.readTree(content);
+			} catch (IOException e) {
+				logger.info("Can not read content from request body data! [" + content + "]");
+				jsonBody = emptyResult;
+			}
+		}
+
+		return jsonBody;
+	}
 }

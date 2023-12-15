@@ -40,7 +40,9 @@ public class ArmedisServer implements ApplicationRunner {
         String loadedMessage = "Spring application loaded!(ArmedisServer.run())";
         logger.info(loadedMessage);
         
-        // print connected redis config.
+        // TODO print connected redis config.
+        
+        // TODO start redis info generator. 
 
         System.out.println(loadedMessage);
     }
