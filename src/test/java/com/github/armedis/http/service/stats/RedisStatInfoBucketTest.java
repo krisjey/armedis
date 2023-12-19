@@ -46,7 +46,7 @@ class RedisStatInfoBucketTest {
 				nodeInfo.listenPort(Integer.parseInt(nodeInfoArray[2]));
 				nodeInfo.clusterBusPort(Integer.parseInt(nodeInfoArray[3]));
 				nodeInfo.flags(nodeInfoArray[4]);
-				nodeInfo.masterId(nodeInfoArray[4]);
+				nodeInfo.masterId(nodeInfoArray[5]);
 				nodeInfo.listenPort(Integer.parseInt(nodeInfoArray[2]));
 				nodeInfo.listenPort(Integer.parseInt(nodeInfoArray[2]));
 				nodeInfo.listenPort(Integer.parseInt(nodeInfoArray[2]));
