@@ -1,5 +1,7 @@
 package com.github.armedis.http.service.stats;
 
+import java.util.Objects;
+
 /**
  * id, ip, listenPort, clusterBusPort, flags, masterId, pingSend, pongRecv,
  * configEpoch, linkState, shardSlotStart, shardSlotEnd
@@ -11,8 +13,8 @@ public class RedisNodeInfo {
 	private int clusterBusPort;
 	private String flags;
 	private String masterId;
-	private int pingSend;
-	private int pongRecv;
+	private long pingSend;
+	private long pongRecv;
 	private long configEpoch;
 	private String linkState;
 	private int shardSlotStart;
@@ -105,28 +107,28 @@ public class RedisNodeInfo {
 	/**
 	 * @return the pingSend
 	 */
-	public int pingSend() {
+	public long pingSend() {
 		return pingSend;
 	}
 
 	/**
 	 * @param pingSend the pingSend to
 	 */
-	public void pingSend(int pingSend) {
+	public void pingSend(long pingSend) {
 		this.pingSend = pingSend;
 	}
 
 	/**
 	 * @return the pongRecv
 	 */
-	public int pongRecv() {
+	public long pongRecv() {
 		return pongRecv;
 	}
 
 	/**
 	 * @param pongRecv the pongRecv to
 	 */
-	public void pongRecv(int pongRecv) {
+	public void pongRecv(long pongRecv) {
 		this.pongRecv = pongRecv;
 	}
 
@@ -184,5 +186,35 @@ public class RedisNodeInfo {
 	 */
 	public void shardSlotEnd(int shardSlotEnd) {
 		this.shardSlotEnd = shardSlotEnd;
+	}
+
+	@Override
+	public String toString() {
+		return "RedisNodeInfo [id=" + id + ", ip=" + ip + ", listenPort=" + listenPort + ", clusterBusPort="
+				+ clusterBusPort + ", flags=" + flags + ", masterId=" + masterId + ", pingSend=" + pingSend
+				+ ", pongRecv=" + pongRecv + ", configEpoch=" + configEpoch + ", linkState=" + linkState
+				+ ", shardSlotStart=" + shardSlotStart + ", shardSlotEnd=" + shardSlotEnd + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(clusterBusPort, configEpoch, flags, id, ip, linkState, listenPort, masterId, pingSend,
+				pongRecv, shardSlotEnd, shardSlotStart);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RedisNodeInfo other = (RedisNodeInfo) obj;
+		return clusterBusPort == other.clusterBusPort && configEpoch == other.configEpoch
+				&& Objects.equals(flags, other.flags) && Objects.equals(id, other.id) && Objects.equals(ip, other.ip)
+				&& Objects.equals(linkState, other.linkState) && listenPort == other.listenPort
+				&& Objects.equals(masterId, other.masterId) && pingSend == other.pingSend && pongRecv == other.pongRecv
+				&& shardSlotEnd == other.shardSlotEnd && shardSlotStart == other.shardSlotStart;
 	}
 }

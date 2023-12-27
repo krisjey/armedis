@@ -35,10 +35,11 @@ class RedisStatInfoBucketTest {
 			List<String> nodeInfoStrings = IOUtils.readLines(new StringReader(nodes));
 
 			for (String nodeInfoString : nodeInfoStrings) {
-				// nodeInfoString(12, 10) ==> id, ip, listenPort, clusterBusPort, flags,
-				// masterId, pingSend, pongRecv, configEpoch, linkState, shardSlotStart,
+				// nodeInfoString(12, 10) ==> id, ip, listenPort, clusterBusPort,
+				// flags,masterId,
+				// pingSend, pongRecv, configEpoch, linkState, shardSlotStart,
 				// shardSlotEnd
-				String[] nodeInfoArray = StringUtils.split(nodeInfoString, " :@-");
+				String[] nodeInfoArray = StringUtils.split(nodeInfoString, " :@");
 
 				RedisNodeInfo nodeInfo = new RedisNodeInfo();
 				nodeInfo.id(nodeInfoArray[0]);
@@ -47,12 +48,17 @@ class RedisStatInfoBucketTest {
 				nodeInfo.clusterBusPort(Integer.parseInt(nodeInfoArray[3]));
 				nodeInfo.flags(nodeInfoArray[4]);
 				nodeInfo.masterId(nodeInfoArray[5]);
-				nodeInfo.listenPort(Integer.parseInt(nodeInfoArray[2]));
-				nodeInfo.listenPort(Integer.parseInt(nodeInfoArray[2]));
-				nodeInfo.listenPort(Integer.parseInt(nodeInfoArray[2]));
-				nodeInfo.listenPort(Integer.parseInt(nodeInfoArray[2]));
+				nodeInfo.pingSend(Long.parseLong(nodeInfoArray[6]));
+				nodeInfo.pongRecv(Long.parseLong(nodeInfoArray[7]));
+				nodeInfo.configEpoch(Integer.parseInt(nodeInfoArray[8]));
+				nodeInfo.linkState(nodeInfoArray[9]);
+				if (nodeInfoArray.length > 10) {
+					nodeInfo.shardSlotStart(Integer.parseInt(StringUtils.split(nodeInfoArray[10], "-")[0]));
+					nodeInfo.shardSlotEnd(Integer.parseInt(StringUtils.split(nodeInfoArray[10], "-")[1]));
+				}
 
 				redisNodeInfo.add(nodeInfo);
+				System.out.println(nodeInfo);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
