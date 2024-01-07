@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -17,6 +18,7 @@ import org.springframework.test.context.event.annotation.BeforeTestClass;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.github.armedis.ArmedisServer;
 import com.github.armedis.http.service.BaseServiceTest;
 import com.linecorp.armeria.client.WebClient;
 import com.linecorp.armeria.common.AggregatedHttpResponse;
@@ -26,14 +28,14 @@ import com.linecorp.armeria.server.Server;
 import jakarta.inject.Inject;
 
 @ActiveProfiles("testbed")
-@SpringBootTest(webEnvironment = WebEnvironment.NONE)
+@SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
 public class RedisGetServiceTest extends BaseServiceTest {
     @Inject
     private Server server;
 
     private WebClient client;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
         client = WebClient.of("http://localhost:" + server.activePort().localAddress().getPort());
     }
@@ -49,9 +51,8 @@ public class RedisGetServiceTest extends BaseServiceTest {
         System.setProperty("SERVICE_PORT", HTTP_PORT);
     }
 
-//    @Ignore
     @Test
-    public void testSetAndGetCommand() throws JsonParseException, JsonMappingException, IOException {
+    void testSetAndGetCommand() throws JsonParseException, JsonMappingException, IOException {
         // TODO data 응답 크기 제한 필요.
 
         AggregatedHttpResponse res = null;
