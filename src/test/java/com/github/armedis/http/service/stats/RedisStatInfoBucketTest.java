@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
 class RedisStatInfoBucketTest {
@@ -23,41 +22,20 @@ class RedisStatInfoBucketTest {
 				3d99533fa02cdaff449a9588fad627c1dee9a0d7 192.168.56.105:17001@27001 myself,master - 0 1702912056000 8 connected 0-5460
 				""";
 
-		List<RedisNodeInfo> redisNodeInfo = parseNodeInfo(nodes);
+		List<RedisClusterNodeInfo> redisNodeInfo = parseNodeInfo(nodes);
 
 		assertThat(redisNodeInfo).isNotEmpty();
 		assertThat(redisNodeInfo.get(0).ip()).isEqualTo("192.168.56.105");
 	}
 
-	private List<RedisNodeInfo> parseNodeInfo(String nodes) {
-		List<RedisNodeInfo> redisNodeInfo = new ArrayList<RedisNodeInfo>();
+	private List<RedisClusterNodeInfo> parseNodeInfo(String nodes) {
+		List<RedisClusterNodeInfo> redisNodeInfo = new ArrayList<RedisClusterNodeInfo>();
 		try {
 			List<String> nodeInfoStrings = IOUtils.readLines(new StringReader(nodes));
 
 			for (String nodeInfoString : nodeInfoStrings) {
-				// nodeInfoString(12, 10) ==> id, ip, listenPort, clusterBusPort,
-				// flags,masterId,
-				// pingSend, pongRecv, configEpoch, linkState, shardSlotStart,
-				// shardSlotEnd
-				String[] nodeInfoArray = StringUtils.split(nodeInfoString, " :@");
+				RedisClusterNodeInfo nodeInfo = RedisClusterNodeInfoConverter.convert(nodeInfoString);
 
-				RedisNodeInfo nodeInfo = new RedisNodeInfo();
-				nodeInfo.id(nodeInfoArray[0]);
-				nodeInfo.ip(nodeInfoArray[1]);
-				nodeInfo.listenPort(Integer.parseInt(nodeInfoArray[2]));
-				nodeInfo.clusterBusPort(Integer.parseInt(nodeInfoArray[3]));
-				nodeInfo.flags(nodeInfoArray[4]);
-				nodeInfo.masterId(nodeInfoArray[5]);
-				nodeInfo.pingSend(Long.parseLong(nodeInfoArray[6]));
-				nodeInfo.pongRecv(Long.parseLong(nodeInfoArray[7]));
-				nodeInfo.configEpoch(Integer.parseInt(nodeInfoArray[8]));
-				nodeInfo.linkState(nodeInfoArray[9]);
-				if (nodeInfoArray.length > 10) {
-					nodeInfo.shardSlotStart(Integer.parseInt(StringUtils.split(nodeInfoArray[10], "-")[0]));
-					nodeInfo.shardSlotEnd(Integer.parseInt(StringUtils.split(nodeInfoArray[10], "-")[1]));
-				}
-
-				redisNodeInfo.add(nodeInfo);
 				System.out.println(nodeInfo);
 			}
 		} catch (IOException e) {

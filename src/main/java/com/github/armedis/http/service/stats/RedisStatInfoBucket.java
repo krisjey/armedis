@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +23,9 @@ import com.github.armedis.redis.connection.pool.RedisConnectionPool;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 
+/**
+ * Redis cluster node status info command result --> redis status
+ */
 @Component
 public class RedisStatInfoBucket {
 	CircularFifoQueue<String> queue = new CircularFifoQueue<>(20);
@@ -49,26 +51,20 @@ public class RedisStatInfoBucket {
 	@Bean(name = "scheduleStatRunner")
 	public Thread scheduleStatRunner() {
 		return new Thread() {
-			List<RedisNodeInfo> redisNodeInfoList;
+			List<RedisClusterNodeInfo> redisNodeInfoList;
 			BlockingQueue<String> tempQueue = new LinkedBlockingQueue<>(1);
 
 			@Autowired
 			private RedisConnectionPool<String, String> redisConnectionPool;
 
+			// initialize Redis cluster node info when server startup.
 			public void run() {
-				String nodes = getRedisNodeInfo(redisConnectionPool);
-
-				// initialize Redis cluster node info when server startup.
-
-				System.out.println("Start Hello world Thread.");
+				String clusterNodes = getClusterNodesCommandResult(redisConnectionPool);
 
 				while (true) {
-					redisNodeInfoList = convertToNodeInfoList(nodes);
+					redisNodeInfoList = convertToNodeInfoList(clusterNodes);
 
-					for (RedisNodeInfo redisNodeInfo : redisNodeInfoList) {
-						// send info command to each node.
-						// calculate tps and etc.
-
+					for (RedisClusterNodeInfo redisNodeInfo : redisNodeInfoList) {
 						try {
 							StatefulRedisClusterConnection<String, String> connection = redisConnectionPool
 									.getClusterConnection();
@@ -78,6 +74,8 @@ public class RedisStatInfoBucket {
 							String info = nodeConnection.sync().info();
 							redisConnectionPool.returnObject(connection);
 
+//							RedisInfo RedisInfoResultConverter.convert(info);
+							
 							System.out.println(info);
 							System.out.println(redisNodeInfo.id());
 						} catch (Exception e) {
@@ -95,7 +93,7 @@ public class RedisStatInfoBucket {
 				}
 			}
 
-			private String getRedisNodeInfo(RedisConnectionPool<String, String> redisConnectionPool) {
+			private String getClusterNodesCommandResult(RedisConnectionPool<String, String> redisConnectionPool) {
 				String nodes = null;
 				try {
 					StatefulRedisClusterConnection<String, String> connection = redisConnectionPool
@@ -109,33 +107,13 @@ public class RedisStatInfoBucket {
 				return nodes;
 			}
 
-			private List<RedisNodeInfo> convertToNodeInfoList(String clusterNodes) {
-				List<RedisNodeInfo> redisNodeInfo = new ArrayList<RedisNodeInfo>();
+			private List<RedisClusterNodeInfo> convertToNodeInfoList(String clusterNodes) {
+				List<RedisClusterNodeInfo> redisNodeInfo = new ArrayList<RedisClusterNodeInfo>();
 				try {
 					List<String> nodeInfoStrings = IOUtils.readLines(new StringReader(clusterNodes));
 
 					for (String nodeInfoString : nodeInfoStrings) {
-						// nodeInfoString(12, 10) ==> id, ip, listenPort, clusterBusPort,
-						// flags,masterId,
-						// pingSend, pongRecv, configEpoch, linkState, shardSlotStart,
-						// shardSlotEnd
-						String[] nodeInfoArray = StringUtils.split(nodeInfoString, " :@");
-
-						RedisNodeInfo nodeInfo = new RedisNodeInfo();
-						nodeInfo.id(nodeInfoArray[0]);
-						nodeInfo.ip(nodeInfoArray[1]);
-						nodeInfo.listenPort(Integer.parseInt(nodeInfoArray[2]));
-						nodeInfo.clusterBusPort(Integer.parseInt(nodeInfoArray[3]));
-						nodeInfo.flags(nodeInfoArray[4]);
-						nodeInfo.masterId(nodeInfoArray[5]);
-						nodeInfo.pingSend(Long.parseLong(nodeInfoArray[6]));
-						nodeInfo.pongRecv(Long.parseLong(nodeInfoArray[7]));
-						nodeInfo.configEpoch(Integer.parseInt(nodeInfoArray[8]));
-						nodeInfo.linkState(nodeInfoArray[9]);
-						if (nodeInfoArray.length > 10) {
-							nodeInfo.shardSlotStart(Integer.parseInt(StringUtils.split(nodeInfoArray[10], "-")[0]));
-							nodeInfo.shardSlotEnd(Integer.parseInt(StringUtils.split(nodeInfoArray[10], "-")[1]));
-						}
+						RedisClusterNodeInfo nodeInfo = RedisClusterNodeInfoConverter.convert(nodeInfoString);
 
 						redisNodeInfo.add(nodeInfo);
 					}

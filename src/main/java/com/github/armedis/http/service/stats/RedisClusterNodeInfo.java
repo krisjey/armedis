@@ -3,10 +3,11 @@ package com.github.armedis.http.service.stats;
 import java.util.Objects;
 
 /**
+ * VO of redis cluster nodes command result.
  * id, ip, listenPort, clusterBusPort, flags, masterId, pingSend, pongRecv,
  * configEpoch, linkState, shardSlotStart, shardSlotEnd
  */
-public class RedisNodeInfo {
+public class RedisClusterNodeInfo {
 	private String id;
 	private String ip;
 	private int listenPort;
@@ -210,7 +211,7 @@ public class RedisNodeInfo {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		RedisNodeInfo other = (RedisNodeInfo) obj;
+		RedisClusterNodeInfo other = (RedisClusterNodeInfo) obj;
 		return clusterBusPort == other.clusterBusPort && configEpoch == other.configEpoch
 				&& Objects.equals(flags, other.flags) && Objects.equals(id, other.id) && Objects.equals(ip, other.ip)
 				&& Objects.equals(linkState, other.linkState) && listenPort == other.listenPort

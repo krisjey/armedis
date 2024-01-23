@@ -7,12 +7,10 @@ import org.springframework.stereotype.Component;
 
 import com.github.armedis.http.service.BaseService;
 import com.github.armedis.http.service.ServiceUrl;
-import com.github.armedis.http.service.request.RedisRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.server.annotation.Get;
 import com.linecorp.armeria.server.annotation.Path;
-import com.linecorp.armeria.server.annotation.Post;
 
 /**
  * Service activity api.
@@ -37,12 +35,12 @@ public class RedisStatsService extends BaseService {
 //        buildresponse
         return HttpResponse.of(HttpStatus.OK);
     }
-
-    @Post
-    @Path(ServiceUrl.REDIS_STATS)
-    public HttpResponse ruokPost(RedisRequest redisRequest) {
-        logger.info("Ruok service POST");
-
-        return HttpResponse.of(HttpStatus.OK);
-    }
+//
+//    @Post
+//    @Path(ServiceUrl.REDIS_STATS)
+//    public HttpResponse ruokPost(RedisRequest redisRequest) {
+//        logger.info("Ruok service POST");
+//
+//        return HttpResponse.of(HttpStatus.OK);
+//    }
 }
