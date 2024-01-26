@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
@@ -18,7 +16,9 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.armedis.redis.RedisInfo;
 import com.github.armedis.redis.connection.pool.RedisConnectionPool;
+import com.github.armedis.utils.TimerUtil;
 
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
@@ -52,7 +52,6 @@ public class RedisStatInfoBucket {
 	public Thread scheduleStatRunner() {
 		return new Thread() {
 			List<RedisClusterNodeInfo> redisNodeInfoList;
-			BlockingQueue<String> tempQueue = new LinkedBlockingQueue<>(1);
 
 			@Autowired
 			private RedisConnectionPool<String, String> redisConnectionPool;
@@ -60,9 +59,9 @@ public class RedisStatInfoBucket {
 			// initialize Redis cluster node info when server startup.
 			public void run() {
 				String clusterNodes = getClusterNodesCommandResult(redisConnectionPool);
+				redisNodeInfoList = convertNodeInfoList(clusterNodes);
 
 				while (true) {
-					redisNodeInfoList = convertToNodeInfoList(clusterNodes);
 
 					for (RedisClusterNodeInfo redisNodeInfo : redisNodeInfoList) {
 						try {
@@ -71,12 +70,15 @@ public class RedisStatInfoBucket {
 							StatefulRedisConnection<String, String> nodeConnection = connection
 									.getConnection(redisNodeInfo.id());
 
+							// send info command
 							String info = nodeConnection.sync().info();
 							redisConnectionPool.returnObject(connection);
 
-//							RedisInfo RedisInfoResultConverter.convert(info);
+							// update stat info
 							
-							System.out.println(info);
+							RedisInfo redisInfo = RedisInfoResultConverter.convert(info);
+
+							System.out.println(redisInfo);
 							System.out.println(redisNodeInfo.id());
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
@@ -84,12 +86,7 @@ public class RedisStatInfoBucket {
 						}
 					}
 
-					try {
-						tempQueue.poll(1, TimeUnit.SECONDS);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					TimerUtil.timeToWait(1, TimeUnit.SECONDS);
 				}
 			}
 
@@ -107,7 +104,7 @@ public class RedisStatInfoBucket {
 				return nodes;
 			}
 
-			private List<RedisClusterNodeInfo> convertToNodeInfoList(String clusterNodes) {
+			private List<RedisClusterNodeInfo> convertNodeInfoList(String clusterNodes) {
 				List<RedisClusterNodeInfo> redisNodeInfo = new ArrayList<RedisClusterNodeInfo>();
 				try {
 					List<String> nodeInfoStrings = IOUtils.readLines(new StringReader(clusterNodes));
