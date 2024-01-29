@@ -28,19 +28,11 @@ public class RedisStatsService extends BaseService {
      */
     @Get
     @Path(ServiceUrl.REDIS_STATS)
-    public HttpResponse ruokGet() {
-        logger.info("Ruok service GET");
+    public HttpResponse redisStats() {
+        logger.info("Armedis stat GET");
         // TODO get info data list from stats info.
 //        buildResponse
 //        buildresponse
         return HttpResponse.of(HttpStatus.OK);
     }
-//
-//    @Post
-//    @Path(ServiceUrl.REDIS_STATS)
-//    public HttpResponse ruokPost(RedisRequest redisRequest) {
-//        logger.info("Ruok service POST");
-//
-//        return HttpResponse.of(HttpStatus.OK);
-//    }
 }

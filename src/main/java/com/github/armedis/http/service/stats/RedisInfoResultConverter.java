@@ -31,8 +31,8 @@ public class RedisInfoResultConverter {
 
 	public static RedisInfo convert(String info) {
 		RedisInfo redisInfo = new RedisInfo();
-		redisInfo.server().
-		List<String> redisInfoStrings;
+//		redisInfo.server().
+		List<String> redisInfoStrings = null;
 		try {
 			redisInfoStrings = IOUtils.readLines(new StringReader(info));
 
