@@ -16,8 +16,8 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.armedis.redis.RedisInfo;
 import com.github.armedis.redis.connection.pool.RedisConnectionPool;
+import com.github.armedis.redis.info.RedisInfoVo;
 import com.github.armedis.utils.TimerUtil;
 
 import io.lettuce.core.api.StatefulRedisConnection;
@@ -75,8 +75,7 @@ public class RedisStatInfoBucket {
 							redisConnectionPool.returnObject(connection);
 
 							// update stat info
-							
-							RedisInfo redisInfo = RedisInfoResultConverter.convert(info);
+							RedisInfoVo redisInfo = RedisInfoVo.fromInfoCommandResult(info);
 
 							System.out.println(redisInfo);
 							System.out.println(redisNodeInfo.id());

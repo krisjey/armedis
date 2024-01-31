@@ -1,220 +1,24 @@
+/**
+ * 
+ */
 package com.github.armedis.redis;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.junit.jupiter.api.Assertions.*;
 
-import org.apache.commons.lang3.StringUtils;`
+import org.junit.jupiter.api.Test;
 
-public class RedisInfoVO {
-	@Override
-	public String toString() {
-		return "RedisInfoVO [serverInfo=" + serverInfo + ", clientsInfo=" + clientsInfo + "]";
-	}
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.armedis.redis.info.RedisInfoVo;
 
-	private ServerInfo serverInfo;
-	private ClientsInfo clientsInfo;
-	// Add more sections as needed
+/**
+ * 
+ */
+class RedisInfoVoTest {
 
-	// Constructor, getters, and setters go here...
-
-	// Static method to create an instance of RedisInfoVO from the INFO command
-	// result
-	public static RedisInfoVO fromInfoCommandResult(String infoResult) {
-		RedisInfoVO redisInfoVO = new RedisInfoVO();
-		String[] sections = infoResult.split("# ");
-
-		for (String section : sections) {
-			if (StringUtils.isEmpty(section)) {
-				continue;
-			}
-
-			String[] lines = section.split("\r\n");
-
-			if (lines.length > 0) {
-				String sectionName = lines[0].trim();
-				String sectionContent = section.substring(section.indexOf("\r\n") + 2);
-
-				switch (sectionName) {
-				case "Server":
-					redisInfoVO.setServerInfo(ServerInfo.fromString(sectionContent));
-					break;
-				case "Clients":
-					redisInfoVO.setClientsInfo(ClientsInfo.fromString(sectionContent));
-					break;
-				// Add more cases for other sections as needed
-				}
-			}
-		}
-
-		return redisInfoVO;
-	}
-
-	/**
-	 * @return the serverInfo
-	 */
-	public ServerInfo getServerInfo() {
-		return serverInfo;
-	}
-
-	/**
-	 * @param serverInfo the serverInfo to set
-	 */
-	public void setServerInfo(ServerInfo serverInfo) {
-		this.serverInfo = serverInfo;
-	}
-
-	/**
-	 * @return the clientsInfo
-	 */
-	public ClientsInfo getClientsInfo() {
-		return clientsInfo;
-	}
-
-	/**
-	 * @param clientsInfo the clientsInfo to set
-	 */
-	public void setClientsInfo(ClientsInfo clientsInfo) {
-		this.clientsInfo = clientsInfo;
-	}
-
-	public static class ServerInfo {
-		@Override
-		public String toString() {
-			return "ServerInfo [redisVersion=" + redisVersion + ", redisGitSha1=" + redisGitSha1 + "]";
-		}
-
-		private String redisVersion;
-
-		private String redisGitSha1;
-		// Add more fields as needed
-
-		/**
-		 * @return the redisVersion
-		 */
-		public String getRedisVersion() {
-			return redisVersion;
-		}
-
-		/**
-		 * @param redisVersion the redisVersion to set
-		 */
-		public void setRedisVersion(String redisVersion) {
-			this.redisVersion = redisVersion;
-		}
-
-		/**
-		 * @return the redisGitSha1
-		 */
-		public String getRedisGitSha1() {
-			return redisGitSha1;
-		}
-
-		/**
-		 * @param redisGitSha1 the redisGitSha1 to set
-		 */
-		public void setRedisGitSha1(String redisGitSha1) {
-			this.redisGitSha1 = redisGitSha1;
-		}
-
-		// Constructor, getters, and setters for ServerInfo go here...
-
-		public static ServerInfo fromString(String content) {
-			ServerInfo serverInfo = new ServerInfo();
-			String[] lines = content.split("\r\n");
-
-			for (String line : lines) {
-				String[] parts = line.split(":");
-				if (parts.length == 2) {
-					String key = parts[0].trim();
-					String value = parts[1].trim();
-
-					switch (key) {
-					case "redis_version":
-						serverInfo.setRedisVersion(value);
-						break;
-					case "redis_git_sha1":
-						serverInfo.setRedisGitSha1(value);
-						break;
-					// Add more cases for other fields in ServerInfo as needed
-					}
-				}
-			}
-
-			return serverInfo;
-		}
-	}
-
-	public static class ClientsInfo {
-		@Override
-		public String toString() {
-			return "ClientsInfo [connectedClients=" + connectedClients + ", blockedClients=" + blockedClients + "]";
-		}
-
-		private int connectedClients;
-
-		private int blockedClients;
-		// Add more fields as needed
-
-		/**
-		 * @return the connectedClients
-		 */
-		public int getConnectedClients() {
-			return connectedClients;
-		}
-
-		/**
-		 * @param connectedClients the connectedClients to set
-		 */
-		public void setConnectedClients(int connectedClients) {
-			this.connectedClients = connectedClients;
-		}
-
-		/**
-		 * @return the blockedClients
-		 */
-		public int getBlockedClients() {
-			return blockedClients;
-		}
-
-		/**
-		 * @param blockedClients the blockedClients to set
-		 */
-		public void setBlockedClients(int blockedClients) {
-			this.blockedClients = blockedClients;
-		}
-
-		// Constructor, getters, and setters for ClientsInfo go here...
-
-		public static ClientsInfo fromString(String content) {
-			ClientsInfo clientsInfo = new ClientsInfo();
-			String[] lines = content.split("\r\n");
-
-			for (String line : lines) {
-				String[] parts = line.split(":");
-				if (parts.length == 2) {
-					String key = parts[0].trim();
-					String value = parts[1].trim();
-
-					switch (key) {
-					case "connected_clients":
-						clientsInfo.setConnectedClients(Integer.parseInt(value));
-						break;
-					case "blocked_clients":
-						clientsInfo.setBlockedClients(Integer.parseInt(value));
-						break;
-					// Add more cases for other fields in ClientsInfo as needed
-					}
-				}
-			}
-
-			return clientsInfo;
-		}
-	}
-
-	// Add more internal classes for other sections as needed
-
-	// Example usage
-	public static void main(String[] args) {
+	@Test
+	void test() throws JsonProcessingException {
 		String infoResult = "# Server\r\n" + "redis_version:6.2.14\r\n" + "redis_git_sha1:00000000\r\n"
 				+ "redis_git_dirty:0\r\n" + "redis_build_id:a712fce3205cb7ee\r\n" + "redis_mode:cluster\r\n"
 				+ "os:Linux 3.10.0-1160.105.1.el7.x86_64 x86_64\r\n" + "arch_bits:64\r\n"
@@ -278,10 +82,33 @@ public class RedisInfoVO {
 				+ "used_cpu_user_main_thread:17.130294\r\n" + "\r\n" + "# Modules\r\n" + "\r\n" + "# Errorstats\r\n"
 				+ "errorstat_ERR:count=8\r\n" + "\r\n" + "# Cluster\r\n" + "cluster_enabled:1\r\n" + "\r\n"
 				+ "# Keyspace\r\n" + "db0:keys=1,expires=0,avg_ttl=0\r\n" + "";
-		RedisInfoVO redisInfoVO = RedisInfoVO.fromInfoCommandResult(infoResult);
-		// Use the parsed information as needed
+		RedisInfoVo redisInfoVO = RedisInfoVo.fromInfoCommandResult(infoResult);
+//		System.out.println(redisInfoVO.toString());
 		
-		redisInfoVO.ser
-		System.out.println(redisInfoVO);
+		ObjectMapper objectMapper = new ObjectMapper();
+//		java.lang.IllegalArgumentException: No serializer found for class com.github.armedis.redis.RedisInfoVO$ServerInfo and no properties discovered to create BeanSerializer (to avoid exception, disable SerializationFeature.FAIL_ON_EMPTY_BEANS) (through reference chain: com.github.armedis.redis.RedisInfoVO["serverInfo"])
+//		at com.fasterxml.jackson.databind.ObjectMapper.valueToTree(ObjectMapper.java:3537)
+//		at com.github.armedis.redis.RedisInfoVOTest.test(RedisInfoVOTest.java:87)
+//		at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+//		at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+//		at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+//	Caused by: com.fasterxml.jackson.databind.exc.InvalidDefinitionException: No serializer found for class com.github.armedis.redis.RedisInfoVO$ServerInfo and no properties discovered to create BeanSerializer (to avoid exception, disable SerializationFeature.FAIL_ON_EMPTY_BEANS) (through reference chain: com.github.armedis.redis.RedisInfoVO["serverInfo"])
+//		at com.fasterxml.jackson.databind.exc.InvalidDefinitionException.from(InvalidDefinitionException.java:77)
+//		at com.fasterxml.jackson.databind.SerializerProvider.reportBadDefinition(SerializerProvider.java:1308)
+//		at com.fasterxml.jackson.databind.DatabindContext.reportBadDefinition(DatabindContext.java:414)
+//		at com.fasterxml.jackson.databind.ser.impl.UnknownSerializer.failForEmpty(UnknownSerializer.java:53)
+//		at com.fasterxml.jackson.databind.ser.impl.UnknownSerializer.serialize(UnknownSerializer.java:30)
+//		at com.fasterxml.jackson.databind.ser.BeanPropertyWriter.serializeAsField(BeanPropertyWriter.java:732)
+//		at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:772)
+//		at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:178)
+//		at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider._serialize(DefaultSerializerProvider.java:479)
+//		at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider.serializeValue(DefaultSerializerProvider.java:318)
+//		at com.fasterxml.jackson.databind.ObjectMapper.valueToTree(ObjectMapper.java:3532)
+//		... 4 more
+
+//		JsonNode jsonNode = objectMapper.valueToTree(redisInfoVO);
+//		System.out.println(jsonNode);
+		String json = objectMapper.writeValueAsString(redisInfoVO);
+		System.out.println(json);
 	}
 }

@@ -1,0 +1,211 @@
+package com.github.armedis.redis.info;
+
+import com.google.common.base.CaseFormat;
+
+public final class Replication {
+	private String role;
+	private int connectedSlaves;
+	private String slave0;
+	private String masterFailoverState;
+	private String masterReplid;
+	private String masterReplid2;
+	private long masterReplOffset;
+	private long secondReplOffset;
+	private int replBacklogActive;
+	private long replBacklogSize;
+	private long replBacklogFirstByteOffset;
+	private long replBacklogHistlen;
+
+	/**
+	 * TODO from string에서 getter/Setter 찾는 로직 넣기.
+	 * 
+	 * @param content
+	 * @return
+	 */
+	public static Replication convert(String content) {
+		Replication replication = new Replication();
+		String[] lines = content.split("\r\n");
+
+		for (String line : lines) {
+			String[] parts = line.split(":");
+			if (parts.length == 2) {
+				String key = parts[0].trim();
+				String value = parts[1].trim();
+
+				key = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, key);
+
+				RedisInfoConverter.setField(replication, key, value);
+			}
+		}
+
+		return replication;
+	}
+
+	/**
+	 * @return the role
+	 */
+	public String getRole() {
+		return role;
+	}
+
+	/**
+	 * @param role the role to set
+	 */
+	public void setRole(String role) {
+		this.role = role;
+	}
+
+	/**
+	 * @return the connectedSlaves
+	 */
+	public int getConnectedSlaves() {
+		return connectedSlaves;
+	}
+
+	/**
+	 * @param connectedSlaves the connectedSlaves to set
+	 */
+	public void setConnectedSlaves(int connectedSlaves) {
+		this.connectedSlaves = connectedSlaves;
+	}
+
+	/**
+	 * @return the slave0
+	 */
+	public String getSlave0() {
+		return slave0;
+	}
+
+	/**
+	 * @param slave0 the slave0 to set
+	 */
+	public void setSlave0(String slave0) {
+		this.slave0 = slave0;
+	}
+
+	/**
+	 * @return the masterFailoverState
+	 */
+	public String getMasterFailoverState() {
+		return masterFailoverState;
+	}
+
+	/**
+	 * @param masterFailoverState the masterFailoverState to set
+	 */
+	public void setMasterFailoverState(String masterFailoverState) {
+		this.masterFailoverState = masterFailoverState;
+	}
+
+	/**
+	 * @return the masterReplid
+	 */
+	public String getMasterReplid() {
+		return masterReplid;
+	}
+
+	/**
+	 * @param masterReplid the masterReplid to set
+	 */
+	public void setMasterReplid(String masterReplid) {
+		this.masterReplid = masterReplid;
+	}
+
+	/**
+	 * @return the masterReplid2
+	 */
+	public String getMasterReplid2() {
+		return masterReplid2;
+	}
+
+	/**
+	 * @param masterReplid2 the masterReplid2 to set
+	 */
+	public void setMasterReplid2(String masterReplid2) {
+		this.masterReplid2 = masterReplid2;
+	}
+
+	/**
+	 * @return the masterReplOffset
+	 */
+	public long getMasterReplOffset() {
+		return masterReplOffset;
+	}
+
+	/**
+	 * @param masterReplOffset the masterReplOffset to set
+	 */
+	public void setMasterReplOffset(long masterReplOffset) {
+		this.masterReplOffset = masterReplOffset;
+	}
+
+	/**
+	 * @return the secondReplOffset
+	 */
+	public long getSecondReplOffset() {
+		return secondReplOffset;
+	}
+
+	/**
+	 * @param secondReplOffset the secondReplOffset to set
+	 */
+	public void setSecondReplOffset(long secondReplOffset) {
+		this.secondReplOffset = secondReplOffset;
+	}
+
+	/**
+	 * @return the replBacklogActive
+	 */
+	public int getReplBacklogActive() {
+		return replBacklogActive;
+	}
+
+	/**
+	 * @param replBacklogActive the replBacklogActive to set
+	 */
+	public void setReplBacklogActive(int replBacklogActive) {
+		this.replBacklogActive = replBacklogActive;
+	}
+
+	/**
+	 * @return the replBacklogSize
+	 */
+	public long getReplBacklogSize() {
+		return replBacklogSize;
+	}
+
+	/**
+	 * @param replBacklogSize the replBacklogSize to set
+	 */
+	public void setReplBacklogSize(long replBacklogSize) {
+		this.replBacklogSize = replBacklogSize;
+	}
+
+	/**
+	 * @return the replBacklogFirstByteOffset
+	 */
+	public long getReplBacklogFirstByteOffset() {
+		return replBacklogFirstByteOffset;
+	}
+
+	/**
+	 * @param replBacklogFirstByteOffset the replBacklogFirstByteOffset to set
+	 */
+	public void setReplBacklogFirstByteOffset(long replBacklogFirstByteOffset) {
+		this.replBacklogFirstByteOffset = replBacklogFirstByteOffset;
+	}
+
+	/**
+	 * @return the replBacklogHistlen
+	 */
+	public long getReplBacklogHistlen() {
+		return replBacklogHistlen;
+	}
+
+	/**
+	 * @param replBacklogHistlen the replBacklogHistlen to set
+	 */
+	public void setReplBacklogHistlen(long replBacklogHistlen) {
+		this.replBacklogHistlen = replBacklogHistlen;
+	}
+}
