@@ -4,7 +4,17 @@ import com.google.common.base.CaseFormat;
 
 public final class Replication {
 	private String role;
-	private int connectedSlaves;
+    private String masterHost;
+    private int masterPort;
+    private String masterLinkStatus;
+    private long masterLastIoSecondsAgo;
+    private int masterSyncInProgress;
+    private long slaveReadReplOffset;
+    private long slaveReplOffset;
+    private int slavePriority;
+    private int slaveReadOnly;
+    private int replicaAnnounced;
+    private int connectedSlaves;
 	private String slave0;
 	private String masterFailoverState;
 	private String masterReplid;
@@ -53,6 +63,146 @@ public final class Replication {
 	 */
 	public void setRole(String role) {
 		this.role = role;
+	}
+
+	/**
+	 * @return the masterHost
+	 */
+	public String getMasterHost() {
+		return masterHost;
+	}
+
+	/**
+	 * @param masterHost the masterHost to set
+	 */
+	public void setMasterHost(String masterHost) {
+		this.masterHost = masterHost;
+	}
+
+	/**
+	 * @return the masterPort
+	 */
+	public int getMasterPort() {
+		return masterPort;
+	}
+
+	/**
+	 * @param masterPort the masterPort to set
+	 */
+	public void setMasterPort(int masterPort) {
+		this.masterPort = masterPort;
+	}
+
+	/**
+	 * @return the masterLinkStatus
+	 */
+	public String getMasterLinkStatus() {
+		return masterLinkStatus;
+	}
+
+	/**
+	 * @param masterLinkStatus the masterLinkStatus to set
+	 */
+	public void setMasterLinkStatus(String masterLinkStatus) {
+		this.masterLinkStatus = masterLinkStatus;
+	}
+
+	/**
+	 * @return the masterLastIoSecondsAgo
+	 */
+	public long getMasterLastIoSecondsAgo() {
+		return masterLastIoSecondsAgo;
+	}
+
+	/**
+	 * @param masterLastIoSecondsAgo the masterLastIoSecondsAgo to set
+	 */
+	public void setMasterLastIoSecondsAgo(long masterLastIoSecondsAgo) {
+		this.masterLastIoSecondsAgo = masterLastIoSecondsAgo;
+	}
+
+	/**
+	 * @return the masterSyncInProgress
+	 */
+	public int getMasterSyncInProgress() {
+		return masterSyncInProgress;
+	}
+
+	/**
+	 * @param masterSyncInProgress the masterSyncInProgress to set
+	 */
+	public void setMasterSyncInProgress(int masterSyncInProgress) {
+		this.masterSyncInProgress = masterSyncInProgress;
+	}
+
+	/**
+	 * @return the slaveReadReplOffset
+	 */
+	public long getSlaveReadReplOffset() {
+		return slaveReadReplOffset;
+	}
+
+	/**
+	 * @param slaveReadReplOffset the slaveReadReplOffset to set
+	 */
+	public void setSlaveReadReplOffset(long slaveReadReplOffset) {
+		this.slaveReadReplOffset = slaveReadReplOffset;
+	}
+
+	/**
+	 * @return the slaveReplOffset
+	 */
+	public long getSlaveReplOffset() {
+		return slaveReplOffset;
+	}
+
+	/**
+	 * @param slaveReplOffset the slaveReplOffset to set
+	 */
+	public void setSlaveReplOffset(long slaveReplOffset) {
+		this.slaveReplOffset = slaveReplOffset;
+	}
+
+	/**
+	 * @return the slavePriority
+	 */
+	public int getSlavePriority() {
+		return slavePriority;
+	}
+
+	/**
+	 * @param slavePriority the slavePriority to set
+	 */
+	public void setSlavePriority(int slavePriority) {
+		this.slavePriority = slavePriority;
+	}
+
+	/**
+	 * @return the slaveReadOnly
+	 */
+	public int getSlaveReadOnly() {
+		return slaveReadOnly;
+	}
+
+	/**
+	 * @param slaveReadOnly the slaveReadOnly to set
+	 */
+	public void setSlaveReadOnly(int slaveReadOnly) {
+		this.slaveReadOnly = slaveReadOnly;
+	}
+
+	/**
+	 * @return the replicaAnnounced
+	 */
+	public int getReplicaAnnounced() {
+		return replicaAnnounced;
+	}
+
+	/**
+	 * @param replicaAnnounced the replicaAnnounced to set
+	 */
+	public void setReplicaAnnounced(int replicaAnnounced) {
+		this.replicaAnnounced = replicaAnnounced;
 	}
 
 	/**

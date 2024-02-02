@@ -3,17 +3,18 @@ package com.github.armedis.redis.info;
 import com.google.common.base.CaseFormat;
 
 public class Server {
+
 	@Override
 	public String toString() {
 		return "Server [redisVersion=" + redisVersion + ", redisGitSha1=" + redisGitSha1 + ", redisGitDirty="
 				+ redisGitDirty + ", redisBuildId=" + redisBuildId + ", redisMode=" + redisMode + ", os=" + os
 				+ ", archBits=" + archBits + ", monotonicClock=" + monotonicClock + ", multiplexingApi="
 				+ multiplexingApi + ", atomicvarApi=" + atomicvarApi + ", gccVersion=" + gccVersion + ", processId="
-				+ processId + ", processSupervised=" + processSupervised + ", runId=" + runId + ", tcpPort=" + tcpPort
-				+ ", serverTimeUsec=" + serverTimeUsec + ", uptimeInSeconds=" + uptimeInSeconds + ", uptimeInDays="
-				+ uptimeInDays + ", hz=" + hz + ", configuredHz=" + configuredHz + ", lruClock=" + lruClock
-				+ ", executable=" + executable + ", configFile=" + configFile + ", ioThreadsActive=" + ioThreadsActive
-				+ "]";
+				+ processId + ", processSupervised=" + processSupervised + ", runId=" + runId + ", host=" + host
+				+ ", tcpPort=" + tcpPort + ", serverTimeUsec=" + serverTimeUsec + ", uptimeInSeconds=" + uptimeInSeconds
+				+ ", uptimeInDays=" + uptimeInDays + ", hz=" + hz + ", configuredHz=" + configuredHz + ", lruClock="
+				+ lruClock + ", executable=" + executable + ", configFile=" + configFile + ", ioThreadsActive="
+				+ ioThreadsActive + "]";
 	}
 
 	private String redisVersion;
@@ -30,6 +31,7 @@ public class Server {
 	private int processId;
 	private String processSupervised;
 	private String runId;
+	private String host;
 	private int tcpPort;
 	private long serverTimeUsec;
 	private int uptimeInSeconds;
@@ -249,6 +251,20 @@ public class Server {
 	 */
 	public void setTcpPort(int tcpPort) {
 		this.tcpPort = tcpPort;
+	}
+
+	/**
+	 * @return the host
+	 */
+	public String getHost() {
+		return host;
+	}
+
+	/**
+	 * @param host the host to set
+	 */
+	public void setHost(String host) {
+		this.host = host;
 	}
 
 	/**

@@ -31,7 +31,7 @@ public class RedisClusterNodeInfo {
 	/**
 	 * @param id the id to
 	 */
-	public void id(String id) {
+	public void clusterId(String id) {
 		this.id = id;
 	}
 

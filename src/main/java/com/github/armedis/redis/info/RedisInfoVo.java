@@ -5,6 +5,8 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class RedisInfoVo {
 
@@ -40,6 +42,8 @@ public class RedisInfoVo {
 
 	@JsonInclude
 	private Map<Integer, Keyspace> keyspace;
+
+	private ObjectMapper objectMapper = new ObjectMapper();
 
 	/**
 	 * @return the server
@@ -193,6 +197,17 @@ public class RedisInfoVo {
 	 */
 	public void setKeyspace(Map<Integer, Keyspace> keyspace) {
 		this.keyspace = keyspace;
+	}
+
+	public String toJsonString()	{
+		String json = null;
+		try {
+			json = objectMapper.writeValueAsString(this);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		
+		return json;
 	}
 
 	// Static method to create an instance of RedisInfoVO from the INFO command

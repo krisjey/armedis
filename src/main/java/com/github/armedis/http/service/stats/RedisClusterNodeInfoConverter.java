@@ -11,7 +11,7 @@ public class RedisClusterNodeInfoConverter {
 		String[] nodeInfoArray = StringUtils.split(nodeInfoString, " :@");
 
 		RedisClusterNodeInfo nodeInfo = new RedisClusterNodeInfo();
-		nodeInfo.id(nodeInfoArray[0]);
+		nodeInfo.clusterId(nodeInfoArray[0]);
 		nodeInfo.ip(nodeInfoArray[1]);
 		nodeInfo.listenPort(Integer.parseInt(nodeInfoArray[2]));
 		nodeInfo.clusterBusPort(Integer.parseInt(nodeInfoArray[3]));
