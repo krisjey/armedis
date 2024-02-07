@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author krisjey
+ * @TODO Change class name to ArmedisShutdownHook
  */
 public class ServerShutdownHook extends Thread {
     private static final Logger logger = LoggerFactory.getLogger(ServerShutdownHook.class);
@@ -18,11 +19,12 @@ public class ServerShutdownHook extends Thread {
     }
 
     /**
-     * When the server goes down, delete a zookeeper node.
+     * When the server goes down running jobs
      */
     @Override
     public void run() {
         try {
+        	// if use zookeeper delete zookeeper node.
             logger.info("Shutdown server");
         }
         catch (Exception e) {

@@ -2,10 +2,12 @@ package com.github.armedis.http.service.stats;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.io.IOUtils;
@@ -17,7 +19,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.armedis.redis.connection.pool.RedisConnectionPool;
 import com.github.armedis.redis.info.RedisInfoVo;
 
@@ -31,18 +33,26 @@ import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 @Configuration
 @EnableScheduling
 public class RedisStatInfoBucket {
-	CircularFifoQueue<String> queue = new CircularFifoQueue<>(20);
+	private CircularFifoQueue<RedisStatsInfo> redisStatsInfoList = new CircularFifoQueue<>(20);
 
-	List<RedisClusterNodeInfo> redisNodeInfoList;
+	private List<RedisClusterNodeInfo> redisNodeInfoList;
+
+	private Map<String, RedisInfoVo> lastStats;
+
+	private ObjectMapper mapper = new ObjectMapper();
 
 	@Autowired
 	private RedisConnectionPool<String, String> redisConnectionPool;
 
-	public ObjectNode getStats() {
-		// response data 시간 역순으로
-		queue.poll();
+	public String getStats() {
+		String stats = null;
+		try {
+			stats = mapper.writeValueAsString(redisStatsInfoList);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
-		return null;
+		return stats;
 	}
 
 	@Bean
@@ -55,23 +65,23 @@ public class RedisStatInfoBucket {
 	// 초 단위로 메서드를 호출하려면 fixedRate 속성을 사용합니다.
 	@Scheduled(fixedRate = 1000) // 1000밀리초 = 1초
 	public void myScheduledMethod() {
-
-		// 현재 시간을 가져옵니다.
-		LocalDateTime currentTime = LocalDateTime.now();
-
-		// 사용자가 원하는 포맷으로 시간을 문자열로 변환합니다.
-		String formattedTime = currentTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+		ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.systemDefault());
 
 		String clusterNodes = getClusterNodesCommandResult(redisConnectionPool);
 		redisNodeInfoList = convertNodeInfoList(clusterNodes);
 
+		RedisStatsInfo redisStatsInfo = new RedisStatsInfo(currentTime);
+
+		String info = null;
+
+		// statsInfo
 		for (RedisClusterNodeInfo redisNodeInfo : redisNodeInfoList) {
 			try {
 				StatefulRedisClusterConnection<String, String> connection = redisConnectionPool.getClusterConnection();
 				StatefulRedisConnection<String, String> nodeConnection = connection.getConnection(redisNodeInfo.id());
 
 				// send info command
-				String info = nodeConnection.sync().info();
+				info = nodeConnection.sync().info();
 				redisConnectionPool.returnObject(connection);
 
 				// update stat info
@@ -80,15 +90,41 @@ public class RedisStatInfoBucket {
 				redisInfo.getServer().setHost(redisNodeInfo.ip());
 				redisInfo.getServer().setTcpPort(redisNodeInfo.listenPort());
 
-				System.out.println(formattedTime + " " + redisInfo.getServer().getHost() + ":"
-						+ redisInfo.getServer().getTcpPort() + " " + redisNodeInfo.id() + " - " + redisInfo.toJsonString());
+//				System.out.println(redisStatsInfo.getFormatedEpochTime() + " " + redisInfo.getServer().getHost() + ":"
+//						+ redisInfo.getServer().getTcpPort() + " " + redisNodeInfo.id() + " - "
+//						+ redisInfo.toJsonString());
 
+				String redisInfoId = redisInfo.getServer().getHost() + ":" + redisInfo.getServer().getTcpPort();
+				redisStatsInfo.put(redisInfoId, redisInfo);
 				// 현재 시간기준(초단위)
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+
+		// calculate sum.
+		/**
+		 * clients.connectedClients clients.maxclients memory.usedMemory
+		 * memory.usedMemoryRss memory.maxmemory memory.maxmemoryPolicy
+		 * 
+		 */
+		// Create dummy info from last data.
+		RedisInfoVo sumRedisInfo = RedisInfoVo.fromInfoCommandResult(info);
+		for (Entry<String, RedisInfoVo> item : redisStatsInfo.getRedisInfoList().entrySet()) {
+			// server sum
+			// memory sum
+			// delta count.. --> prev가 없으면 그냥 0 돌려주기.
+		}
+		
+		redisStatsInfo.put("sum", sumRedisInfo);
+
+		if (redisStatsInfoList.isAtFullCapacity()) {
+			redisStatsInfoList.remove();
+		}
+		redisStatsInfoList.add(redisStatsInfo);
+
+		lastStats = redisStatsInfo.getRedisInfoList();
 	}
 
 	private String getClusterNodesCommandResult(RedisConnectionPool<String, String> redisConnectionPool) {

@@ -4,13 +4,15 @@ import com.google.common.base.CaseFormat;
 
 public final class Errorstats {
 	/**
-	 * // # Errorstats // errorstat_CLUSTERDOWN:count=8 //
-	 * errorstat_CROSSSLOT:count=3 // errorstat_ERR:count=169 //
-	 * errorstat_LOADING:count=4284 // errorstat_MASTERDOWN:count=102 //
-	 * errorstat_MOVED:count=3626 // errorstat_NOSCRIPT:count=4 //
-	 * errorstat_WRONGPASS:count=2 // errorstat_WRONGTYPE:count=30
-	 * 
-	 * 
+	 * errorstat_CLUSTERDOWN:count=8
+	 * errorstat_CROSSSLOT:count=3
+	 * errorstat_ERR:count=169
+	 * errorstat_LOADING:count=4284
+	 * errorstat_MASTERDOWN:count=102
+	 * errorstat_MOVED:count=3626
+	 * errorstat_NOSCRIPT:count=4
+	 * errorstat_WRONGPASS:count=2
+	 * errorstat_WRONGTYPE:count=30
 	 */
 	private long errorstatClusterDown;
 	private long errorstatCrossSlot;

@@ -3,19 +3,36 @@
  */
 package com.github.armedis.redis;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Random;
 
+import org.apache.commons.collections4.queue.CircularFifoQueue;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.armedis.http.service.stats.RedisStatInfoBucket;
+import com.github.armedis.http.service.stats.RedisStatsInfo;
 import com.github.armedis.redis.info.RedisInfoVo;
 
 /**
  * 
  */
+@SpringBootTest
 class RedisInfoVoTest {
+	@BeforeAll
+	public static void setUpBeforeClass() throws Exception {
+		Random rnd = new Random();
+		Integer portNumber = rnd.nextInt(1000) + 8001;
+		System.setProperty("SERVICE_PORT", String.valueOf(portNumber));
+	}
+
+	ObjectMapper mapper = new ObjectMapper();
+
+	@Autowired
+	RedisStatInfoBucket bucket;
 
 	@Test
 	void test() throws JsonProcessingException {
@@ -84,7 +101,7 @@ class RedisInfoVoTest {
 				+ "# Keyspace\r\n" + "db0:keys=1,expires=0,avg_ttl=0\r\n" + "";
 		RedisInfoVo redisInfoVO = RedisInfoVo.fromInfoCommandResult(infoResult);
 //		System.out.println(redisInfoVO.toString());
-		
+
 		ObjectMapper objectMapper = new ObjectMapper();
 //		java.lang.IllegalArgumentException: No serializer found for class com.github.armedis.redis.RedisInfoVO$ServerInfo and no properties discovered to create BeanSerializer (to avoid exception, disable SerializationFeature.FAIL_ON_EMPTY_BEANS) (through reference chain: com.github.armedis.redis.RedisInfoVO["serverInfo"])
 //		at com.fasterxml.jackson.databind.ObjectMapper.valueToTree(ObjectMapper.java:3537)
@@ -110,5 +127,19 @@ class RedisInfoVoTest {
 //		System.out.println(jsonNode);
 		String json = objectMapper.writeValueAsString(redisInfoVO);
 		System.out.println(json);
+
+		CircularFifoQueue<RedisInfoVo> queue = new CircularFifoQueue<RedisInfoVo>();
+		queue.add(redisInfoVO);
+		queue.add(redisInfoVO);
+		
+		
+
+//		redisInfoVO
+	}
+
+	@Test
+	void test2() {
+		System.out.println(bucket.toString());
+//		bucket.getStats();
 	}
 }

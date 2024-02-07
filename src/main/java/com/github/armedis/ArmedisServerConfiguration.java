@@ -158,6 +158,7 @@ public class ArmedisServerConfiguration {
 	 * @param listenPort
 	 */
 	private void setArmeriaListenPort(int listenPort) {
+		// TODO armeria.internal-services.port
 		// Change default listen port to custom port.
 		List<Port> ports = new ArrayList<>();
 		ports.add(new Port().setPort(listenPort).setProtocol(SessionProtocol.HTTP));

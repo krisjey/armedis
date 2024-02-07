@@ -15,7 +15,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.armedis.http.service.request.RedisRequest;
 import com.github.armedis.http.service.request.RedisRequestBuilder;
 import com.github.armedis.http.service.request.RedisRequestBuilderFactory;
-import com.github.armedis.http.service.stats.RedisStatInfoBucket;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.github.armedis.redis.command.RedisCommandExecutor;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
@@ -32,12 +31,9 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
 	@Autowired
 	private RedisCommandExecutor executor;
 
-	@Autowired
-	private RedisStatInfoBucket redisStatInfoBucket;
-
-    protected HttpResponse buildStatResponse(ResponseCode responseCode) {
-    	return buildJsonResponse(responseCode, redisStatInfoBucket.getStats());
-    }
+	protected HttpResponse buildStatResponse(ResponseCode responseCode, String stats) {
+		return HttpResponse.of(responseCode.getStatusCode(), MediaType.JSON_UTF_8, stats);
+	}
 
 	protected HttpResponse buildResponse(ResponseCode responseCode, RedisRequest redisRequest) {
 		return buildResponse(responseCode, redisRequest, null);
