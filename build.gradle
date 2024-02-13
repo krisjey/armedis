@@ -101,7 +101,7 @@ eclipse {
 group = 'com.github.armedis'
 version = '1.0.0-SNAPSHOT'
 description = """An HTTP2/gRPC interface for Redis, Support Redis stand-alone/cluster mode."""
-mainClassName = "com.github.armedis.ArmedisServer1"
+mainClassName = "com.github.armedis.ArmedisServer"
 
 protobuf {
     protoc {
@@ -197,8 +197,6 @@ dependencies {
 
     // Logging
     implementation 'ch.qos.logback:logback-classic:1.4.11'
-    
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
     implementation "com.linecorp.armeria:armeria-spring-boot3-autoconfigure:${armeriaVersion}"
     implementation "com.linecorp.armeria:armeria-spring-boot3-actuator-starter:${armeriaVersion}"
