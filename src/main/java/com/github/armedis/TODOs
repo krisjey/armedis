@@ -1,0 +1,19 @@
+TODO List
+Armidis is a Redis Rest/gRPC API server based on Armeria F/W.
+1. add sum prop for every time.
+  - 
+2. Serving static files for stats web page.
+  - /_admin/stats : display graph of tps, mem size etc..
+  - /_admin/manage : retrive redis config and change values.
+       Current support : set timeout, set maxmemory, mexmemory_policy, memory purge, 
+3. build client grpc jar
+  - build server and client jar
+5. add test code 
+  - API Level 
+  - Service level
+  - Unit level
+6. add Feature
+  - serving static files.
+99. add prometheus exportor - prometheus exporter armeria example
+        https://github.com/heowc/armeria-example/blob/master/prometheus-metrics/src/main/java/com/example/PrometheusMetricsApplication.java
+        https://jupiny.com/2021/01/03/armeria-metric-monitoring-by-prometheus/

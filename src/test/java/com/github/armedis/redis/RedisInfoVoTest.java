@@ -11,10 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.armedis.http.service.stats.RedisStatInfoBucket;
-import com.github.armedis.http.service.stats.RedisStatsInfo;
 import com.github.armedis.redis.info.RedisInfoVo;
 
 /**
@@ -35,7 +33,7 @@ class RedisInfoVoTest {
 	RedisStatInfoBucket bucket;
 
 	@Test
-	void test() throws JsonProcessingException {
+	void test() throws Throwable {
 		String infoResult = "# Server\r\n" + "redis_version:6.2.14\r\n" + "redis_git_sha1:00000000\r\n"
 				+ "redis_git_dirty:0\r\n" + "redis_build_id:a712fce3205cb7ee\r\n" + "redis_mode:cluster\r\n"
 				+ "os:Linux 3.10.0-1160.105.1.el7.x86_64 x86_64\r\n" + "arch_bits:64\r\n"
@@ -131,8 +129,6 @@ class RedisInfoVoTest {
 		CircularFifoQueue<RedisInfoVo> queue = new CircularFifoQueue<RedisInfoVo>();
 		queue.add(redisInfoVO);
 		queue.add(redisInfoVO);
-		
-		
 
 //		redisInfoVO
 	}

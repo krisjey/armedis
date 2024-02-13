@@ -19,9 +19,12 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.armedis.redis.connection.pool.RedisConnectionPool;
 import com.github.armedis.redis.info.RedisInfoVo;
+import com.github.armedis.redis.info.Server;
 
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
@@ -39,7 +42,7 @@ public class RedisStatInfoBucket {
 
 	private Map<String, RedisInfoVo> lastStats;
 
-	private ObjectMapper mapper = new ObjectMapper();
+	private ObjectMapper mapper = configMapper();
 
 	@Autowired
 	private RedisConnectionPool<String, String> redisConnectionPool;
@@ -55,6 +58,18 @@ public class RedisStatInfoBucket {
 		return stats;
 	}
 
+	/**
+	 * @return
+	 */
+	private ObjectMapper configMapper() {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+		mapper.setSerializationInclusion(Include.ALWAYS);
+		mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+
+		return mapper;
+	}
+
 	@Bean
 	public ThreadPoolTaskScheduler taskScheduler() {
 		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
@@ -64,7 +79,7 @@ public class RedisStatInfoBucket {
 
 	// 초 단위로 메서드를 호출하려면 fixedRate 속성을 사용합니다.
 	@Scheduled(fixedRate = 1000) // 1000밀리초 = 1초
-	public void myScheduledMethod() {
+	public void myScheduledMethod() throws Throwable {
 		ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.systemDefault());
 
 		String clusterNodes = getClusterNodesCommandResult(redisConnectionPool);
@@ -104,19 +119,27 @@ public class RedisStatInfoBucket {
 		}
 
 		// calculate sum.
-		/**
-		 * clients.connectedClients clients.maxclients memory.usedMemory
-		 * memory.usedMemoryRss memory.maxmemory memory.maxmemoryPolicy
-		 * 
-		 */
 		// Create dummy info from last data.
 		RedisInfoVo sumRedisInfo = RedisInfoVo.fromInfoCommandResult(info);
+
 		for (Entry<String, RedisInfoVo> item : redisStatsInfo.getRedisInfoList().entrySet()) {
+			RedisInfoVo redisInfoVo = item.getValue();
 			// server sum
+			Server server = redisInfoVo.getServer();
+			// 값이 같으면 이전값 다르면 뒤에 별 붙이기, 숫자는 skip?
+			// clients sum
 			// memory sum
+			// persistance sum
+			// stats sum
+			// replication sum
+			// cpu sum
+			// modules sum
+			// error stats sum
+			// cluster sum
+			// keyspace sum.
 			// delta count.. --> prev가 없으면 그냥 0 돌려주기.
 		}
-		
+
 		redisStatsInfo.put("sum", sumRedisInfo);
 
 		if (redisStatsInfoList.isAtFullCapacity()) {

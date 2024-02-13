@@ -14,6 +14,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import com.github.armedis.config.ApplicationPropertiesLoader;
 
 /**
+ * Armidis is a Redis Rest/gRPC API server based on Armeria F/W.
+ * 
+ * API Server Main class
+ * 
  * @TODO add prometheus exportor - prometheus exporter armeria example
  *       https://github.com/heowc/armeria-example/blob/master/prometheus-metrics/src/main/java/com/example/PrometheusMetricsApplication.java
  *       https://jupiny.com/2021/01/03/armeria-metric-monitoring-by-prometheus/

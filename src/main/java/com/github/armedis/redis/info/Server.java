@@ -1,22 +1,6 @@
 package com.github.armedis.redis.info;
 
-import com.google.common.base.CaseFormat;
-
-public class Server {
-
-	@Override
-	public String toString() {
-		return "Server [redisVersion=" + redisVersion + ", redisGitSha1=" + redisGitSha1 + ", redisGitDirty="
-				+ redisGitDirty + ", redisBuildId=" + redisBuildId + ", redisMode=" + redisMode + ", os=" + os
-				+ ", archBits=" + archBits + ", monotonicClock=" + monotonicClock + ", multiplexingApi="
-				+ multiplexingApi + ", atomicvarApi=" + atomicvarApi + ", gccVersion=" + gccVersion + ", processId="
-				+ processId + ", processSupervised=" + processSupervised + ", runId=" + runId + ", host=" + host
-				+ ", tcpPort=" + tcpPort + ", serverTimeUsec=" + serverTimeUsec + ", uptimeInSeconds=" + uptimeInSeconds
-				+ ", uptimeInDays=" + uptimeInDays + ", hz=" + hz + ", configuredHz=" + configuredHz + ", lruClock="
-				+ lruClock + ", executable=" + executable + ", configFile=" + configFile + ", ioThreadsActive="
-				+ ioThreadsActive + "]";
-	}
-
+public class Server extends StatsBaseVo {
 	private String redisVersion;
 	private String redisGitSha1;
 	private int redisGitDirty;
@@ -393,23 +377,4 @@ public class Server {
 		this.ioThreadsActive = ioThreadsActive;
 	}
 
-	// TODO from string에서 getter/Setter 찾는 로직 넣기.
-	public static Server convert(String content) {
-		Server server = new Server();
-		String[] lines = content.split("\r\n");
-
-		for (String line : lines) {
-			String[] parts = line.split(":");
-			if (parts.length == 2) {
-				String key = parts[0].trim();
-				String value = parts[1].trim();
-
-				key = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, key);
-
-				RedisInfoConverter.setField(server, key, value);
-			}
-		}
-
-		return server;
-	}
 }

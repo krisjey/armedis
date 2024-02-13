@@ -8,7 +8,7 @@ import java.lang.reflect.Field;
 /**
  * 
  */
-public class RedisInfoConverter {
+public class ReflectionSetter {
 	/**
 	 * Private method to set field values using reflection
 	 * 
@@ -16,7 +16,7 @@ public class RedisInfoConverter {
 	 * @param fieldName
 	 * @param value
 	 */
-	public static void setField(Object objects, String fieldName, String value) {
+	public static void setFieldValue(Object objects, String fieldName, String value) {
 
 		try {
 			Field field = objects.getClass().getDeclaredField(fieldName);
@@ -28,12 +28,14 @@ public class RedisInfoConverter {
 				field.setLong(objects, Long.parseLong(value));
 			} else if (field.getType() == double.class) {
 				field.setDouble(objects, Double.parseDouble(value));
+			} else if (field.getType() == float.class) {
+				field.setFloat(objects, Float.parseFloat(value));
 			} else {
 				field.set(objects, value);
 			}
 		} catch (NoSuchFieldException | IllegalAccessException | NumberFormatException e) {
-			System.out.println(
-					"Can not found decleared field in " + objects.getClass().getSimpleName() + " " + fieldName);
+			System.out.println("Can not found decleared field in " + objects.getClass().getSimpleName() + " "
+					+ fieldName + " " + value);
 		}
 	}
 }

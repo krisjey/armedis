@@ -1,8 +1,6 @@
 package com.github.armedis.redis.info;
 
-import com.google.common.base.CaseFormat;
-
-public final class Persistence {
+public final class Persistence extends StatsBaseVo {
 	private int loading;
 	private long currentCowSize;
 	private int currentCowSizeAge;
@@ -26,31 +24,6 @@ public final class Persistence {
 	private long aofLastCowSize;
 	private int moduleForkInProgress;
 	private long moduleForkLastCowSize;
-
-	/**
-	 * TODO from string에서 getter/Setter 찾는 로직 넣기.
-	 * 
-	 * @param content
-	 * @return
-	 */
-	public static Persistence convert(String content) {
-		Persistence persistence = new Persistence();
-		String[] lines = content.split("\r\n");
-
-		for (String line : lines) {
-			String[] parts = line.split(":");
-			if (parts.length == 2) {
-				String key = parts[0].trim();
-				String value = parts[1].trim();
-
-				key = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, key);
-
-				RedisInfoConverter.setField(persistence, key, value);
-			}
-		}
-
-		return persistence;
-	}
 
 	/**
 	 * @return the loading

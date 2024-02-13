@@ -1,8 +1,6 @@
 package com.github.armedis.redis.info;
 
-import com.google.common.base.CaseFormat;
-
-public final class Clients {
+public final class Clients extends StatsBaseVo {
 	private int connectedClients;
 	private int clusterConnections;
 	private int maxclients;
@@ -11,11 +9,6 @@ public final class Clients {
 	private int blockedClients;
 	private int trackingClients;
 	private int clientsInTimeoutTable;
-
-	@Override
-	public String toString() {
-		return "ClientsInfo [connectedClients=" + connectedClients + ", blockedClients=" + blockedClients + "]";
-	}
 
 	/**
 	 * @return the connectedClients
@@ -127,30 +120,5 @@ public final class Clients {
 	 */
 	public void setClientsInTimeoutTable(int clientsInTimeoutTable) {
 		this.clientsInTimeoutTable = clientsInTimeoutTable;
-	}
-
-	/**
-	 * TODO from string에서 getter/Setter 찾는 로직 넣기.
-	 * 
-	 * @param content
-	 * @return
-	 */
-	public static Clients convert(String content) {
-		Clients clients = new Clients();
-		String[] lines = content.split("\r\n");
-
-		for (String line : lines) {
-			String[] parts = line.split(":");
-			if (parts.length == 2) {
-				String key = parts[0].trim();
-				String value = parts[1].trim();
-
-				key = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, key);
-
-				RedisInfoConverter.setField(clients, key, value);
-			}
-		}
-
-		return clients;
 	}
 }
