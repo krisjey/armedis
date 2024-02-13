@@ -199,19 +199,19 @@ public class RedisInfoVo {
 		this.keyspace = keyspace;
 	}
 
-	public String toJsonString()	{
+	public String toJsonString() {
 		String json = null;
 		try {
 			json = objectMapper.writeValueAsString(this);
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		}
-		
+
 		return json;
 	}
 
 	// Static method to create an instance of RedisInfoVO from the INFO command
-	public static RedisInfoVo fromInfoCommandResult(String infoResult) {
+	public static RedisInfoVo fromInfoCommandResult(String infoResult) throws Throwable {
 		RedisInfoVo redisInfoVO = new RedisInfoVo();
 		String[] sections = infoResult.split("# ");
 
@@ -228,37 +228,37 @@ public class RedisInfoVo {
 
 				switch (sectionName) {
 				case "Server":
-					redisInfoVO.setServer(Server.convert(sectionContent));
+					redisInfoVO.setServer(Server.fromString(Server.class, sectionContent));
 					break;
 				case "Clients":
-					redisInfoVO.setClients(Clients.convert(sectionContent));
+					redisInfoVO.setClients(Clients.fromString(Clients.class, sectionContent));
 					break;
 				case "Memory":
-					redisInfoVO.setMemory(Memory.convert(sectionContent));
+					redisInfoVO.setMemory(Memory.fromString(Memory.class, sectionContent));
 					break;
 				case "Persistence":
-					redisInfoVO.setPersistence(Persistence.convert(sectionContent));
+					redisInfoVO.setPersistence(Persistence.fromString(Persistence.class, sectionContent));
 					break;
 				case "Stats":
-					redisInfoVO.setStats(Stats.convert(sectionContent));
+					redisInfoVO.setStats(Stats.fromString(Stats.class, sectionContent));
 					break;
 				case "Replication":
-					redisInfoVO.setReplication(Replication.convert(sectionContent));
+					redisInfoVO.setReplication(Replication.fromString(Replication.class, sectionContent));
 					break;
 				case "CPU":
-					redisInfoVO.setCpu(CPU.convert(sectionContent));
+					redisInfoVO.setCpu(CPU.fromString(CPU.class, sectionContent));
 					break;
 				case "Modules":
-//					redisInfoVO.setModules(Modules.convert(sectionContent));
+					redisInfoVO.setModules(Modules.fromString(Modules.class, sectionContent));
 					break;
 				case "Errorstats":
-//					redisInfoVO.setErrorstats(Errorstats.convert(sectionContent));
+					redisInfoVO.setErrorstats(Errorstats.fromString(Errorstats.class, sectionContent));
 					break;
 				case "Cluster":
-					redisInfoVO.setCluster(Cluster.convert(sectionContent));
+					redisInfoVO.setCluster(Cluster.fromString(Cluster.class, sectionContent));
 					break;
 				case "Keyspace":
-					redisInfoVO.setKeyspace(Keyspace.convert(sectionContent));
+					redisInfoVO.setKeyspace(Keyspace.fromString(sectionContent));
 					break;
 				}
 			}

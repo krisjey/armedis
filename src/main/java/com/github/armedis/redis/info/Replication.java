@@ -1,20 +1,18 @@
 package com.github.armedis.redis.info;
 
-import com.google.common.base.CaseFormat;
-
-public final class Replication {
+public final class Replication extends StatsBaseVo {
 	private String role;
-    private String masterHost;
-    private int masterPort;
-    private String masterLinkStatus;
-    private long masterLastIoSecondsAgo;
-    private int masterSyncInProgress;
-    private long slaveReadReplOffset;
-    private long slaveReplOffset;
-    private int slavePriority;
-    private int slaveReadOnly;
-    private int replicaAnnounced;
-    private int connectedSlaves;
+	private String masterHost;
+	private int masterPort;
+	private String masterLinkStatus;
+	private long masterLastIoSecondsAgo;
+	private int masterSyncInProgress;
+	private long slaveReadReplOffset;
+	private long slaveReplOffset;
+	private int slavePriority;
+	private int slaveReadOnly;
+	private int replicaAnnounced;
+	private int connectedSlaves;
 	private String slave0;
 	private String masterFailoverState;
 	private String masterReplid;
@@ -25,31 +23,6 @@ public final class Replication {
 	private long replBacklogSize;
 	private long replBacklogFirstByteOffset;
 	private long replBacklogHistlen;
-
-	/**
-	 * TODO from string에서 getter/Setter 찾는 로직 넣기.
-	 * 
-	 * @param content
-	 * @return
-	 */
-	public static Replication convert(String content) {
-		Replication replication = new Replication();
-		String[] lines = content.split("\r\n");
-
-		for (String line : lines) {
-			String[] parts = line.split(":");
-			if (parts.length == 2) {
-				String key = parts[0].trim();
-				String value = parts[1].trim();
-
-				key = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, key);
-
-				RedisInfoConverter.setField(replication, key, value);
-			}
-		}
-
-		return replication;
-	}
 
 	/**
 	 * @return the role

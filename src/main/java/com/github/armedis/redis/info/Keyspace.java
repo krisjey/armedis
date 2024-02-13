@@ -5,25 +5,23 @@ import java.util.TreeMap;
 
 import com.google.common.base.CaseFormat;
 
-final class Keyspace {
+final class Keyspace extends StatsBaseVo {
 	private int no;
 	private int keys;
 	private int expires;
 	private int avgTtl;
 
-	@Override
-	public String toString() {
-		return "Keyspace [no=" + no + ", keys=" + keys + ", expires=" + expires + ", avgTtl=" + avgTtl + "]";
-	}
-
 	/**
-	 * TODO from string에서 getter/Setter 찾는 로직 넣기.
+	 * TODO Generic으로 처리.
 	 * 
 	 * @param content
 	 * @return
 	 */
-	public static Map<Integer, Keyspace> convert(String content) {
+	public static Map<Integer, Keyspace> fromString(String content) {
 		Map<Integer, Keyspace> keyspaceMap = new TreeMap<>();
+		if (content == null) {
+			return keyspaceMap;
+		}
 
 		String[] lines = content.split("\r\n");
 
@@ -47,7 +45,7 @@ final class Keyspace {
 					String value = kvArray[1];
 
 					key = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, key);
-					RedisInfoConverter.setField(keyspace, key, value);
+					ReflectionSetter.setFieldValue(keyspace, key, value);
 				}
 
 				keyspaceMap.put(keyspace.getNo(), keyspace);

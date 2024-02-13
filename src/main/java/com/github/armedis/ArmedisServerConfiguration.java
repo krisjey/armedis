@@ -19,12 +19,15 @@ import com.github.armedis.config.DefaultInstanceInfo;
 import com.github.armedis.grpc.service.string.RedisStringGrpcService;
 import com.github.armedis.http.service.ArmeriaAnnotatedHttpService;
 import com.github.armedis.utils.LogStringBuilder;
+import com.linecorp.armeria.common.ServerCacheControl;
 import com.linecorp.armeria.common.SessionProtocol;
 import com.linecorp.armeria.common.util.BlockingTaskExecutor;
 import com.linecorp.armeria.common.util.BlockingTaskExecutorBuilder;
 import com.linecorp.armeria.server.Server;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.docs.DocService;
+import com.linecorp.armeria.server.file.FileService;
+import com.linecorp.armeria.server.file.FileServiceBuilder;
 import com.linecorp.armeria.server.grpc.GrpcService;
 import com.linecorp.armeria.server.grpc.GrpcServiceBuilder;
 import com.linecorp.armeria.server.logging.AccessLogWriter;
@@ -106,6 +109,16 @@ public class ArmedisServerConfiguration {
 			GrpcServiceBuilder grpcServiceBuilder = GrpcService.builder();
 			grpcServiceBuilder.addService(new RedisStringGrpcService());
 			builder.service(grpcServiceBuilder.build());
+
+			// Add static file serving
+			FileServiceBuilder fileServiceBuilder = FileService.builder(ClassLoader.getSystemClassLoader(),
+					"/templates");
+
+			// Specify cache control directives.
+			ServerCacheControl cc = ServerCacheControl.builder().maxAgeSeconds(86400).cachePublic().build();
+			fileServiceBuilder.cacheControl(cc /* "max-age=86400, public" */);
+
+			builder.serviceUnder("/templates", fileServiceBuilder.build());
 		};
 	}
 

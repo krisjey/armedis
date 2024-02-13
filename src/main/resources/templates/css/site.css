@@ -1,0 +1,99 @@
+body {
+  padding-top: 40px;
+}
+
+/* http://www.w3schools.com/cssref/css_colornames.asp */
+.blue         { color: steelblue;      }
+.green        { color: mediumseagreen; }
+.red          { color: orangered;      }
+.yellow       { color: darkorange;     }
+.cyan         { color: darkcyan;       }
+.magenta      { color: darkorchid;     }
+.bold.blue    { color: dodgerblue;     }
+.bold.green   { color: yellowgreen;    }
+.bold.red     { color: crimson;        }
+.bold.yellow  { color: orange;         }
+.bold.cyan    { color: darkcyan;       }
+.bold.magenta { color: mediumorchid;   }
+
+.modal {
+  /* TODO: modal placement */
+}
+
+.navbar .brand {
+  font-weight: bold;
+  font-style:  italic;
+}
+
+.chart {
+  height: 200px;
+  margin-bottom: 20px;
+}
+
+#stat_table td, #stat_table th {
+  text-align: right;
+}
+
+#stat_table.verbose, #stat_table h5.verbose {
+  font-size: 11px;
+}
+
+.footer {
+  padding: 30px 0;
+  margin-top: 30px;
+  border-top: 1px solid #e5e5e5;
+  background-color: #f5f5f5;
+}
+
+.footer p {
+  margin-bottom: 0;
+  padding: 5px;
+  color: #777;
+}
+
+.footer-links {
+  margin: 10px 0;
+}
+
+.footer-links li {
+  display: inline;
+  margin-right: 10px;
+}
+
+.info-wrapper {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+  background-color: transparent;
+  padding: 0;
+}
+
+.info-wrapper div, .info-wrapper table.table {
+  margin: 0;
+}
+
+.info-wrapper th {
+  font-style: italic;
+}
+
+.info-wrapper .span2 {
+  width: 180px;
+}
+
+.info-wrapper .span2 table.table {
+  border-right: 1px solid #ddd;
+}
+
+.info-wrapper .span10 {
+  width: 760px;
+}
+
+.scrollable {
+  overflow: auto;
+}
+
+.selected {
+  background-color: #ff9;
+}

@@ -3,12 +3,10 @@
  */
 package com.github.armedis.redis.info;
 
-import com.google.common.base.CaseFormat;
-
 /**
  * 
  */
-public final class Stats {
+public final class Stats extends StatsBaseVo {
 	private int totalConnectionsReceived;
 	private int totalCommandsProcessed;
 	private int instantaneousOpsPerSec;
@@ -47,31 +45,6 @@ public final class Stats {
 	private int totalWritesProcessed;
 	private int ioThreadedReadsProcessed;
 	private int ioThreadedWritesProcessed;
-
-	/**
-	 * TODO from string에서 getter/Setter 찾는 로직 넣기.
-	 * 
-	 * @param content
-	 * @return
-	 */
-	public static Stats convert(String content) {
-		Stats stats = new Stats();
-		String[] lines = content.split("\r\n");
-
-		for (String line : lines) {
-			String[] parts = line.split(":");
-			if (parts.length == 2) {
-				String key = parts[0].trim();
-				String value = parts[1].trim();
-
-				key = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, key);
-
-				RedisInfoConverter.setField(stats, key, value);
-			}
-		}
-
-		return stats;
-	}
 
 	/**
 	 * @return the totalConnectionsReceived
