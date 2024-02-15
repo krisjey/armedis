@@ -11,6 +11,8 @@ import java.util.Map.Entry;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,7 +38,9 @@ import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 @Configuration
 @EnableScheduling
 public class RedisStatInfoBucket {
-	private CircularFifoQueue<RedisStatsInfo> redisStatsInfoList = new CircularFifoQueue<>(20);
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	private CircularFifoQueue<RedisStatsInfo> redisStatsInfoList = new CircularFifoQueue<>(10);
 
 	private List<RedisClusterNodeInfo> redisNodeInfoList;
 
@@ -63,7 +67,8 @@ public class RedisStatInfoBucket {
 	 */
 	private ObjectMapper configMapper() {
 		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+		// This option increases the response data size.
+//		mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
 		mapper.setSerializationInclusion(Include.ALWAYS);
 		mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
@@ -79,7 +84,11 @@ public class RedisStatInfoBucket {
 
 	// 초 단위로 메서드를 호출하려면 fixedRate 속성을 사용합니다.
 	@Scheduled(fixedRate = 1000) // 1000밀리초 = 1초
-	public void myScheduledMethod() throws Throwable {
+	public void redisStatPolling() throws Throwable {
+		/**
+		 * 0. 노드 접속 정보 추출 1. polling 문자열 Return per sec. 2. Convert to RedisStatsInfo
+		 * per sec, every node RedisInfoVo 3.
+		 */
 		ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.systemDefault());
 
 		String clusterNodes = getClusterNodesCommandResult(redisConnectionPool);
@@ -105,16 +114,13 @@ public class RedisStatInfoBucket {
 				redisInfo.getServer().setHost(redisNodeInfo.ip());
 				redisInfo.getServer().setTcpPort(redisNodeInfo.listenPort());
 
-//				System.out.println(redisStatsInfo.getFormatedEpochTime() + " " + redisInfo.getServer().getHost() + ":"
-//						+ redisInfo.getServer().getTcpPort() + " " + redisNodeInfo.id() + " - "
-//						+ redisInfo.toJsonString());
+				printStatPollingLog(redisStatsInfo, redisNodeInfo, redisInfo);
 
 				String redisInfoId = redisInfo.getServer().getHost() + ":" + redisInfo.getServer().getTcpPort();
 				redisStatsInfo.put(redisInfoId, redisInfo);
 				// 현재 시간기준(초단위)
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error("Error when parsing info command! ", e);
 			}
 		}
 
@@ -148,6 +154,18 @@ public class RedisStatInfoBucket {
 		redisStatsInfoList.add(redisStatsInfo);
 
 		lastStats = redisStatsInfo.getRedisInfoList();
+	}
+
+	/**
+	 * @param redisStatsInfo
+	 * @param redisInfo2
+	 * @param redisNodeInfo
+	 * 
+	 */
+	private void printStatPollingLog(RedisStatsInfo redisStatsInfo, RedisClusterNodeInfo redisNodeInfo,
+			RedisInfoVo redisInfo) {
+		System.out.println(redisStatsInfo.getFormatedEpochTime() + " " + redisInfo.getServer().getHost() + ":"
+				+ redisInfo.getServer().getTcpPort() + " " + redisNodeInfo.id() + " - " + redisInfo.toJsonString());
 	}
 
 	private String getClusterNodesCommandResult(RedisConnectionPool<String, String> redisConnectionPool) {

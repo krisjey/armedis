@@ -227,35 +227,34 @@ public class RedisInfoVo {
 
 				switch (sectionName) {
 				case "Server":
-//					redisInfoVO.setServer(Server.fromString(Server.class, sectionContent).setSctionContent(sectionContent));
-					redisInfoVO.setServer(Server.fromString(Server.class, sectionContent));
+					redisInfoVO.setServer(Server.fromString(Server.class, sectionContent).setSctionContent(sectionContent));
 					break;
 				case "Clients":
-					redisInfoVO.setClients(Clients.fromString(Clients.class, sectionContent));
+					redisInfoVO.setClients(Clients.fromString(Clients.class, sectionContent).setSctionContent(sectionContent));
 					break;
 				case "Memory":
-					redisInfoVO.setMemory(Memory.fromString(Memory.class, sectionContent));
+					redisInfoVO.setMemory(Memory.fromString(Memory.class, sectionContent).setSctionContent(sectionContent));
 					break;
 				case "Persistence":
-					redisInfoVO.setPersistence(Persistence.fromString(Persistence.class, sectionContent));
+					redisInfoVO.setPersistence(Persistence.fromString(Persistence.class, sectionContent).setSctionContent(sectionContent));
 					break;
 				case "Stats":
-					redisInfoVO.setStats(Stats.fromString(Stats.class, sectionContent));
+					redisInfoVO.setStats(Stats.fromString(Stats.class, sectionContent).setSctionContent(sectionContent));
 					break;
 				case "Replication":
-					redisInfoVO.setReplication(Replication.fromString(Replication.class, sectionContent));
+					redisInfoVO.setReplication(Replication.fromString(Replication.class, sectionContent).setSctionContent(sectionContent));
 					break;
 				case "CPU":
-					redisInfoVO.setCpu(CPU.fromString(CPU.class, sectionContent));
+					redisInfoVO.setCpu(CPU.fromString(CPU.class, sectionContent).setSctionContent(sectionContent));
 					break;
 				case "Modules":
-					redisInfoVO.setModules(Modules.fromString(Modules.class, sectionContent));
+					redisInfoVO.setModules(Modules.fromString(Modules.class, sectionContent).setSctionContent(sectionContent));
 					break;
 				case "Errorstats":
-					redisInfoVO.setErrorstats(Errorstats.fromString(Errorstats.class, sectionContent));
+					redisInfoVO.setErrorstats(Errorstats.fromString(Errorstats.class, sectionContent).setSctionContent(sectionContent));
 					break;
 				case "Cluster":
-					redisInfoVO.setCluster(Cluster.fromString(Cluster.class, sectionContent));
+					redisInfoVO.setCluster(Cluster.fromString(Cluster.class, sectionContent).setSctionContent(sectionContent));
 					break;
 				case "Keyspace":
 					redisInfoVO.setKeyspace(Keyspace.fromString(sectionContent));
