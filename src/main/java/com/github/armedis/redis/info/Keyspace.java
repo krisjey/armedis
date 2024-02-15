@@ -27,6 +27,7 @@ final class Keyspace extends StatsBaseVo {
 
 		for (String line : lines) {
 			Keyspace keyspace = new Keyspace();
+			keyspace.setSctionContent(content);
 
 			String[] dbNumber = line.split(":");
 
@@ -92,5 +93,4 @@ final class Keyspace extends StatsBaseVo {
 	public void setAvgTtl(int avgTtl) {
 		this.avgTtl = avgTtl;
 	}
-
 }

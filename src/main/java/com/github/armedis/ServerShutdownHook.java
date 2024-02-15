@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
  * @TODO Change class name to ArmedisShutdownHook
  */
 public class ServerShutdownHook extends Thread {
-    private static final Logger logger = LoggerFactory.getLogger(ServerShutdownHook.class);
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private String nodePath;
 

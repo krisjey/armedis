@@ -15,6 +15,8 @@ import com.google.common.base.CaseFormat;
  * 
  */
 public class StatsBaseVo {
+	protected String sctionContent;
+
 	public StatsBaseVo() {
 
 	}
@@ -62,5 +64,21 @@ public class StatsBaseVo {
 		}
 
 		return instance;
+	}
+
+	/**
+	 * @return the sctionContent
+	 */
+	public String getSctionContent() {
+		return sctionContent;
+	}
+
+	/**
+	 * @param sctionContent the sctionContent to set
+	 */
+	@SuppressWarnings("unchecked")
+	protected <T> T setSctionContent(String sctionContent) {
+		this.sctionContent = sctionContent;
+		return (T) this;
 	}
 }

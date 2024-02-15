@@ -29,7 +29,7 @@ import com.github.armedis.config.ApplicationPropertiesLoader;
 @SpringBootApplication
 public class ArmedisServer implements ApplicationRunner {
 
-	private final Logger logger = LoggerFactory.getLogger(ArmedisServer.class);
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	public static void main(String[] args) throws IOException {
 		long startTime = System.currentTimeMillis();

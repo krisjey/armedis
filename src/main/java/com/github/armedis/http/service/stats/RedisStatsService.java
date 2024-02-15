@@ -21,7 +21,7 @@ import com.linecorp.armeria.server.annotation.Path;
  */
 @Component
 public class RedisStatsService extends BaseService {
-	private final Logger logger = LoggerFactory.getLogger(RedisStatsService.class);
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Autowired
 	private RedisStatInfoBucket redisStatInfoBucket;

@@ -22,7 +22,7 @@ import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.MediaType;
 
 public class BaseService implements ArmeriaAnnotatedHttpService {
-	private static final Logger logger = LoggerFactory.getLogger(BaseService.class);
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	protected static final ObjectMapper mapper = new ObjectMapper();
 

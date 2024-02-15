@@ -15,7 +15,7 @@ public class RedisServerInfo {
     private Set<RedisNode> redisNodes;
     private RedisInstanceType redisInstanceType;
 
-    private final Logger logger = LoggerFactory.getLogger(RedisServerInfo.class);
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public RedisServerInfo(Set<RedisNode> redisNodes, RedisInstanceType redisInstanceType) {
         requireNonNull(redisNodes, "Redis server info not detected!");

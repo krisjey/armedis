@@ -26,12 +26,11 @@ import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.masterreplica.StatefulRedisMasterReplicaConnection;
-import io.lettuce.core.masterslave.MasterSlaveTopologyProvider;
 import io.lettuce.core.support.ConnectionPoolSupport;
 
 @Component
 public class RedisConnectionPoolFactory implements RedisConnectionPool<String, String> {
-    private final Logger logger = LoggerFactory.getLogger(RedisConnectionPoolFactory.class);
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private RedisServerInfoMaker redisServerInfoMaker;
 
     // single connection pool

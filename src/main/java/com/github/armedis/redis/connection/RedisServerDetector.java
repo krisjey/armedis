@@ -17,7 +17,7 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 
 public class RedisServerDetector {
-    private final Logger logger = LoggerFactory.getLogger(RedisServerDetector.class);
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private RedisInstanceType redisInstanceType;
 

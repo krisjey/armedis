@@ -14,7 +14,7 @@ import com.github.armedis.redis.connection.RedisServerInfo;
 
 @Component
 public class RedisServerInfoMaker {
-    private final Logger logger = LoggerFactory.getLogger(RedisServerInfoMaker.class);
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     
     private ArmedisConfiguration armedisConfiguration;
     

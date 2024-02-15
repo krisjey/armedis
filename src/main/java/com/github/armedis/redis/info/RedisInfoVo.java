@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class RedisInfoVo {
-
 	@JsonInclude
 	private Server server;
 
@@ -228,6 +227,7 @@ public class RedisInfoVo {
 
 				switch (sectionName) {
 				case "Server":
+//					redisInfoVO.setServer(Server.fromString(Server.class, sectionContent).setSctionContent(sectionContent));
 					redisInfoVO.setServer(Server.fromString(Server.class, sectionContent));
 					break;
 				case "Clients":
