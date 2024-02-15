@@ -26,6 +26,8 @@ import com.linecorp.armeria.common.util.BlockingTaskExecutorBuilder;
 import com.linecorp.armeria.server.Server;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.docs.DocService;
+import com.linecorp.armeria.server.encoding.DecodingService;
+import com.linecorp.armeria.server.encoding.EncodingService;
 import com.linecorp.armeria.server.file.FileService;
 import com.linecorp.armeria.server.file.FileServiceBuilder;
 import com.linecorp.armeria.server.grpc.GrpcService;
@@ -43,7 +45,7 @@ import com.linecorp.armeria.spring.ArmeriaSettings.Port;
 @Configuration
 @EnableAutoConfiguration
 public class ArmedisServerConfiguration {
-	private static final Logger logger = LoggerFactory.getLogger(ArmedisServerConfiguration.class);
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private DefaultInstanceInfo instanceInfo;
 
@@ -84,24 +86,28 @@ public class ArmedisServerConfiguration {
 			// Content-type is a way to specify the media type of request being sent from
 			// the client to the server.
 
-			initializeServerBuilderByConfig(builder);
+			initializeHttpServerBuilder(builder);
 
+			// Adding a Service
 			// Add DocService that enables you to send Thrift and gRPC requests from web
 			// browser.
 			builder.serviceUnder("/docs", new DocService());
 
-//            // Log every message which the server receives and responds.
+			// Log every message which the server receives and responds.
 			builder.decorator(LoggingService.newDecorator());
 
-//            // Write access log after completing a request.
-			builder.accessLogWriter(AccessLogWriter.combined(), false);
+			// Write access log after completing a request.
+			builder.accessLogWriter(AccessLogWriter.combined(), true);
 
 			// ArmeriaAnnotatedHttpService를 impl 하고 type of 로 갈라서 grpc로 등록하기.
 
 			// Add an Armeria annotated HTTP service.
 			for (ArmeriaAnnotatedHttpService service : services) {
+
 				builder.annotatedService(service);
 			}
+
+			builder.decorator(EncodingService.newDecorator());
 
 			// multiple class is fail.
 			// Can not split RedisStringService by redis command.
@@ -112,13 +118,16 @@ public class ArmedisServerConfiguration {
 
 			// Add static file serving
 			FileServiceBuilder fileServiceBuilder = FileService.builder(ClassLoader.getSystemClassLoader(),
-					"/templates");
+					"/static-files");
 
 			// Specify cache control directives.
 			ServerCacheControl cc = ServerCacheControl.builder().maxAgeSeconds(86400).cachePublic().build();
-			fileServiceBuilder.cacheControl(cc /* "max-age=86400, public" */);
+			fileServiceBuilder.cacheControl(cc); // /* http cache "max-age=86400, public" */
+			fileServiceBuilder.serveCompressedFiles(true); // for compress
 
-			builder.serviceUnder("/templates", fileServiceBuilder.build());
+			builder.serviceUnder("/stats", fileServiceBuilder.build());
+
+//			builder.decorator(DecodingService.newDecorator());
 		};
 	}
 
@@ -142,7 +151,7 @@ public class ArmedisServerConfiguration {
 		}
 	}
 
-	private ServerBuilder initializeServerBuilderByConfig(ServerBuilder serverBuilder) {
+	private ServerBuilder initializeHttpServerBuilder(ServerBuilder serverBuilder) {
 		int requsetTimeout = 5;
 		serverBuilder.requestTimeout(Duration.ofSeconds(requsetTimeout));
 
