@@ -1,13 +1,25 @@
 package com.github.armedis.redis.info;
 
-final class Cluster extends StatsBaseVo {
-	private int clusterEnabled;
+import java.util.HashMap;
+import java.util.Map;
 
-	public int getClusterEnabled() {
-		return clusterEnabled;
-	}
+public final class Cluster extends StatsBaseVo {
+    @Override
+    public Map<String, String> initOperationKeyList() {
+        Map<String, String> keyList = new HashMap<>();
 
-	public void setClusterEnabled(int clusterEnabled) {
-		this.clusterEnabled = clusterEnabled;
-	}
+        keyList.put("clusterEnabled", DIFF);
+
+        return keyList;
+    }
+
+    private int clusterEnabled;
+
+    public int getClusterEnabled() {
+        return clusterEnabled;
+    }
+
+    public void setClusterEnabled(int clusterEnabled) {
+        this.clusterEnabled = clusterEnabled;
+    }
 }

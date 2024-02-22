@@ -1,380 +1,404 @@
 package com.github.armedis.redis.info;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Server extends StatsBaseVo {
-	private String redisVersion;
-	private String redisGitSha1;
-	private int redisGitDirty;
-	private String redisBuildId;
-	private String redisMode;
-	private String os;
-	private String archBits;
-	private String monotonicClock;
-	private String multiplexingApi;
-	private String atomicvarApi;
-	private String gccVersion;
-	private int processId;
-	private String processSupervised;
-	private String runId;
-	private String host;
-	private int tcpPort;
-	private long serverTimeUsec;
-	private int uptimeInSeconds;
-	private int uptimeInDays;
-	private int hz;
-	private int configuredHz;
-	private long lruClock;
-	private String executable;
-	private String configFile;
-	private int ioThreadsActive;
+    @Override
+    public Map<String, String> initOperationKeyList() {
+        Map<String, String> keyList = new HashMap<>();
 
-	/**
-	 * @return the redisVersion
-	 */
-	public String getRedisVersion() {
-		return redisVersion;
-	}
+        keyList.put("redisVersion", DIFF);
+        keyList.put("redisMode", DIFF);
+        keyList.put("os", DIFF);
+        keyList.put("archBits", DIFF);
+        keyList.put("gccVersion", DIFF);
+        keyList.put("processId", CONCAT);
+        keyList.put("processSupervised", DIFF);
+        keyList.put("host", DIFF);
+        keyList.put("tcpPort", DIFF);
+        keyList.put("uptimeInSeconds", MIN);
+        keyList.put("hz", DIFF);
+        keyList.put("configuredHz", DIFF);
+        keyList.put("ioThreadsActive", DIFF);
+        keyList.put("configFile", DIFF);
 
-	/**
-	 * @param redisVersion the redisVersion to set
-	 */
-	public void setRedisVersion(String redisVersion) {
-		this.redisVersion = redisVersion;
-	}
+        return keyList;
+    }
 
-	/**
-	 * @return the redisGitSha1
-	 */
-	public String getRedisGitSha1() {
-		return redisGitSha1;
-	}
+    private String redisVersion;
+    private String redisGitSha1;
+    private int redisGitDirty;
+    private String redisBuildId;
+    private String redisMode;
+    private String os;
+    private String archBits;
+    private String monotonicClock;
+    private String multiplexingApi;
+    private String atomicvarApi;
+    private String gccVersion;
+    private int processId;
+    private String processSupervised;
+    private String runId;
+    private String host;
+    private int tcpPort;
+    private long serverTimeUsec;
+    private int uptimeInSeconds;
+    private int uptimeInDays;
+    private int hz;
+    private int configuredHz;
+    private long lruClock;
+    private String executable;
+    private String configFile;
+    private int ioThreadsActive;
 
-	/**
-	 * @param redisGitSha1 the redisGitSha1 to set
-	 */
-	public void setRedisGitSha1(String redisGitSha1) {
-		this.redisGitSha1 = redisGitSha1;
-	}
+    /**
+     * @return the redisVersion
+     */
+    public String getRedisVersion() {
+        return redisVersion;
+    }
 
-	/**
-	 * @return the redisGitDirty
-	 */
-	public int getRedisGitDirty() {
-		return redisGitDirty;
-	}
+    /**
+     * @param redisVersion the redisVersion to set
+     */
+    public void setRedisVersion(String redisVersion) {
+        this.redisVersion = redisVersion;
+    }
 
-	/**
-	 * @param redisGitDirty the redisGitDirty to set
-	 */
-	public void setRedisGitDirty(int redisGitDirty) {
-		this.redisGitDirty = redisGitDirty;
-	}
+    /**
+     * @return the redisGitSha1
+     */
+    public String getRedisGitSha1() {
+        return redisGitSha1;
+    }
 
-	/**
-	 * @return the redisBuildId
-	 */
-	public String getRedisBuildId() {
-		return redisBuildId;
-	}
+    /**
+     * @param redisGitSha1 the redisGitSha1 to set
+     */
+    public void setRedisGitSha1(String redisGitSha1) {
+        this.redisGitSha1 = redisGitSha1;
+    }
 
-	/**
-	 * @param redisBuildId the redisBuildId to set
-	 */
-	public void setRedisBuildId(String redisBuildId) {
-		this.redisBuildId = redisBuildId;
-	}
+    /**
+     * @return the redisGitDirty
+     */
+    public int getRedisGitDirty() {
+        return redisGitDirty;
+    }
 
-	/**
-	 * @return the redisMode
-	 */
-	public String getRedisMode() {
-		return redisMode;
-	}
+    /**
+     * @param redisGitDirty the redisGitDirty to set
+     */
+    public void setRedisGitDirty(int redisGitDirty) {
+        this.redisGitDirty = redisGitDirty;
+    }
 
-	/**
-	 * @param redisMode the redisMode to set
-	 */
-	public void setRedisMode(String redisMode) {
-		this.redisMode = redisMode;
-	}
+    /**
+     * @return the redisBuildId
+     */
+    public String getRedisBuildId() {
+        return redisBuildId;
+    }
 
-	/**
-	 * @return the os
-	 */
-	public String getOs() {
-		return os;
-	}
+    /**
+     * @param redisBuildId the redisBuildId to set
+     */
+    public void setRedisBuildId(String redisBuildId) {
+        this.redisBuildId = redisBuildId;
+    }
 
-	/**
-	 * @param os the os to set
-	 */
-	public void setOs(String os) {
-		this.os = os;
-	}
+    /**
+     * @return the redisMode
+     */
+    public String getRedisMode() {
+        return redisMode;
+    }
 
-	/**
-	 * @return the archBits
-	 */
-	public String getArchBits() {
-		return archBits;
-	}
+    /**
+     * @param redisMode the redisMode to set
+     */
+    public void setRedisMode(String redisMode) {
+        this.redisMode = redisMode;
+    }
 
-	/**
-	 * @param archBits the archBits to set
-	 */
-	public void setArchBits(String archBits) {
-		this.archBits = archBits;
-	}
+    /**
+     * @return the os
+     */
+    public String getOs() {
+        return os;
+    }
 
-	/**
-	 * @return the monotonicClock
-	 */
-	public String getMonotonicClock() {
-		return monotonicClock;
-	}
+    /**
+     * @param os the os to set
+     */
+    public void setOs(String os) {
+        this.os = os;
+    }
 
-	/**
-	 * @param monotonicClock the monotonicClock to set
-	 */
-	public void setMonotonicClock(String monotonicClock) {
-		this.monotonicClock = monotonicClock;
-	}
+    /**
+     * @return the archBits
+     */
+    public String getArchBits() {
+        return archBits;
+    }
 
-	/**
-	 * @return the multiplexingApi
-	 */
-	public String getMultiplexingApi() {
-		return multiplexingApi;
-	}
+    /**
+     * @param archBits the archBits to set
+     */
+    public void setArchBits(String archBits) {
+        this.archBits = archBits;
+    }
 
-	/**
-	 * @param multiplexingApi the multiplexingApi to set
-	 */
-	public void setMultiplexingApi(String multiplexingApi) {
-		this.multiplexingApi = multiplexingApi;
-	}
+    /**
+     * @return the monotonicClock
+     */
+    public String getMonotonicClock() {
+        return monotonicClock;
+    }
 
-	/**
-	 * @return the atomicvarApi
-	 */
-	public String getAtomicvarApi() {
-		return atomicvarApi;
-	}
+    /**
+     * @param monotonicClock the monotonicClock to set
+     */
+    public void setMonotonicClock(String monotonicClock) {
+        this.monotonicClock = monotonicClock;
+    }
 
-	/**
-	 * @param atomicvarApi the atomicvarApi to set
-	 */
-	public void setAtomicvarApi(String atomicvarApi) {
-		this.atomicvarApi = atomicvarApi;
-	}
+    /**
+     * @return the multiplexingApi
+     */
+    public String getMultiplexingApi() {
+        return multiplexingApi;
+    }
 
-	/**
-	 * @return the gccVersion
-	 */
-	public String getGccVersion() {
-		return gccVersion;
-	}
+    /**
+     * @param multiplexingApi the multiplexingApi to set
+     */
+    public void setMultiplexingApi(String multiplexingApi) {
+        this.multiplexingApi = multiplexingApi;
+    }
 
-	/**
-	 * @param gccVersion the gccVersion to set
-	 */
-	public void setGccVersion(String gccVersion) {
-		this.gccVersion = gccVersion;
-	}
+    /**
+     * @return the atomicvarApi
+     */
+    public String getAtomicvarApi() {
+        return atomicvarApi;
+    }
 
-	/**
-	 * @return the processId
-	 */
-	public int getProcessId() {
-		return processId;
-	}
+    /**
+     * @param atomicvarApi the atomicvarApi to set
+     */
+    public void setAtomicvarApi(String atomicvarApi) {
+        this.atomicvarApi = atomicvarApi;
+    }
 
-	/**
-	 * @param processId the processId to set
-	 */
-	public void setProcessId(int processId) {
-		this.processId = processId;
-	}
+    /**
+     * @return the gccVersion
+     */
+    public String getGccVersion() {
+        return gccVersion;
+    }
 
-	/**
-	 * @return the processSupervised
-	 */
-	public String getProcessSupervised() {
-		return processSupervised;
-	}
+    /**
+     * @param gccVersion the gccVersion to set
+     */
+    public void setGccVersion(String gccVersion) {
+        this.gccVersion = gccVersion;
+    }
 
-	/**
-	 * @param processSupervised the processSupervised to set
-	 */
-	public void setProcessSupervised(String processSupervised) {
-		this.processSupervised = processSupervised;
-	}
+    /**
+     * @return the processId
+     */
+    public int getProcessId() {
+        return processId;
+    }
 
-	/**
-	 * @return the runId
-	 */
-	public String getRunId() {
-		return runId;
-	}
+    /**
+     * @param processId the processId to set
+     */
+    public void setProcessId(int processId) {
+        this.processId = processId;
+    }
 
-	/**
-	 * @param runId the runId to set
-	 */
-	public void setRunId(String runId) {
-		this.runId = runId;
-	}
+    /**
+     * @return the processSupervised
+     */
+    public String getProcessSupervised() {
+        return processSupervised;
+    }
 
-	/**
-	 * @return the tcpPort
-	 */
-	public int getTcpPort() {
-		return tcpPort;
-	}
+    /**
+     * @param processSupervised the processSupervised to set
+     */
+    public void setProcessSupervised(String processSupervised) {
+        this.processSupervised = processSupervised;
+    }
 
-	/**
-	 * @param tcpPort the tcpPort to set
-	 */
-	public void setTcpPort(int tcpPort) {
-		this.tcpPort = tcpPort;
-	}
+    /**
+     * @return the runId
+     */
+    public String getRunId() {
+        return runId;
+    }
 
-	/**
-	 * @return the host
-	 */
-	public String getHost() {
-		return host;
-	}
+    /**
+     * @param runId the runId to set
+     */
+    public void setRunId(String runId) {
+        this.runId = runId;
+    }
 
-	/**
-	 * @param host the host to set
-	 */
-	public void setHost(String host) {
-		this.host = host;
-	}
+    /**
+     * @return the tcpPort
+     */
+    public int getTcpPort() {
+        return tcpPort;
+    }
 
-	/**
-	 * @return the serverTimeUsec
-	 */
-	public long getServerTimeUsec() {
-		return serverTimeUsec;
-	}
+    /**
+     * @param tcpPort the tcpPort to set
+     */
+    public void setTcpPort(int tcpPort) {
+        this.tcpPort = tcpPort;
+    }
 
-	/**
-	 * @param serverTimeUsec the serverTimeUsec to set
-	 */
-	public void setServerTimeUsec(long serverTimeUsec) {
-		this.serverTimeUsec = serverTimeUsec;
-	}
+    /**
+     * @return the host
+     */
+    public String getHost() {
+        return host;
+    }
 
-	/**
-	 * @return the uptimeInSeconds
-	 */
-	public int getUptimeInSeconds() {
-		return uptimeInSeconds;
-	}
+    /**
+     * @param host the host to set
+     */
+    public void setHost(String host) {
+        this.host = host;
+    }
 
-	/**
-	 * @param uptimeInSeconds the uptimeInSeconds to set
-	 */
-	public void setUptimeInSeconds(int uptimeInSeconds) {
-		this.uptimeInSeconds = uptimeInSeconds;
-	}
+    /**
+     * @return the serverTimeUsec
+     */
+    public long getServerTimeUsec() {
+        return serverTimeUsec;
+    }
 
-	/**
-	 * @return the uptimeInDays
-	 */
-	public int getUptimeInDays() {
-		return uptimeInDays;
-	}
+    /**
+     * @param serverTimeUsec the serverTimeUsec to set
+     */
+    public void setServerTimeUsec(long serverTimeUsec) {
+        this.serverTimeUsec = serverTimeUsec;
+    }
 
-	/**
-	 * @param uptimeInDays the uptimeInDays to set
-	 */
-	public void setUptimeInDays(int uptimeInDays) {
-		this.uptimeInDays = uptimeInDays;
-	}
+    /**
+     * @return the uptimeInSeconds
+     */
+    public int getUptimeInSeconds() {
+        return uptimeInSeconds;
+    }
 
-	/**
-	 * @return the hz
-	 */
-	public int getHz() {
-		return hz;
-	}
+    /**
+     * @param uptimeInSeconds the uptimeInSeconds to set
+     */
+    public void setUptimeInSeconds(int uptimeInSeconds) {
+        this.uptimeInSeconds = uptimeInSeconds;
+    }
 
-	/**
-	 * @param hz the hz to set
-	 */
-	public void setHz(int hz) {
-		this.hz = hz;
-	}
+    /**
+     * @return the uptimeInDays
+     */
+    public int getUptimeInDays() {
+        return uptimeInDays;
+    }
 
-	/**
-	 * @return the configuredHz
-	 */
-	public int getConfiguredHz() {
-		return configuredHz;
-	}
+    /**
+     * @param uptimeInDays the uptimeInDays to set
+     */
+    public void setUptimeInDays(int uptimeInDays) {
+        this.uptimeInDays = uptimeInDays;
+    }
 
-	/**
-	 * @param configuredHz the configuredHz to set
-	 */
-	public void setConfiguredHz(int configuredHz) {
-		this.configuredHz = configuredHz;
-	}
+    /**
+     * @return the hz
+     */
+    public int getHz() {
+        return hz;
+    }
 
-	/**
-	 * @return the lruClock
-	 */
-	public long getLruClock() {
-		return lruClock;
-	}
+    /**
+     * @param hz the hz to set
+     */
+    public void setHz(int hz) {
+        this.hz = hz;
+    }
 
-	/**
-	 * @param lruClock the lruClock to set
-	 */
-	public void setLruClock(long lruClock) {
-		this.lruClock = lruClock;
-	}
+    /**
+     * @return the configuredHz
+     */
+    public int getConfiguredHz() {
+        return configuredHz;
+    }
 
-	/**
-	 * @return the executable
-	 */
-	public String getExecutable() {
-		return executable;
-	}
+    /**
+     * @param configuredHz the configuredHz to set
+     */
+    public void setConfiguredHz(int configuredHz) {
+        this.configuredHz = configuredHz;
+    }
 
-	/**
-	 * @param executable the executable to set
-	 */
-	public void setExecutable(String executable) {
-		this.executable = executable;
-	}
+    /**
+     * @return the lruClock
+     */
+    public long getLruClock() {
+        return lruClock;
+    }
 
-	/**
-	 * @return the configFile
-	 */
-	public String getConfigFile() {
-		return configFile;
-	}
+    /**
+     * @param lruClock the lruClock to set
+     */
+    public void setLruClock(long lruClock) {
+        this.lruClock = lruClock;
+    }
 
-	/**
-	 * @param configFile the configFile to set
-	 */
-	public void setConfigFile(String configFile) {
-		this.configFile = configFile;
-	}
+    /**
+     * @return the executable
+     */
+    public String getExecutable() {
+        return executable;
+    }
 
-	/**
-	 * @return the ioThreadsActive
-	 */
-	public int getIoThreadsActive() {
-		return ioThreadsActive;
-	}
+    /**
+     * @param executable the executable to set
+     */
+    public void setExecutable(String executable) {
+        this.executable = executable;
+    }
 
-	/**
-	 * @param ioThreadsActive the ioThreadsActive to set
-	 */
-	public void setIoThreadsActive(int ioThreadsActive) {
-		this.ioThreadsActive = ioThreadsActive;
-	}
+    /**
+     * @return the configFile
+     */
+    public String getConfigFile() {
+        return configFile;
+    }
 
+    /**
+     * @param configFile the configFile to set
+     */
+    public void setConfigFile(String configFile) {
+        this.configFile = configFile;
+    }
+
+    /**
+     * @return the ioThreadsActive
+     */
+    public int getIoThreadsActive() {
+        return ioThreadsActive;
+    }
+
+    /**
+     * @param ioThreadsActive the ioThreadsActive to set
+     */
+    public void setIoThreadsActive(int ioThreadsActive) {
+        this.ioThreadsActive = ioThreadsActive;
+    }
 }

@@ -1,349 +1,369 @@
 package com.github.armedis.redis.info;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public final class Persistence extends StatsBaseVo {
-	private int loading;
-	private long currentCowSize;
-	private int currentCowSizeAge;
-	private double currentForkPerc;
-	private long currentSaveKeysProcessed;
-	private long currentSaveKeysTotal;
-	private long rdbChangesSinceLastSave;
-	private int rdbBgsaveInProgress;
-	private long rdbLastSaveTime;
-	private String rdbLastBgsaveStatus;
-	private long rdbLastBgsaveTimeSec;
-	private long rdbCurrentBgsaveTimeSec;
-	private long rdbLastCowSize;
-	private int aofEnabled;
-	private int aofRewriteInProgress;
-	private int aofRewriteScheduled;
-	private long aofLastRewriteTimeSec;
-	private long aofCurrentRewriteTimeSec;
-	private String aofLastBgrewriteStatus;
-	private String aofLastWriteStatus;
-	private long aofLastCowSize;
-	private int moduleForkInProgress;
-	private long moduleForkLastCowSize;
+    @Override
+    public Map<String, String> initOperationKeyList() {
+        Map<String, String> keyList = new HashMap<>();
 
-	/**
-	 * @return the loading
-	 */
-	public int getLoading() {
-		return loading;
-	}
+        keyList.put("loading", MAX);
+        keyList.put("currentSaveKeysTotal", SUM);
+        keyList.put("rdbChangesSinceLastSave", SUM);
+        keyList.put("rdbBgsaveInProgress", MAX);
+        keyList.put("rdbLastSaveTime", MAX);
+        keyList.put("rdbLastBgsaveStatus", DIFF);
+        keyList.put("rdbLastBgsaveTimeSec", SUM);
+        keyList.put("aofEnabled", DIFF);
+        keyList.put("aofLastCowSize", SUM);
 
-	/**
-	 * @param loading the loading to set
-	 */
-	public void setLoading(int loading) {
-		this.loading = loading;
-	}
+        return keyList;
+    }
 
-	/**
-	 * @return the currentCowSize
-	 */
-	public long getCurrentCowSize() {
-		return currentCowSize;
-	}
+    private int loading;
+    private long currentCowSize;
+    private int currentCowSizeAge;
+    private double currentForkPerc;
+    private long currentSaveKeysProcessed;
+    private long currentSaveKeysTotal;
+    private long rdbChangesSinceLastSave;
+    private int rdbBgsaveInProgress;
+    private long rdbLastSaveTime;
+    private String rdbLastBgsaveStatus;
+    private long rdbLastBgsaveTimeSec;
+    private long rdbCurrentBgsaveTimeSec;
+    private long rdbLastCowSize;
+    private int aofEnabled;
+    private int aofRewriteInProgress;
+    private int aofRewriteScheduled;
+    private long aofLastRewriteTimeSec;
+    private long aofCurrentRewriteTimeSec;
+    private String aofLastBgrewriteStatus;
+    private String aofLastWriteStatus;
+    private long aofLastCowSize;
+    private int moduleForkInProgress;
+    private long moduleForkLastCowSize;
 
-	/**
-	 * @param currentCowSize the currentCowSize to set
-	 */
-	public void setCurrentCowSize(long currentCowSize) {
-		this.currentCowSize = currentCowSize;
-	}
+    /**
+     * @return the loading
+     */
+    public int getLoading() {
+        return loading;
+    }
 
-	/**
-	 * @return the currentCowSizeAge
-	 */
-	public int getCurrentCowSizeAge() {
-		return currentCowSizeAge;
-	}
+    /**
+     * @param loading the loading to set
+     */
+    public void setLoading(int loading) {
+        this.loading = loading;
+    }
 
-	/**
-	 * @param currentCowSizeAge the currentCowSizeAge to set
-	 */
-	public void setCurrentCowSizeAge(int currentCowSizeAge) {
-		this.currentCowSizeAge = currentCowSizeAge;
-	}
+    /**
+     * @return the currentCowSize
+     */
+    public long getCurrentCowSize() {
+        return currentCowSize;
+    }
 
-	/**
-	 * @return the currentForkPerc
-	 */
-	public double getCurrentForkPerc() {
-		return currentForkPerc;
-	}
+    /**
+     * @param currentCowSize the currentCowSize to set
+     */
+    public void setCurrentCowSize(long currentCowSize) {
+        this.currentCowSize = currentCowSize;
+    }
 
-	/**
-	 * @param currentForkPerc the currentForkPerc to set
-	 */
-	public void setCurrentForkPerc(double currentForkPerc) {
-		this.currentForkPerc = currentForkPerc;
-	}
+    /**
+     * @return the currentCowSizeAge
+     */
+    public int getCurrentCowSizeAge() {
+        return currentCowSizeAge;
+    }
 
-	/**
-	 * @return the currentSaveKeysProcessed
-	 */
-	public long getCurrentSaveKeysProcessed() {
-		return currentSaveKeysProcessed;
-	}
+    /**
+     * @param currentCowSizeAge the currentCowSizeAge to set
+     */
+    public void setCurrentCowSizeAge(int currentCowSizeAge) {
+        this.currentCowSizeAge = currentCowSizeAge;
+    }
 
-	/**
-	 * @param currentSaveKeysProcessed the currentSaveKeysProcessed to set
-	 */
-	public void setCurrentSaveKeysProcessed(long currentSaveKeysProcessed) {
-		this.currentSaveKeysProcessed = currentSaveKeysProcessed;
-	}
+    /**
+     * @return the currentForkPerc
+     */
+    public double getCurrentForkPerc() {
+        return currentForkPerc;
+    }
 
-	/**
-	 * @return the currentSaveKeysTotal
-	 */
-	public long getCurrentSaveKeysTotal() {
-		return currentSaveKeysTotal;
-	}
+    /**
+     * @param currentForkPerc the currentForkPerc to set
+     */
+    public void setCurrentForkPerc(double currentForkPerc) {
+        this.currentForkPerc = currentForkPerc;
+    }
 
-	/**
-	 * @param currentSaveKeysTotal the currentSaveKeysTotal to set
-	 */
-	public void setCurrentSaveKeysTotal(long currentSaveKeysTotal) {
-		this.currentSaveKeysTotal = currentSaveKeysTotal;
-	}
+    /**
+     * @return the currentSaveKeysProcessed
+     */
+    public long getCurrentSaveKeysProcessed() {
+        return currentSaveKeysProcessed;
+    }
 
-	/**
-	 * @return the rdbChangesSinceLastSave
-	 */
-	public long getRdbChangesSinceLastSave() {
-		return rdbChangesSinceLastSave;
-	}
+    /**
+     * @param currentSaveKeysProcessed the currentSaveKeysProcessed to set
+     */
+    public void setCurrentSaveKeysProcessed(long currentSaveKeysProcessed) {
+        this.currentSaveKeysProcessed = currentSaveKeysProcessed;
+    }
 
-	/**
-	 * @param rdbChangesSinceLastSave the rdbChangesSinceLastSave to set
-	 */
-	public void setRdbChangesSinceLastSave(long rdbChangesSinceLastSave) {
-		this.rdbChangesSinceLastSave = rdbChangesSinceLastSave;
-	}
+    /**
+     * @return the currentSaveKeysTotal
+     */
+    public long getCurrentSaveKeysTotal() {
+        return currentSaveKeysTotal;
+    }
 
-	/**
-	 * @return the rdbBgsaveInProgress
-	 */
-	public int getRdbBgsaveInProgress() {
-		return rdbBgsaveInProgress;
-	}
+    /**
+     * @param currentSaveKeysTotal the currentSaveKeysTotal to set
+     */
+    public void setCurrentSaveKeysTotal(long currentSaveKeysTotal) {
+        this.currentSaveKeysTotal = currentSaveKeysTotal;
+    }
 
-	/**
-	 * @param rdbBgsaveInProgress the rdbBgsaveInProgress to set
-	 */
-	public void setRdbBgsaveInProgress(int rdbBgsaveInProgress) {
-		this.rdbBgsaveInProgress = rdbBgsaveInProgress;
-	}
+    /**
+     * @return the rdbChangesSinceLastSave
+     */
+    public long getRdbChangesSinceLastSave() {
+        return rdbChangesSinceLastSave;
+    }
 
-	/**
-	 * @return the rdbLastSaveTime
-	 */
-	public long getRdbLastSaveTime() {
-		return rdbLastSaveTime;
-	}
+    /**
+     * @param rdbChangesSinceLastSave the rdbChangesSinceLastSave to set
+     */
+    public void setRdbChangesSinceLastSave(long rdbChangesSinceLastSave) {
+        this.rdbChangesSinceLastSave = rdbChangesSinceLastSave;
+    }
 
-	/**
-	 * @param rdbLastSaveTime the rdbLastSaveTime to set
-	 */
-	public void setRdbLastSaveTime(long rdbLastSaveTime) {
-		this.rdbLastSaveTime = rdbLastSaveTime;
-	}
+    /**
+     * @return the rdbBgsaveInProgress
+     */
+    public int getRdbBgsaveInProgress() {
+        return rdbBgsaveInProgress;
+    }
 
-	/**
-	 * @return the rdbLastBgsaveStatus
-	 */
-	public String getRdbLastBgsaveStatus() {
-		return rdbLastBgsaveStatus;
-	}
+    /**
+     * @param rdbBgsaveInProgress the rdbBgsaveInProgress to set
+     */
+    public void setRdbBgsaveInProgress(int rdbBgsaveInProgress) {
+        this.rdbBgsaveInProgress = rdbBgsaveInProgress;
+    }
 
-	/**
-	 * @param rdbLastBgsaveStatus the rdbLastBgsaveStatus to set
-	 */
-	public void setRdbLastBgsaveStatus(String rdbLastBgsaveStatus) {
-		this.rdbLastBgsaveStatus = rdbLastBgsaveStatus;
-	}
+    /**
+     * @return the rdbLastSaveTime
+     */
+    public long getRdbLastSaveTime() {
+        return rdbLastSaveTime;
+    }
 
-	/**
-	 * @return the rdbLastBgsaveTimeSec
-	 */
-	public long getRdbLastBgsaveTimeSec() {
-		return rdbLastBgsaveTimeSec;
-	}
+    /**
+     * @param rdbLastSaveTime the rdbLastSaveTime to set
+     */
+    public void setRdbLastSaveTime(long rdbLastSaveTime) {
+        this.rdbLastSaveTime = rdbLastSaveTime;
+    }
 
-	/**
-	 * @param rdbLastBgsaveTimeSec the rdbLastBgsaveTimeSec to set
-	 */
-	public void setRdbLastBgsaveTimeSec(long rdbLastBgsaveTimeSec) {
-		this.rdbLastBgsaveTimeSec = rdbLastBgsaveTimeSec;
-	}
+    /**
+     * @return the rdbLastBgsaveStatus
+     */
+    public String getRdbLastBgsaveStatus() {
+        return rdbLastBgsaveStatus;
+    }
 
-	/**
-	 * @return the rdbCurrentBgsaveTimeSec
-	 */
-	public long getRdbCurrentBgsaveTimeSec() {
-		return rdbCurrentBgsaveTimeSec;
-	}
+    /**
+     * @param rdbLastBgsaveStatus the rdbLastBgsaveStatus to set
+     */
+    public void setRdbLastBgsaveStatus(String rdbLastBgsaveStatus) {
+        this.rdbLastBgsaveStatus = rdbLastBgsaveStatus;
+    }
 
-	/**
-	 * @param rdbCurrentBgsaveTimeSec the rdbCurrentBgsaveTimeSec to set
-	 */
-	public void setRdbCurrentBgsaveTimeSec(long rdbCurrentBgsaveTimeSec) {
-		this.rdbCurrentBgsaveTimeSec = rdbCurrentBgsaveTimeSec;
-	}
+    /**
+     * @return the rdbLastBgsaveTimeSec
+     */
+    public long getRdbLastBgsaveTimeSec() {
+        return rdbLastBgsaveTimeSec;
+    }
 
-	/**
-	 * @return the rdbLastCowSize
-	 */
-	public long getRdbLastCowSize() {
-		return rdbLastCowSize;
-	}
+    /**
+     * @param rdbLastBgsaveTimeSec the rdbLastBgsaveTimeSec to set
+     */
+    public void setRdbLastBgsaveTimeSec(long rdbLastBgsaveTimeSec) {
+        this.rdbLastBgsaveTimeSec = rdbLastBgsaveTimeSec;
+    }
 
-	/**
-	 * @param rdbLastCowSize the rdbLastCowSize to set
-	 */
-	public void setRdbLastCowSize(long rdbLastCowSize) {
-		this.rdbLastCowSize = rdbLastCowSize;
-	}
+    /**
+     * @return the rdbCurrentBgsaveTimeSec
+     */
+    public long getRdbCurrentBgsaveTimeSec() {
+        return rdbCurrentBgsaveTimeSec;
+    }
 
-	/**
-	 * @return the aofEnabled
-	 */
-	public int getAofEnabled() {
-		return aofEnabled;
-	}
+    /**
+     * @param rdbCurrentBgsaveTimeSec the rdbCurrentBgsaveTimeSec to set
+     */
+    public void setRdbCurrentBgsaveTimeSec(long rdbCurrentBgsaveTimeSec) {
+        this.rdbCurrentBgsaveTimeSec = rdbCurrentBgsaveTimeSec;
+    }
 
-	/**
-	 * @param aofEnabled the aofEnabled to set
-	 */
-	public void setAofEnabled(int aofEnabled) {
-		this.aofEnabled = aofEnabled;
-	}
+    /**
+     * @return the rdbLastCowSize
+     */
+    public long getRdbLastCowSize() {
+        return rdbLastCowSize;
+    }
 
-	/**
-	 * @return the aofRewriteInProgress
-	 */
-	public int getAofRewriteInProgress() {
-		return aofRewriteInProgress;
-	}
+    /**
+     * @param rdbLastCowSize the rdbLastCowSize to set
+     */
+    public void setRdbLastCowSize(long rdbLastCowSize) {
+        this.rdbLastCowSize = rdbLastCowSize;
+    }
 
-	/**
-	 * @param aofRewriteInProgress the aofRewriteInProgress to set
-	 */
-	public void setAofRewriteInProgress(int aofRewriteInProgress) {
-		this.aofRewriteInProgress = aofRewriteInProgress;
-	}
+    /**
+     * @return the aofEnabled
+     */
+    public int getAofEnabled() {
+        return aofEnabled;
+    }
 
-	/**
-	 * @return the aofRewriteScheduled
-	 */
-	public int getAofRewriteScheduled() {
-		return aofRewriteScheduled;
-	}
+    /**
+     * @param aofEnabled the aofEnabled to set
+     */
+    public void setAofEnabled(int aofEnabled) {
+        this.aofEnabled = aofEnabled;
+    }
 
-	/**
-	 * @param aofRewriteScheduled the aofRewriteScheduled to set
-	 */
-	public void setAofRewriteScheduled(int aofRewriteScheduled) {
-		this.aofRewriteScheduled = aofRewriteScheduled;
-	}
+    /**
+     * @return the aofRewriteInProgress
+     */
+    public int getAofRewriteInProgress() {
+        return aofRewriteInProgress;
+    }
 
-	/**
-	 * @return the aofLastRewriteTimeSec
-	 */
-	public long getAofLastRewriteTimeSec() {
-		return aofLastRewriteTimeSec;
-	}
+    /**
+     * @param aofRewriteInProgress the aofRewriteInProgress to set
+     */
+    public void setAofRewriteInProgress(int aofRewriteInProgress) {
+        this.aofRewriteInProgress = aofRewriteInProgress;
+    }
 
-	/**
-	 * @param aofLastRewriteTimeSec the aofLastRewriteTimeSec to set
-	 */
-	public void setAofLastRewriteTimeSec(long aofLastRewriteTimeSec) {
-		this.aofLastRewriteTimeSec = aofLastRewriteTimeSec;
-	}
+    /**
+     * @return the aofRewriteScheduled
+     */
+    public int getAofRewriteScheduled() {
+        return aofRewriteScheduled;
+    }
 
-	/**
-	 * @return the aofCurrentRewriteTimeSec
-	 */
-	public long getAofCurrentRewriteTimeSec() {
-		return aofCurrentRewriteTimeSec;
-	}
+    /**
+     * @param aofRewriteScheduled the aofRewriteScheduled to set
+     */
+    public void setAofRewriteScheduled(int aofRewriteScheduled) {
+        this.aofRewriteScheduled = aofRewriteScheduled;
+    }
 
-	/**
-	 * @param aofCurrentRewriteTimeSec the aofCurrentRewriteTimeSec to set
-	 */
-	public void setAofCurrentRewriteTimeSec(long aofCurrentRewriteTimeSec) {
-		this.aofCurrentRewriteTimeSec = aofCurrentRewriteTimeSec;
-	}
+    /**
+     * @return the aofLastRewriteTimeSec
+     */
+    public long getAofLastRewriteTimeSec() {
+        return aofLastRewriteTimeSec;
+    }
 
-	/**
-	 * @return the aofLastBgrewriteStatus
-	 */
-	public String getAofLastBgrewriteStatus() {
-		return aofLastBgrewriteStatus;
-	}
+    /**
+     * @param aofLastRewriteTimeSec the aofLastRewriteTimeSec to set
+     */
+    public void setAofLastRewriteTimeSec(long aofLastRewriteTimeSec) {
+        this.aofLastRewriteTimeSec = aofLastRewriteTimeSec;
+    }
 
-	/**
-	 * @param aofLastBgrewriteStatus the aofLastBgrewriteStatus to set
-	 */
-	public void setAofLastBgrewriteStatus(String aofLastBgrewriteStatus) {
-		this.aofLastBgrewriteStatus = aofLastBgrewriteStatus;
-	}
+    /**
+     * @return the aofCurrentRewriteTimeSec
+     */
+    public long getAofCurrentRewriteTimeSec() {
+        return aofCurrentRewriteTimeSec;
+    }
 
-	/**
-	 * @return the aofLastWriteStatus
-	 */
-	public String getAofLastWriteStatus() {
-		return aofLastWriteStatus;
-	}
+    /**
+     * @param aofCurrentRewriteTimeSec the aofCurrentRewriteTimeSec to set
+     */
+    public void setAofCurrentRewriteTimeSec(long aofCurrentRewriteTimeSec) {
+        this.aofCurrentRewriteTimeSec = aofCurrentRewriteTimeSec;
+    }
 
-	/**
-	 * @param aofLastWriteStatus the aofLastWriteStatus to set
-	 */
-	public void setAofLastWriteStatus(String aofLastWriteStatus) {
-		this.aofLastWriteStatus = aofLastWriteStatus;
-	}
+    /**
+     * @return the aofLastBgrewriteStatus
+     */
+    public String getAofLastBgrewriteStatus() {
+        return aofLastBgrewriteStatus;
+    }
 
-	/**
-	 * @return the aofLastCowSize
-	 */
-	public long getAofLastCowSize() {
-		return aofLastCowSize;
-	}
+    /**
+     * @param aofLastBgrewriteStatus the aofLastBgrewriteStatus to set
+     */
+    public void setAofLastBgrewriteStatus(String aofLastBgrewriteStatus) {
+        this.aofLastBgrewriteStatus = aofLastBgrewriteStatus;
+    }
 
-	/**
-	 * @param aofLastCowSize the aofLastCowSize to set
-	 */
-	public void setAofLastCowSize(long aofLastCowSize) {
-		this.aofLastCowSize = aofLastCowSize;
-	}
+    /**
+     * @return the aofLastWriteStatus
+     */
+    public String getAofLastWriteStatus() {
+        return aofLastWriteStatus;
+    }
 
-	/**
-	 * @return the moduleForkInProgress
-	 */
-	public int getModuleForkInProgress() {
-		return moduleForkInProgress;
-	}
+    /**
+     * @param aofLastWriteStatus the aofLastWriteStatus to set
+     */
+    public void setAofLastWriteStatus(String aofLastWriteStatus) {
+        this.aofLastWriteStatus = aofLastWriteStatus;
+    }
 
-	/**
-	 * @param moduleForkInProgress the moduleForkInProgress to set
-	 */
-	public void setModuleForkInProgress(int moduleForkInProgress) {
-		this.moduleForkInProgress = moduleForkInProgress;
-	}
+    /**
+     * @return the aofLastCowSize
+     */
+    public long getAofLastCowSize() {
+        return aofLastCowSize;
+    }
 
-	/**
-	 * @return the moduleForkLastCowSize
-	 */
-	public long getModuleForkLastCowSize() {
-		return moduleForkLastCowSize;
-	}
+    /**
+     * @param aofLastCowSize the aofLastCowSize to set
+     */
+    public void setAofLastCowSize(long aofLastCowSize) {
+        this.aofLastCowSize = aofLastCowSize;
+    }
 
-	/**
-	 * @param moduleForkLastCowSize the moduleForkLastCowSize to set
-	 */
-	public void setModuleForkLastCowSize(long moduleForkLastCowSize) {
-		this.moduleForkLastCowSize = moduleForkLastCowSize;
-	}
+    /**
+     * @return the moduleForkInProgress
+     */
+    public int getModuleForkInProgress() {
+        return moduleForkInProgress;
+    }
+
+    /**
+     * @param moduleForkInProgress the moduleForkInProgress to set
+     */
+    public void setModuleForkInProgress(int moduleForkInProgress) {
+        this.moduleForkInProgress = moduleForkInProgress;
+    }
+
+    /**
+     * @return the moduleForkLastCowSize
+     */
+    public long getModuleForkLastCowSize() {
+        return moduleForkLastCowSize;
+    }
+
+    /**
+     * @param moduleForkLastCowSize the moduleForkLastCowSize to set
+     */
+    public void setModuleForkLastCowSize(long moduleForkLastCowSize) {
+        this.moduleForkLastCowSize = moduleForkLastCowSize;
+    }
 }

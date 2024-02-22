@@ -95,9 +95,9 @@ class RedisInfoVoTest {
 				+ "used_cpu_sys:12.553367\r\n" + "used_cpu_user:17.318401\r\n" + "used_cpu_sys_children:0.018534\r\n"
 				+ "used_cpu_user_children:0.000000\r\n" + "used_cpu_sys_main_thread:11.817680\r\n"
 				+ "used_cpu_user_main_thread:17.130294\r\n" + "\r\n" + "# Modules\r\n" + "\r\n" + "# Errorstats\r\n"
-				+ "errorstat_ERR:count=8\r\n" + "\r\n" + "# Cluster\r\n" + "cluster_enabled:1\r\n" + "\r\n"
+				+ "errorstat_ERR:count=8\r\nerrorstat_MOVED:count=1\r\n" + "\r\n" + "# Cluster\r\n" + "cluster_enabled:1\r\n" + "\r\n"
 				+ "# Keyspace\r\n" + "db0:keys=1,expires=0,avg_ttl=0\r\n" + "";
-		RedisInfoVo redisInfoVO = RedisInfoVo.fromInfoCommandResult(infoResult);
+		RedisInfoVo redisInfoVO = RedisInfoVo.from(infoResult);
 //		System.out.println(redisInfoVO.toString());
 
 		ObjectMapper objectMapper = new ObjectMapper();
@@ -124,7 +124,7 @@ class RedisInfoVoTest {
 //		JsonNode jsonNode = objectMapper.valueToTree(redisInfoVO);
 //		System.out.println(jsonNode);
 		String json = objectMapper.writeValueAsString(redisInfoVO);
-		System.out.println(json);
+		System.out.println("Static data convert " + json);
 
 		CircularFifoQueue<RedisInfoVo> queue = new CircularFifoQueue<RedisInfoVo>();
 		queue.add(redisInfoVO);

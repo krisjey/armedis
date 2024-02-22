@@ -26,7 +26,6 @@ import com.linecorp.armeria.common.util.BlockingTaskExecutorBuilder;
 import com.linecorp.armeria.server.Server;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.docs.DocService;
-import com.linecorp.armeria.server.encoding.DecodingService;
 import com.linecorp.armeria.server.encoding.EncodingService;
 import com.linecorp.armeria.server.file.FileService;
 import com.linecorp.armeria.server.file.FileServiceBuilder;
@@ -45,179 +44,181 @@ import com.linecorp.armeria.spring.ArmeriaSettings.Port;
 @Configuration
 @EnableAutoConfiguration
 public class ArmedisServerConfiguration {
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private DefaultInstanceInfo instanceInfo;
+    private DefaultInstanceInfo instanceInfo;
 
-	private ArmeriaSettings settings;
+    private ArmeriaSettings settings;
 
-	private ArmedisConfiguration armedisConfiguration;
+    private ArmedisConfiguration armedisConfiguration;
 
-	@Autowired
-	public ArmedisServerConfiguration(ArmeriaSettings settings, ArmedisConfiguration armedisConfiguration) {
-		this.settings = settings;
-		this.armedisConfiguration = armedisConfiguration;
-	}
+    @Autowired
+    public ArmedisServerConfiguration(ArmeriaSettings settings, ArmedisConfiguration armedisConfiguration) {
+        this.settings = settings;
+        this.armedisConfiguration = armedisConfiguration;
+    }
 
-	/**
-	 * A user can configure a {@link Server} by providing an
-	 * {@link ArmeriaServerConfigurator} bean.
-	 * 
-	 * prop check(prop or zookeeper) redis check
-	 * 
-	 */
-	@Bean
-	public ArmeriaServerConfigurator armeriaServerConfigurator(ArmeriaAnnotatedHttpService... services) {
-		int listenPort = initializeServicePort();
+    /**
+     * A user can configure a {@link Server} by providing an
+     * {@link ArmeriaServerConfigurator} bean.
+     * 
+     * prop check(prop or zookeeper) redis check
+     * 
+     */
+    @Bean
+    public ArmeriaServerConfigurator armeriaServerConfigurator(ArmeriaAnnotatedHttpService... services) {
+        int listenPort = initializeServicePort();
 
-		setArmeriaListenPort(listenPort);
+        setArmeriaListenPort(listenPort);
 
-		addShutdownHook(listenPort);
+        addShutdownHook(listenPort);
 
-		logger.info(LogStringBuilder.makeHeader("Product info"));
-		logger.info(LogStringBuilder.makeBody(" startup process begin at " + new Date()));
-		logger.info(LogStringBuilder.makeBody(" Process ID : " + this.instanceInfo.getPid()));
-		logger.info(LogStringBuilder.makeFooter());
+        logger.info(LogStringBuilder.makeHeader("Product info"));
+        logger.info(LogStringBuilder.makeBody(" startup process begin at " + new Date()));
+        logger.info(LogStringBuilder.makeBody(" Process ID : " + this.instanceInfo.getPid()));
+        logger.info(LogStringBuilder.makeFooter());
 
-		// Customize the server using the given ServerBuilder. For example:
-		return builder -> {
-			// Accept header is a way for a client to specify the media type of the response
-			// content it is expecting
-			// Content-type is a way to specify the media type of request being sent from
-			// the client to the server.
+        // Customize the server using the given ServerBuilder. For example:
+        return builder -> {
+            // Accept header is a way for a client to specify the media type of the response
+            // content it is expecting
+            // Content-type is a way to specify the media type of request being sent from
+            // the client to the server.
 
-			initializeHttpServerBuilder(builder);
+            initializeHttpServerBuilder(builder);
 
-			// Adding a Service
-			// Add DocService that enables you to send Thrift and gRPC requests from web
-			// browser.
-			builder.serviceUnder("/docs", new DocService());
+            // Adding a Service
+            // Add DocService that enables you to send Thrift and gRPC requests from web
+            // browser.
+            builder.serviceUnder("/docs", new DocService());
 
-			// Log every message which the server receives and responds.
-			builder.decorator(LoggingService.newDecorator());
+            // Log every message which the server receives and responds.
+            builder.decorator(LoggingService.newDecorator());
 
-			// Write access log after completing a request.
-			builder.accessLogWriter(AccessLogWriter.combined(), true);
+            // Write access log after completing a request.
+            builder.accessLogWriter(AccessLogWriter.combined(), true);
 
-			// ArmeriaAnnotatedHttpService를 impl 하고 type of 로 갈라서 grpc로 등록하기.
+            // ArmeriaAnnotatedHttpService를 impl 하고 type of 로 갈라서 grpc로 등록하기.
 
-			// Add an Armeria annotated HTTP service.
-			for (ArmeriaAnnotatedHttpService service : services) {
+            // Add an Armeria annotated HTTP service.
+            for (ArmeriaAnnotatedHttpService service : services) {
 
-				builder.annotatedService(service);
-			}
+                builder.annotatedService(service);
+            }
 
-			builder.decorator(EncodingService.newDecorator());
+            builder.decorator(EncodingService.newDecorator());
 
-			// multiple class is fail.
-			// Can not split RedisStringService by redis command.
-			// services.put(service.getServiceDescriptor().getName(), service);
-			GrpcServiceBuilder grpcServiceBuilder = GrpcService.builder();
-			grpcServiceBuilder.addService(new RedisStringGrpcService());
-			builder.service(grpcServiceBuilder.build());
+            // multiple class is fail.
+            // Can not split RedisStringService by redis command.
+            // services.put(service.getServiceDescriptor().getName(), service);
+            GrpcServiceBuilder grpcServiceBuilder = GrpcService.builder();
+            grpcServiceBuilder.addService(new RedisStringGrpcService());
+            builder.service(grpcServiceBuilder.build());
 
-			// Add static file serving
-			FileServiceBuilder fileServiceBuilder = FileService.builder(ClassLoader.getSystemClassLoader(),
-					"/static-files");
+            // Add static file serving
+            FileServiceBuilder fileServiceBuilder = FileService.builder(ClassLoader.getSystemClassLoader(),
+                    "/static-files");
 
-			// Specify cache control directives.
-			ServerCacheControl cc = ServerCacheControl.builder().maxAgeSeconds(86400).cachePublic().build();
-			fileServiceBuilder.cacheControl(cc); // /* http cache "max-age=86400, public" */
-			fileServiceBuilder.serveCompressedFiles(true); // for compress
+            // Specify cache control directives.
+            ServerCacheControl cc = ServerCacheControl.builder().maxAgeSeconds(86400).cachePublic().build();
+            fileServiceBuilder.cacheControl(cc); // /* http cache "max-age=86400, public" */
+            fileServiceBuilder.serveCompressedFiles(true); // for compress
 
-			builder.serviceUnder("/stats", fileServiceBuilder.build());
+            builder.serviceUnder("/stats", fileServiceBuilder.build());
 
 //			builder.decorator(DecodingService.newDecorator());
-		};
-	}
+        };
+    }
 
-	private void addShutdownHook(int listenPort) {
-		try {
-			instanceInfo = new DefaultInstanceInfo(String.valueOf(listenPort));
+    private void addShutdownHook(int listenPort) {
+        try {
+            instanceInfo = new DefaultInstanceInfo(String.valueOf(listenPort));
 
-			// FIXME remove comment.. currently not used zookeeper.
-			logger.info("Successfully added zookeeper node! [" + instanceInfo.getNodePath() + "] "
-					+ instanceInfo.toJsonObject().toString());
+            // FIXME remove comment.. currently not used zookeeper.
+            logger.info("Successfully added zookeeper node! [" + instanceInfo.getNodePath() + "] "
+                    + instanceInfo.toJsonObject().toString());
 
-			logger.info(LogStringBuilder.makeReadableLine(1));
-			logger.info(LogStringBuilder.makeHeader("Add shutdownhook"));
-			logger.info(LogStringBuilder.makeBody("ClipboardServerShutdownHook added!" + instanceInfo.getNodePath()));
-			logger.info(LogStringBuilder.makeReadableLine(1));
-			logger.info(LogStringBuilder.makeFooter());
+            logger.info(LogStringBuilder.makeReadableLine(1));
+            logger.info(LogStringBuilder.makeHeader("Add shutdownhook"));
+            logger.info(LogStringBuilder.makeBody("ClipboardServerShutdownHook added!" + instanceInfo.getNodePath()));
+            logger.info(LogStringBuilder.makeReadableLine(1));
+            logger.info(LogStringBuilder.makeFooter());
 
-			Runtime.getRuntime().addShutdownHook(new ServerShutdownHook(instanceInfo.getNodePath()));
-		} catch (Exception e) {
-			throw new RuntimeException("Cannot start " + listenPort + " server at initServer", e);
-		}
-	}
+            Runtime.getRuntime().addShutdownHook(new ServerShutdownHook(instanceInfo.getNodePath()));
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Cannot start " + listenPort + " server at initServer", e);
+        }
+    }
 
-	private ServerBuilder initializeHttpServerBuilder(ServerBuilder serverBuilder) {
-		int requsetTimeout = 5;
-		serverBuilder.requestTimeout(Duration.ofSeconds(requsetTimeout));
+    private ServerBuilder initializeHttpServerBuilder(ServerBuilder serverBuilder) {
+        int requsetTimeout = 5;
+        serverBuilder.requestTimeout(Duration.ofSeconds(requsetTimeout));
 
-		int listenPort = Integer.parseInt(getInstanceInfo().getServicePort());
-		serverBuilder.http(listenPort);
+        int listenPort = Integer.parseInt(getInstanceInfo().getServicePort());
+        serverBuilder.http(listenPort);
 
-		// Disable worker thread shutdown timeout() configuration. default false.
-		// if set keepAliveTimeMillis value then auto enable.
-		BlockingTaskExecutorBuilder blockingTaskExecutorBuilder = BlockingTaskExecutor.builder();
-		blockingTaskExecutorBuilder.numThreads(500);
-		blockingTaskExecutorBuilder.build();
+        // Disable worker thread shutdown timeout() configuration. default false.
+        // if set keepAliveTimeMillis value then auto enable.
+        BlockingTaskExecutorBuilder blockingTaskExecutorBuilder = BlockingTaskExecutor.builder();
+        blockingTaskExecutorBuilder.numThreads(500);
+        blockingTaskExecutorBuilder.build();
 
-		serverBuilder.blockingTaskExecutor(blockingTaskExecutorBuilder.build(), true);
+        serverBuilder.blockingTaskExecutor(blockingTaskExecutorBuilder.build(), true);
 
-		return serverBuilder;
-	}
+        return serverBuilder;
+    }
 
-	/**
-	 * When you using spring boot with Armeria, You can not disable default port
-	 * 8080 on programmatically way.<br/>
-	 * (Using application.xml is working fine) This situation based on class loading
-	 * order.<br/>
-	 * So, You have to set the port number to ArmeriaSettings bean, Before
-	 * initialize Armeria AutoConfiguration class.
-	 * 
-	 * @param listenPort
-	 */
-	private void setArmeriaListenPort(int listenPort) {
-		// TODO armeria.internal-services.port
-		// Change default listen port to custom port.
-		List<Port> ports = new ArrayList<>();
-		ports.add(new Port().setPort(listenPort).setProtocol(SessionProtocol.HTTP));
-		settings.setPorts(ports);
-	}
+    /**
+     * When you using spring boot with Armeria, You can not disable default port
+     * 8080 on programmatically way.<br/>
+     * (Using application.xml is working fine) This situation based on class loading
+     * order.<br/>
+     * So, You have to set the port number to ArmeriaSettings bean, Before
+     * initialize Armeria AutoConfiguration class.
+     * 
+     * @param listenPort
+     */
+    private void setArmeriaListenPort(int listenPort) {
+        // TODO armeria.internal-services.port
+        // Change default listen port to custom port.
+        List<Port> ports = new ArrayList<>();
+        ports.add(new Port().setPort(listenPort).setProtocol(SessionProtocol.HTTP));
+        settings.setPorts(ports);
+    }
 
-	/**
-	 * Configuration 정보를 사용하여 armedis 서버의 runtime 을 구성한다.
-	 */
-	private int initializeServicePort() {
-		String paramServicePort = System.getProperty(ConstantNames.SERVICE_PORT_PARAM_NAME);
-		int listenPort = 0;
+    /**
+     * Configuration 정보를 사용하여 armedis 서버의 runtime 을 구성한다.
+     */
+    private int initializeServicePort() {
+        String paramServicePort = System.getProperty(ConstantNames.SERVICE_PORT_PARAM_NAME);
+        int listenPort = 0;
 
-		int servicePortFromParam = listenPort = Integer.parseInt(paramServicePort == null ? "0" : paramServicePort);
+        int servicePortFromParam = listenPort = Integer.parseInt(paramServicePort == null ? "0" : paramServicePort);
 
-		int configServicePort = armedisConfiguration.getServicePort();
-		int instanceCount = armedisConfiguration.getInstanceCount();
+        int configServicePort = armedisConfiguration.getServicePort();
+        int instanceCount = armedisConfiguration.getInstanceCount();
 
-		if (instanceCount == 0 || configServicePort == 0) {
-			throw new RuntimeException("Cannot start Server. service port[" + configServicePort + "] instance count["
-					+ instanceCount + "] but request is [" + servicePortFromParam + "]");
-		}
+        if (instanceCount == 0 || configServicePort == 0) {
+            throw new RuntimeException("Cannot start Server. service port[" + configServicePort + "] instance count["
+                    + instanceCount + "] but request is [" + servicePortFromParam + "]");
+        }
 
-		if (configServicePort <= servicePortFromParam
-				&& (configServicePort + instanceCount - 1) >= servicePortFromParam) {
-			// do nothing
-		} else {
-			throw new RuntimeException("Cannot start Server. service port[" + configServicePort + "] instance count["
-					+ instanceCount + "] but request is [" + servicePortFromParam + "]");
-		}
+        if (configServicePort <= servicePortFromParam
+                && (configServicePort + instanceCount - 1) >= servicePortFromParam) {
+            // do nothing
+        }
+        else {
+            throw new RuntimeException("Cannot start Server. service port[" + configServicePort + "] instance count["
+                    + instanceCount + "] but request is [" + servicePortFromParam + "]");
+        }
 
-		logger.info("Initialized service port : " + listenPort);
+        logger.info("Initialized service port : " + listenPort);
 
-		return listenPort;
-	}
+        return listenPort;
+    }
 
-	public DefaultInstanceInfo getInstanceInfo() {
-		return this.instanceInfo;
-	}
+    public DefaultInstanceInfo getInstanceInfo() {
+        return this.instanceInfo;
+    }
 }

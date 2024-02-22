@@ -1,124 +1,141 @@
 package com.github.armedis.redis.info;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public final class Clients extends StatsBaseVo {
-	private int connectedClients;
-	private int clusterConnections;
-	private int maxclients;
-	private int clientRecentMaxInputBuffer;
-	private int clientRecentMaxOutputBuffer;
-	private int blockedClients;
-	private int trackingClients;
-	private int clientsInTimeoutTable;
+    @Override
+    public Map<String, String> initOperationKeyList() {
+        Map<String, String> keyList = new HashMap<>();
 
-	/**
-	 * @return the connectedClients
-	 */
-	public int getConnectedClients() {
-		return connectedClients;
-	}
+        keyList.put("connectedClients", SUM);
+        keyList.put("clusterConnections", SUM);
+        keyList.put("maxclients", SUM);
+        keyList.put("blockedClients", SUM);
+        keyList.put("trackingClients", SUM);
+        keyList.put("clientsInTimeoutTable", SUM);
 
-	/**
-	 * @param connectedClients the connectedClients to set
-	 */
-	public void setConnectedClients(int connectedClients) {
-		this.connectedClients = connectedClients;
-	}
+        return keyList;
+    }
 
-	/**
-	 * @return the clusterConnections
-	 */
-	public int getClusterConnections() {
-		return clusterConnections;
-	}
+    private int connectedClients;
+    private int clusterConnections;
+    private int maxclients;
+    private int clientRecentMaxInputBuffer;
+    private int clientRecentMaxOutputBuffer;
+    private int blockedClients;
+    private int trackingClients;
+    private int clientsInTimeoutTable;
 
-	/**
-	 * @param clusterConnections the clusterConnections to set
-	 */
-	public void setClusterConnections(int clusterConnections) {
-		this.clusterConnections = clusterConnections;
-	}
+    /**
+     * @return the connectedClients
+     */
+    public int getConnectedClients() {
+        return connectedClients;
+    }
 
-	/**
-	 * @return the maxClients
-	 */
-	public int getMaxclients() {
-		return maxclients;
-	}
+    /**
+     * @param connectedClients the connectedClients to set
+     */
+    public void setConnectedClients(int connectedClients) {
+        this.connectedClients = connectedClients;
+    }
 
-	/**
-	 * @param maxClients the maxClients to set
-	 */
-	public void setMaxclients(int maxclients) {
-		this.maxclients = maxclients;
-	}
+    /**
+     * @return the clusterConnections
+     */
+    public int getClusterConnections() {
+        return clusterConnections;
+    }
 
-	/**
-	 * @return the clientRecentMaxInputBuffer
-	 */
-	public int getClientRecentMaxInputBuffer() {
-		return clientRecentMaxInputBuffer;
-	}
+    /**
+     * @param clusterConnections the clusterConnections to set
+     */
+    public void setClusterConnections(int clusterConnections) {
+        this.clusterConnections = clusterConnections;
+    }
 
-	/**
-	 * @param clientRecentMaxInputBuffer the clientRecentMaxInputBuffer to set
-	 */
-	public void setClientRecentMaxInputBuffer(int clientRecentMaxInputBuffer) {
-		this.clientRecentMaxInputBuffer = clientRecentMaxInputBuffer;
-	}
+    /**
+     * @return the maxClients
+     */
+    public int getMaxclients() {
+        return maxclients;
+    }
 
-	/**
-	 * @return the clientRecentMaxOutputBuffer
-	 */
-	public int getClientRecentMaxOutputBuffer() {
-		return clientRecentMaxOutputBuffer;
-	}
+    /**
+     * @param maxClients the maxClients to set
+     */
+    public void setMaxclients(int maxclients) {
+        this.maxclients = maxclients;
+    }
 
-	/**
-	 * @param clientRecentMaxOutputBuffer the clientRecentMaxOutputBuffer to set
-	 */
-	public void setClientRecentMaxOutputBuffer(int clientRecentMaxOutputBuffer) {
-		this.clientRecentMaxOutputBuffer = clientRecentMaxOutputBuffer;
-	}
+    /**
+     * @return the clientRecentMaxInputBuffer
+     */
+    public int getClientRecentMaxInputBuffer() {
+        return clientRecentMaxInputBuffer;
+    }
 
-	/**
-	 * @return the blockedClients
-	 */
-	public int getBlockedClients() {
-		return blockedClients;
-	}
+    /**
+     * @param clientRecentMaxInputBuffer the clientRecentMaxInputBuffer to set
+     */
+    public void setClientRecentMaxInputBuffer(int clientRecentMaxInputBuffer) {
+        this.clientRecentMaxInputBuffer = clientRecentMaxInputBuffer;
+    }
 
-	/**
-	 * @param blockedClients the blockedClients to set
-	 */
-	public void setBlockedClients(int blockedClients) {
-		this.blockedClients = blockedClients;
-	}
+    /**
+     * @return the clientRecentMaxOutputBuffer
+     */
+    public int getClientRecentMaxOutputBuffer() {
+        return clientRecentMaxOutputBuffer;
+    }
 
-	/**
-	 * @return the trackingClients
-	 */
-	public int getTrackingClients() {
-		return trackingClients;
-	}
+    /**
+     * @param clientRecentMaxOutputBuffer the clientRecentMaxOutputBuffer to set
+     */
+    public void setClientRecentMaxOutputBuffer(int clientRecentMaxOutputBuffer) {
+        this.clientRecentMaxOutputBuffer = clientRecentMaxOutputBuffer;
+    }
 
-	/**
-	 * @param trackingClients the trackingClients to set
-	 */
-	public void setTrackingClients(int trackingClients) {
-		this.trackingClients = trackingClients;
-	}
+    /**
+     * @return the blockedClients
+     */
+    public int getBlockedClients() {
+        return blockedClients;
+    }
 
-	/**
-	 * @return the clientsInTimeoutTable
-	 */
-	public int getClientsInTimeoutTable() {
-		return clientsInTimeoutTable;
-	}
+    /**
+     * @param blockedClients the blockedClients to set
+     */
+    public void setBlockedClients(int blockedClients) {
+        this.blockedClients = blockedClients;
+    }
 
-	/**
-	 * @param clientsInTimeoutTable the clientsInTimeoutTable to set
-	 */
-	public void setClientsInTimeoutTable(int clientsInTimeoutTable) {
-		this.clientsInTimeoutTable = clientsInTimeoutTable;
-	}
+    /**
+     * @return the trackingClients
+     */
+    public int getTrackingClients() {
+        return trackingClients;
+    }
+
+    /**
+     * @param trackingClients the trackingClients to set
+     */
+    public void setTrackingClients(int trackingClients) {
+        this.trackingClients = trackingClients;
+    }
+
+    /**
+     * @return the clientsInTimeoutTable
+     */
+    public int getClientsInTimeoutTable() {
+        return clientsInTimeoutTable;
+    }
+
+    /**
+     * @param clientsInTimeoutTable the clientsInTimeoutTable to set
+     */
+    public void setClientsInTimeoutTable(int clientsInTimeoutTable) {
+        this.clientsInTimeoutTable = clientsInTimeoutTable;
+    }
 }
