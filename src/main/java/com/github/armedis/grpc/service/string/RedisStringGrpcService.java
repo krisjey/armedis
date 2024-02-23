@@ -16,7 +16,7 @@ import io.grpc.stub.StreamObserver;
  */
 @Service
 public class RedisStringGrpcService extends RedisStringServiceImplBase {
-    private static final Logger logger = LoggerFactory.getLogger(RedisStringGrpcService.class);
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public void set(SetRequest setRequest, StreamObserver<SetResponse> responseObserver) {

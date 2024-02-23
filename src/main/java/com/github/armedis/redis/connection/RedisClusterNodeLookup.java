@@ -17,7 +17,7 @@ import io.lettuce.core.cluster.models.partitions.Partitions;
 import io.lettuce.core.cluster.models.partitions.RedisClusterNode;
 
 public class RedisClusterNodeLookup implements RedisNodeLookup {
-    private final Logger logger = LoggerFactory.getLogger(RedisClusterNodeLookup.class);
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public Set<RedisNode> lookup(StatefulRedisConnection<String, String> redisSeedConnection) {

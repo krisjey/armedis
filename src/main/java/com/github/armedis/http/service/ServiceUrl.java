@@ -17,6 +17,11 @@ public final class ServiceUrl {
      * Server active check.
      */
     public static final String RUOK = "/v1/ruok";
+    
+    /**
+     * Redis status check
+     */
+    public static final String REDIS_STATS = "/v1/redis/stats";
 
     /**
      * Current memory status

@@ -21,7 +21,7 @@ import com.linecorp.armeria.server.annotation.Post;
  */
 @Component
 public class AreYouOkService extends BaseService {
-    private final Logger logger = LoggerFactory.getLogger(AreYouOkService.class);
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
      * Are you ok service for server instance.

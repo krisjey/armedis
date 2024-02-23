@@ -27,7 +27,7 @@ import com.linecorp.armeria.server.annotation.Put;
  */
 @Component
 public class RedisHgetService extends BaseService {
-    private static final Logger logger = LoggerFactory.getLogger(RedisHgetService.class);
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final String REDIS_COMMAND = "hget";
 

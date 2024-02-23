@@ -23,6 +23,9 @@ public class ArmedisConfiguration {
     @Value("${server.service.instanceCount}")
     private int instanceCount;
 
+    @Value("${server.config.stat.addContentSection}")
+    private boolean addContentSection;
+
     public String getRedisSeedAddress() {
         return redisSeedAddress;
     }
@@ -47,4 +50,17 @@ public class ArmedisConfiguration {
         this.instanceCount = instanceCount;
     }
 
+    /**
+     * @return the addContentSection
+     */
+    public boolean isAddContentSection() {
+        return addContentSection;
+    }
+
+    /**
+     * @param addContentSection the addContentSection to set
+     */
+    public void setAddContentSection(boolean addContentSection) {
+        this.addContentSection = addContentSection;
+    }
 }

@@ -16,7 +16,7 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 
 public class RedisNoneClusterNodeLookup implements RedisNodeLookup {
-    private final Logger logger = LoggerFactory.getLogger(RedisNoneClusterNodeLookup.class);
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private String seedAddresses;
 
     public RedisNoneClusterNodeLookup(String seedAddresses) {
