@@ -101,7 +101,7 @@ public abstract class StatsBaseVo {
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
-    public static <T> T fromString(Class<T> clazz, String content)
+    public static <T> T fromString(Class<T> clazz, String content, boolean addContentSection)
             throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
             NoSuchMethodException, SecurityException {
         T instance = clazz.getDeclaredConstructor().newInstance();
@@ -122,6 +122,10 @@ public abstract class StatsBaseVo {
 
                 ReflectionManipulator.setFieldValue(instance, key, value);
             }
+        }
+
+        if (addContentSection) {
+            ReflectionManipulator.setFieldValue(instance, "sctionContent", content);
         }
 
         return instance;

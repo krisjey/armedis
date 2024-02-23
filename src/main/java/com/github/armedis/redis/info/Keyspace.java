@@ -29,7 +29,7 @@ final class Keyspace extends StatsBaseVo {
      * @param content
      * @return
      */
-    public static Map<Integer, Keyspace> fromString(String content) {
+    public static Map<Integer, Keyspace> fromString(String content, boolean addContentSection) {
         Map<Integer, Keyspace> keyspaceMap = new TreeMap<>();
         if (content == null) {
             return keyspaceMap;
@@ -41,7 +41,9 @@ final class Keyspace extends StatsBaseVo {
             Keyspace keyspace = new Keyspace();
 
             // set section content string for
-            keyspace.setSctionContent(content);
+            if (addContentSection) {
+                keyspace.setSctionContent(content);
+            }
 
             String[] dbNumber = line.split(":");
 

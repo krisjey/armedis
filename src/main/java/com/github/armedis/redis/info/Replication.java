@@ -8,7 +8,7 @@ public final class Replication extends StatsBaseVo {
     public Map<String, String> initOperationKeyList() {
         Map<String, String> keyList = new HashMap<>();
 
-        keyList.put("masterLinkStatus", DIFF);
+//        keyList.put("masterLinkStatus", CONCAT);
         keyList.put("masterLastIoSecondsAgo", MAX);
         keyList.put("masterSyncInProgress", MAX);
         keyList.put("connectedSlaves", SUM);

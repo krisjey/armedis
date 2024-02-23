@@ -29,30 +29,30 @@ import com.github.armedis.config.ApplicationPropertiesLoader;
 @SpringBootApplication
 public class ArmedisServer implements ApplicationRunner {
 
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	public static void main(String[] args) throws IOException {
-		long startTime = System.currentTimeMillis();
-		SpringApplication application = new SpringApplication(ArmedisServer.class);
+    public static void main(String[] args) throws IOException {
+        long startTime = System.currentTimeMillis();
+        SpringApplication application = new SpringApplication(ArmedisServer.class);
 
-		// load application properties
-		application.setDefaultProperties(ApplicationPropertiesLoader.getProperties());
-		application.setWebApplicationType(WebApplicationType.NONE);
-		application.run(args);
+        // load application properties
+        application.setDefaultProperties(ApplicationPropertiesLoader.getProperties());
+        application.setWebApplicationType(WebApplicationType.NONE);
+        application.run(args);
 
-		System.out.println(
-				"Spring framework is loaded! (main) " + (System.currentTimeMillis() - startTime) + "ms elapsed");
-	}
+        System.out.println(
+                "Spring framework is loaded! (main) " + (System.currentTimeMillis() - startTime) + "ms elapsed");
+    }
 
-	@Override
-	public void run(ApplicationArguments args) throws Exception {
-		String loadedMessage = "Spring application loaded!(ArmedisServer.run())";
-		logger.info(loadedMessage);
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        String loadedMessage = "Spring application loaded!(ArmedisServer.run())";
+        logger.info(loadedMessage);
 
-		// TODO print connected redis config.
+        // TODO print connected redis config.
 
-		// TODO start redis info generator.
+        // TODO start redis info generator.
 
-		System.out.println(loadedMessage);
-	}
+        System.out.println(loadedMessage);
+    }
 }

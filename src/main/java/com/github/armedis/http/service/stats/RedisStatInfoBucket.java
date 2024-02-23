@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.github.armedis.config.ArmedisConfiguration;
 import com.github.armedis.redis.connection.pool.RedisConnectionPool;
 import com.github.armedis.redis.info.RedisInfoVo;
 import com.github.armedis.redis.info.ReflectionManipulator;
@@ -44,6 +45,9 @@ public class RedisStatInfoBucket {
     private CircularFifoQueue<RedisStatsInfo> redisStatsInfoList = new CircularFifoQueue<>(10);
 
     private List<RedisClusterNodeInfo> redisNodeInfoList;
+
+    @Autowired
+    private ArmedisConfiguration armedisConfiguration;
 
     private Map<String, RedisInfoVo> lastStats;
 
@@ -84,7 +88,6 @@ public class RedisStatInfoBucket {
         return scheduler;
     }
 
-    // 초 단위로 메서드를 호출하려면 fixedRate 속성을 사용합니다.
     @Scheduled(fixedRate = 1000) // 1000밀리초 = 1초
     public void redisStatPolling() throws Throwable {
         /**
@@ -113,7 +116,7 @@ public class RedisStatInfoBucket {
                 redisConnectionPool.returnObject(connection);
 
                 // update stat info
-                RedisInfoVo redisInfo = RedisInfoVo.from(info);
+                RedisInfoVo redisInfo = RedisInfoVo.from(info, armedisConfiguration.isAddContentSection());
 
                 redisInfo.getServer().setHost(dummyNodeIp);
                 redisInfo.getServer().setTcpPort(redisNodeInfo.listenPort());
@@ -131,7 +134,7 @@ public class RedisStatInfoBucket {
 
         // calculate sum.
         // Create dummy info object from last data. info object can not create
-        RedisInfoVo sumRedisInfoVo = RedisInfoVo.from(info);
+        RedisInfoVo sumRedisInfoVo = RedisInfoVo.from(info, armedisConfiguration.isAddContentSection());
         sumRedisInfoVo.getServer().setHost(dummyNodeIp);
 
         for (Entry<String, RedisInfoVo> item : redisStatsInfo.getRedisInfoList().entrySet()) {
@@ -156,9 +159,29 @@ public class RedisStatInfoBucket {
      * @param redisInfoVo
      */
     private void accumulateStatValue(RedisInfoVo sumRedisInfoVo, RedisInfoVo redisInfoVo) {
-        Map<String, String> keyList = null;
 
-        keyList = redisInfoVo.getServer().operationKeyList();
+        accumulateStatSubVo(sumRedisInfoVo.getServer(), redisInfoVo.getServer());
+        accumulateStatSubVo(sumRedisInfoVo.getClients(), redisInfoVo.getClients());
+        accumulateStatSubVo(sumRedisInfoVo.getMemory(), redisInfoVo.getMemory());
+        accumulateStatSubVo(sumRedisInfoVo.getPersistence(), redisInfoVo.getPersistence());
+        accumulateStatSubVo(sumRedisInfoVo.getStats(), redisInfoVo.getStats());
+        accumulateStatSubVo(sumRedisInfoVo.getReplication(), redisInfoVo.getReplication());
+        accumulateStatSubVo(sumRedisInfoVo.getCpu(), redisInfoVo.getCpu());
+        accumulateStatSubVo(sumRedisInfoVo.getModules(), redisInfoVo.getModules());
+        accumulateStatSubVo(sumRedisInfoVo.getErrorstats(), redisInfoVo.getErrorstats());
+        accumulateStatSubVo(sumRedisInfoVo.getCluster(), redisInfoVo.getCluster());
+
+//        keyList = redisInfoVo.getKeyspace().operationKeyList();
+
+    }
+
+    /**
+     * @param sumRedisInfoVo 
+     * @param baseVo 
+     * 
+     */
+    private void accumulateStatSubVo(StatsBaseVo sumBaseVo, StatsBaseVo baseVo) {
+        Map<String, String> keyList = baseVo.operationKeyList();
 
         for (Entry<String, String> item : keyList.entrySet()) {
             String fieldName = item.getKey();
@@ -173,71 +196,41 @@ public class RedisStatInfoBucket {
 //            }
 
             // 필드명으로 두 클래스의 값 가져와서 비교 후 할당.
-            Object sumValue = ReflectionManipulator.getMethodInvokeResult(sumRedisInfoVo.getServer(), fieldName);
-            Object targetValue = ReflectionManipulator.getMethodInvokeResult(redisInfoVo.getServer(), fieldName);
+            Object sumValue = ReflectionManipulator.getMethodInvokeResult(sumBaseVo, fieldName);
+            Object targetValue = ReflectionManipulator.getMethodInvokeResult(baseVo, fieldName);
 
-            if (sumValue == null || targetValue == null || fieldName.equals("tcpPort")) {
-                System.out.println();
+            if (sumValue == null || targetValue == null) {
+                logger.info("[{}] [{}] [{}]", fieldName, sumValue, targetValue);
             }
-
-            logger.debug("[%s] [%s]", sumValue.getClass().getSimpleName(), targetValue.getClass().getSimpleName());
 
             switch (operation) {
                 case StatsBaseVo.SUM:
                     String resultSumValue = calculateSumValue(sumValue, targetValue);
-                    ReflectionManipulator.setFieldValue(sumRedisInfoVo.getServer(), fieldName, resultSumValue);
-                    if (resultSumValue == null) {
-                        System.out.println();
-                    }
+                    ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, resultSumValue);
                     break;
                 case StatsBaseVo.CONCAT:
-                    ReflectionManipulator.setFieldValue(sumRedisInfoVo.getServer(), fieldName, sumValue + "," + targetValue);
-                    if (sumValue == null || targetValue == null) {
-                        System.out.println();
-                    }
+                    ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, sumValue + "," + targetValue);
                     break;
                 case StatsBaseVo.DIFF:
-                    String compareValue = diffValue(sumValue, targetValue);
-                    ReflectionManipulator.setFieldValue(sumRedisInfoVo.getServer(), fieldName, compareValue);
-                    if (compareValue == null) {
-                        System.out.println();
-                    }
+                    String compareValue = diffValue(sumValue, targetValue, fieldName);
+                    ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, compareValue);
                     break;
                 case StatsBaseVo.EMPTY:
-                    ReflectionManipulator.setFieldValue(sumRedisInfoVo.getServer(), fieldName, "-");
+                    ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, "-");
                     break;
                 case StatsBaseVo.MAX:
                     String maxValue = maxValue(sumValue, targetValue);
-                    ReflectionManipulator.setFieldValue(sumRedisInfoVo.getServer(), fieldName, maxValue);
-                    if (maxValue == null) {
-                        System.out.println();
-                    }
+                    ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, maxValue);
                     break;
                 case StatsBaseVo.MIN:
                     String minValue = minValue(sumValue, targetValue);
-                    ReflectionManipulator.setFieldValue(sumRedisInfoVo.getServer(), fieldName, minValue);
-                    if (minValue == null) {
-                        System.out.println();
-                    }
+                    ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, minValue);
                     break;
 
                 default:
                     break;
             }
         }
-
-//        keyList = redisInfoVo.getClients().operationKeyList();
-//        keyList = redisInfoVo.getMemory().operationKeyList();
-//        keyList = redisInfoVo.getPersistence().operationKeyList();
-//        keyList = redisInfoVo.getStats().operationKeyList();
-//        keyList = redisInfoVo.getReplication().operationKeyList();
-//        keyList = redisInfoVo.getCpu().operationKeyList();
-//        keyList = redisInfoVo.getModules().operationKeyList();
-//        keyList = redisInfoVo.getErrorstats().operationKeyList();
-//        keyList = redisInfoVo.getCluster().operationKeyList();
-
-//        keyList = redisInfoVo.getKeyspace().operationKeyList();
-
     }
 
     /**
@@ -257,7 +250,7 @@ public class RedisStatInfoBucket {
             }
         }
         catch (Exception e) {
-            logger.error("Cannot create class %s", sumValue.getClass().getSimpleName(), e);
+            logger.error("Cannot create class {}", sumValue.getClass().getSimpleName(), e);
         }
 
         return resultSumValue;
@@ -280,7 +273,7 @@ public class RedisStatInfoBucket {
             }
         }
         catch (Exception e) {
-            logger.error("Cannot create class %s", sumValue.getClass().getSimpleName(), e);
+            logger.error("Cannot create class {}", sumValue.getClass().getSimpleName(), e);
         }
 
         return resultSumValue;
@@ -291,9 +284,10 @@ public class RedisStatInfoBucket {
      * diffString(*), -123
      * @param sumValue
      * @param targetValue
+     * @param fieldName 
      * @return
      */
-    private String diffValue(Object sumValue, Object targetValue) {
+    private String diffValue(Object sumValue, Object targetValue, String fieldName) {
         String resultSumValue = null;
         try {
             if (sumValue instanceof Number && sumValue.getClass().getSimpleName().equals(targetValue.getClass().getSimpleName())) {
@@ -336,7 +330,7 @@ public class RedisStatInfoBucket {
             }
         }
         catch (Exception e) {
-            logger.error("Cannot create class %s", sumValue.getClass().getSimpleName(), e);
+            logger.error("Cannot create field [{}], value[{}]", fieldName, sumValue, e);
         }
 
         return resultSumValue;
@@ -368,11 +362,11 @@ public class RedisStatInfoBucket {
                 }
             }
             else {
-                logger.error("Can not sum %s, %s", sumValue, targetValue);
+                logger.error("Can not sum {}, {}", sumValue, targetValue);
             }
         }
         catch (Exception e) {
-            logger.error("Cannot create class %s", sumValue.getClass().getSimpleName(), e);
+            logger.error("Cannot create class {}", sumValue.getClass().getSimpleName(), e);
         }
 
         return resultSumValue;
@@ -385,8 +379,7 @@ public class RedisStatInfoBucket {
      * @param redisInfo
      */
     private void printStatPollingLog(RedisStatsInfo redisStatsInfo, RedisClusterNodeInfo redisNodeInfo, RedisInfoVo redisInfo) {
-        logger.info(redisStatsInfo.getFormatedEpochTime() + " " + redisInfo.getServer().getHost() + ":"
-                + redisInfo.getServer().getTcpPort() + " " + redisNodeInfo.id() + " - " + redisInfo.toJsonString());
+        logger.info("{}:{} {} {}", redisInfo.getServer().getHost(), redisInfo.getServer().getTcpPort(), redisNodeInfo.id(), redisInfo.toJsonString());
     }
 
     private String getClusterNodesCommandResult(RedisConnectionPool<String, String> redisConnectionPool) {

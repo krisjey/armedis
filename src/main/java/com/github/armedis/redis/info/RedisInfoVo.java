@@ -213,7 +213,7 @@ public class RedisInfoVo {
     }
 
     // Static method to create an instance of RedisInfoVO from the INFO command
-    public static RedisInfoVo from(String infoResult) throws Throwable {
+    public static RedisInfoVo from(String infoResult, boolean addContentSection) throws Throwable {
         final Logger logger = LoggerFactory.getLogger(RedisInfoVo.class);
 
         RedisInfoVo redisInfoVO = new RedisInfoVo();
@@ -229,44 +229,57 @@ public class RedisInfoVo {
 
             if (lines.length > 0) {
                 String sectionName = lines[0].trim();
-                String sectionContent = StringUtils.trimToEmpty(section.substring(section.indexOf("\r\n") + 2));
+                String contentSection = null;
+
+                contentSection = StringUtils.trimToEmpty(section.substring(section.indexOf("\r\n") + 2));
 
                 switch (sectionName) {
                     case "Server":
-                        redisInfoVO.setServer(Server.fromString(Server.class, sectionContent).setSctionContent(sectionContent));
+                        redisInfoVO.setServer(Server.fromString(Server.class, contentSection, addContentSection));
                         break;
+
                     case "Clients":
-                        redisInfoVO.setClients(Clients.fromString(Clients.class, sectionContent).setSctionContent(sectionContent));
+                        redisInfoVO.setClients(Clients.fromString(Clients.class, contentSection, addContentSection));
                         break;
+
                     case "Memory":
-                        redisInfoVO.setMemory(Memory.fromString(Memory.class, sectionContent).setSctionContent(sectionContent));
+                        redisInfoVO.setMemory(Memory.fromString(Memory.class, contentSection, addContentSection));
                         break;
+
                     case "Persistence":
-                        redisInfoVO.setPersistence(Persistence.fromString(Persistence.class, sectionContent).setSctionContent(sectionContent));
+                        redisInfoVO.setPersistence(Persistence.fromString(Persistence.class, contentSection, addContentSection));
                         break;
+
                     case "Stats":
-                        redisInfoVO.setStats(Stats.fromString(Stats.class, sectionContent).setSctionContent(sectionContent));
+                        redisInfoVO.setStats(Stats.fromString(Stats.class, contentSection, addContentSection));
                         break;
+
                     case "Replication":
-                        redisInfoVO.setReplication(Replication.fromString(Replication.class, sectionContent).setSctionContent(sectionContent));
+                        redisInfoVO.setReplication(Replication.fromString(Replication.class, contentSection, addContentSection));
                         break;
+
                     case "CPU":
-                        redisInfoVO.setCpu(CPU.fromString(CPU.class, sectionContent).setSctionContent(sectionContent));
+                        redisInfoVO.setCpu(CPU.fromString(CPU.class, contentSection, addContentSection));
                         break;
+
                     case "Modules":
-                        redisInfoVO.setModules(Modules.fromString(Modules.class, sectionContent).setSctionContent(sectionContent));
+                        redisInfoVO.setModules(Modules.fromString(Modules.class, contentSection, addContentSection));
                         break;
+
                     case "Errorstats":
-                        redisInfoVO.setErrorstats(Errorstats.fromString(Errorstats.class, sectionContent).setSctionContent(sectionContent));
+                        redisInfoVO.setErrorstats(Errorstats.fromString(Errorstats.class, contentSection, addContentSection));
                         break;
+
                     case "Cluster":
-                        redisInfoVO.setCluster(Cluster.fromString(Cluster.class, sectionContent).setSctionContent(sectionContent));
+                        redisInfoVO.setCluster(Cluster.fromString(Cluster.class, contentSection, addContentSection));
                         break;
+
                     case "Keyspace":
-                        redisInfoVO.setKeyspace(Keyspace.fromString(sectionContent));
+                        redisInfoVO.setKeyspace(Keyspace.fromString(contentSection, addContentSection));
                         break;
+
                     default:
-                        logger.error("Can not convert " + sectionName + " " + sectionContent);
+                        logger.error("Can not convert " + sectionName + " " + contentSection);
                 }
             }
         }

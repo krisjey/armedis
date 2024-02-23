@@ -97,7 +97,7 @@ class RedisInfoVoTest {
 				+ "used_cpu_user_main_thread:17.130294\r\n" + "\r\n" + "# Modules\r\n" + "\r\n" + "# Errorstats\r\n"
 				+ "errorstat_ERR:count=8\r\nerrorstat_MOVED:count=1\r\n" + "\r\n" + "# Cluster\r\n" + "cluster_enabled:1\r\n" + "\r\n"
 				+ "# Keyspace\r\n" + "db0:keys=1,expires=0,avg_ttl=0\r\n" + "";
-		RedisInfoVo redisInfoVO = RedisInfoVo.from(infoResult);
+		RedisInfoVo redisInfoVO = RedisInfoVo.from(infoResult, false);
 //		System.out.println(redisInfoVO.toString());
 
 		ObjectMapper objectMapper = new ObjectMapper();
