@@ -90,7 +90,10 @@ public class RedisStatInfoBucket {
 
     @Scheduled(fixedRate = 1000) // 1000밀리초 = 1초
     public void redisStatPolling() throws Throwable {
-        if (armedisConfiguration.isStatDisabled()) {
+        if (armedisConfiguration.isStatEnabled()) {
+            // do nothing
+        }
+        else {
             logger.debug("Redis Stat thread starting by config.");
             return;
         }
@@ -153,6 +156,7 @@ public class RedisStatInfoBucket {
         if (redisStatsInfoList.isAtFullCapacity()) {
             redisStatsInfoList.remove();
         }
+
         redisStatsInfoList.add(redisStatsInfo);
     }
 

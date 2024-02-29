@@ -26,8 +26,8 @@ public class ArmedisConfiguration {
     @Value("${server.config.stat.addContentSection}")
     private boolean addContentSection;
 
-    @Value("${server.config.stat.disabled}")
-    private boolean statDisabled;
+    @Value("${server.config.stat.enabled}")
+    private boolean statEnabled;
 
     @Value("${server.config.stat.logging.enableed}")
     private boolean loggingEnabled;
@@ -70,18 +70,19 @@ public class ArmedisConfiguration {
         this.addContentSection = addContentSection;
     }
 
+
     /**
      * @return the statEnabled
      */
-    public boolean isStatDisabled() {
-        return statDisabled;
+    public boolean isStatEnabled() {
+        return statEnabled;
     }
 
     /**
      * @param statEnabled the statEnabled to set
      */
-    public void setStatEnabled(boolean statDisabled) {
-        this.statDisabled = statDisabled;
+    public void setStatEnabled(boolean statEnabled) {
+        this.statEnabled = statEnabled;
     }
 
     /**
