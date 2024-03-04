@@ -49,8 +49,6 @@ public class RedisStatInfoBucket {
     @Autowired
     private ArmedisConfiguration armedisConfiguration;
 
-    private Map<String, RedisInfoVo> lastStats;
-
     private ObjectMapper mapper = configMapper();
 
     @Autowired
@@ -84,12 +82,22 @@ public class RedisStatInfoBucket {
     @Bean
     public ThreadPoolTaskScheduler taskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+
         scheduler.setPoolSize(2); // 원하는 크기로 조절
+
         return scheduler;
     }
 
     @Scheduled(fixedRate = 1000) // 1000밀리초 = 1초
     public void redisStatPolling() throws Throwable {
+        if (armedisConfiguration.isStatEnabled()) {
+            // do nothing
+        }
+        else {
+            logger.debug("Redis Stat thread starting by config.");
+            return;
+        }
+
         /**
          * 0. 노드 접속 정보 추출 1. polling 문자열 Return per sec. 2. Convert to RedisStatsInfo
          * per sec, every node RedisInfoVo 3.
@@ -148,9 +156,8 @@ public class RedisStatInfoBucket {
         if (redisStatsInfoList.isAtFullCapacity()) {
             redisStatsInfoList.remove();
         }
-        redisStatsInfoList.add(redisStatsInfo);
 
-        lastStats = redisStatsInfo.getRedisInfoList();
+        redisStatsInfoList.add(redisStatsInfo);
     }
 
     /**
@@ -379,7 +386,9 @@ public class RedisStatInfoBucket {
      * @param redisInfo
      */
     private void printStatPollingLog(RedisStatsInfo redisStatsInfo, RedisClusterNodeInfo redisNodeInfo, RedisInfoVo redisInfo) {
-        logger.info("{}:{} {} {}", redisInfo.getServer().getHost(), redisInfo.getServer().getTcpPort(), redisNodeInfo.id(), redisInfo.toJsonString());
+        if (armedisConfiguration.isLoggingEnabled()) {
+            logger.info("{}:{} {} {}", redisInfo.getServer().getHost(), redisInfo.getServer().getTcpPort(), redisNodeInfo.id(), redisInfo.toJsonString());
+        }
     }
 
     private String getClusterNodesCommandResult(RedisConnectionPool<String, String> redisConnectionPool) {

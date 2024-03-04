@@ -26,6 +26,12 @@ public class ArmedisConfiguration {
     @Value("${server.config.stat.addContentSection}")
     private boolean addContentSection;
 
+    @Value("${server.config.stat.enabled}")
+    private boolean statEnabled;
+
+    @Value("${server.config.stat.logging.enableed}")
+    private boolean loggingEnabled;
+
     public String getRedisSeedAddress() {
         return redisSeedAddress;
     }
@@ -62,5 +68,34 @@ public class ArmedisConfiguration {
      */
     public void setAddContentSection(boolean addContentSection) {
         this.addContentSection = addContentSection;
+    }
+
+
+    /**
+     * @return the statEnabled
+     */
+    public boolean isStatEnabled() {
+        return statEnabled;
+    }
+
+    /**
+     * @param statEnabled the statEnabled to set
+     */
+    public void setStatEnabled(boolean statEnabled) {
+        this.statEnabled = statEnabled;
+    }
+
+    /**
+     * @return the loggingEnabled
+     */
+    public boolean isLoggingEnabled() {
+        return loggingEnabled;
+    }
+
+    /**
+     * @param loggingEnabled the loggingEnabled to set
+     */
+    public void setLoggingEnabled(boolean loggingEnabled) {
+        this.loggingEnabled = loggingEnabled;
     }
 }
