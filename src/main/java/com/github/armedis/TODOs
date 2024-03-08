@@ -7,14 +7,58 @@ Armidis is a Redis Rest/gRPC API server based on Armeria F/W.
   - /_admin/manage : retrive redis config and change values.
        Current support : set timeout, set maxmemory, mexmemory_policy, memory purge,
   - done 
-3. build client grpc jar
+3. Add Config change api
+/v1/management/activedefrag
+/v1/management/memory
+/v1/management/bgsave
+
+기능상으로 api 2개
+config set commend list available value enum
+master/all
+
+realtime memory
+"memory purge"  command - purge dirty page 
+"activedefrag" : "no" config get
+
+server memory
+"maxmemory-policy" "noeviction"
+"maxmemory-samples" "5"
+"maxmemory" "0"
+
+clients
+"timeout" "0"
+"maxclients" "4064"
+
+snapshot
+"save"
+"3600 1 300 100 60 10000"
+"appendonly" "no"
+
+lazyfree
+"lazyfree-lazy-eviction" "no"  recommend yes
+"lazyfree-lazy-expire" "no" recommend yes
+"lazyfree-lazy-server-del" "no" recommend yes
+"lazyfree-lazy-user-del" "no" recommend yes
+"lazyfree-lazy-user-flush" "no" recommend yes
+
+time limit
+"lua-time-limit" "5000"
+"cluster-node-timeout" "15000"
+"slowlog-log-slower-than" "10000"
+
+logging
+"syslog-ident" "redis"
+"loglevel" "notice"
+"appendfsync" "everysec"
+
+4. Add grpc feature
+  - 
+5. build client grpc jar
   - build server and client jar
-5. add test code 
+6. add test code 
   - API Level Test
   - Service level Test
   - Unit level Test
-6. Add grpc feature
-  - 
 99. add prometheus exportor - prometheus exporter armeria example
         https://github.com/heowc/armeria-example/blob/master/prometheus-metrics/src/main/java/com/example/PrometheusMetricsApplication.java
         https://jupiny.com/2021/01/03/armeria-metric-monitoring-by-prometheus/
