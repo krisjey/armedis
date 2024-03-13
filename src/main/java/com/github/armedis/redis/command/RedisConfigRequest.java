@@ -8,9 +8,7 @@ import com.github.armedis.http.service.request.RedisRequest;
 import com.linecorp.armeria.server.annotation.Param;
 
 public class RedisConfigRequest extends RedisRequest {
-    private final Logger logger = LoggerFactory.getLogger(RedisConfigRequest.class);
-
-    private static final String COMMAND_NAME = "set";
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Param("value")
     protected String value;
@@ -18,7 +16,7 @@ public class RedisConfigRequest extends RedisRequest {
     public RedisConfigRequest() {
 //        // created object by every http request
 //        logger.info("Created request " + RedisGetRequest.class.getName());
-        this.setCommand(COMMAND_NAME);
+        this.setCommand(getCommand());
     }
 
     public String getValue() {

@@ -27,12 +27,12 @@ import com.linecorp.armeria.server.annotation.Put;
  *
  */
 @Component
-public class RedisManagementService extends BaseService {
+public class RedisConfigService extends BaseService {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private static final String REDIS_COMMAND = "management";
+	private static final String REDIS_COMMAND = "config";
 
-	private static final String COMMAND_URL = "/v1/" + REDIS_COMMAND;
+	private static final String COMMAND_URL = "/v1/management/" + REDIS_COMMAND;
 
 	private static final String COMMAND_URL_WITH_KEY = COMMAND_URL + "/:key";
 

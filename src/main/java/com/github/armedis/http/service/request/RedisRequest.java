@@ -4,6 +4,7 @@ package com.github.armedis.http.service.request;
 import java.util.Optional;
 
 /**
+ * Created object by every http request<br />
  * Json to redis command object
  *     // http/command with key 
  *     // http/command

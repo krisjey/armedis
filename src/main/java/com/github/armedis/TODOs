@@ -17,7 +17,8 @@ config set commend list available value enum
 master/all
 
 realtime memory
-"memory purge"  command - purge dirty page 
+"memory flush" /v1/management/memory/flush
+"memory purge" command - purge dirty page 
 "activedefrag" : "no" config get
 
 server memory
