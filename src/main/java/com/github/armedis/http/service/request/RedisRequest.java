@@ -28,12 +28,16 @@ import java.util.Optional;
  *
  */
 public class RedisRequest extends AbstractRedisParam implements ResponseDataTypes {
-    protected String command;
-
+    private String command;
+    
     public String getCommand() {
         return this.command;
     }
 
+    /**
+     * Should be set in the constructor
+     * @param command
+     */
     public void setCommand(String command) {
         this.command = command;
     }

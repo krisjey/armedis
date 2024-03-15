@@ -14,9 +14,7 @@ public class RedisConfigRequest extends RedisRequest {
     protected String value;
 
     public RedisConfigRequest() {
-//        // created object by every http request
-//        logger.info("Created request " + RedisGetRequest.class.getName());
-        this.setCommand(getCommand());
+        this.setCommand("Config");
     }
 
     public String getValue() {

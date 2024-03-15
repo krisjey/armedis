@@ -57,6 +57,9 @@ public class RedisCommandExecutor {
 
         switch (this.redisServerInfo) {
             case STANDALONE:
+                // Bean lookup and execute on cluster server.
+                return executeNonClusterCommand((RedisCommandRunner) commandRunner);
+
             case SENTINEL:
                 // Bean lookup and execute on cluster server.
                 return executeNonClusterCommand((RedisCommandRunner) commandRunner);
@@ -72,7 +75,7 @@ public class RedisCommandExecutor {
 
     // TODO Add executeMasterReplicaCommand
 //    StatefulRedisMasterSlaveConnection
-    
+
     private RedisCommandExecuteResult executeNonClusterCommand(RedisCommandRunner commandRunner) throws Exception {
         StatefulRedisConnection<String, String> connection = this.redisConnectionPool.getNonClusterConnection();
         RedisCommands<String, String> commands = connection.sync();
@@ -87,7 +90,13 @@ public class RedisCommandExecutor {
     }
 
     private RedisCommandExecuteResult executeClusterCommand(RedisCommandRunner commandRunner) throws Exception {
+        // cluster is not null
+        // send all cluster
+        // send master
+        // send slave
+
         StatefulRedisClusterConnection<String, String> connection = this.redisConnectionPool.getClusterConnection();
+
         RedisAdvancedClusterCommands<String, String> commands = connection.sync();
 
         RedisCommandExecuteResult result = commandRunner.executeAndGet(commands);

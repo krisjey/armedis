@@ -90,6 +90,7 @@ public class RedisStatInfoBucket {
 
     @Scheduled(fixedRate = 1000) // 1000밀리초 = 1초
     public void redisStatPolling() throws Throwable {
+        // TODO Cluster랑 None Cluster 분리.
         if (armedisConfiguration.isStatEnabled()) {
             // do nothing
         }

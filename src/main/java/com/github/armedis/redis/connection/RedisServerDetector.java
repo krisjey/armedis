@@ -5,13 +5,13 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.HashSet;
 import java.util.Set;
- 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.armedis.redis.RedisInstanceType;
 import com.github.armedis.redis.RedisNode;
+import com.github.armedis.redis.info.RedisInfoVo;
 
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
@@ -81,8 +81,8 @@ public class RedisServerDetector {
     private Set<RedisNode> detectRedisServerNodes(StatefulRedisConnection<String, String> redisSeedConnection)
             throws UnsupportedOperationException {
         Set<RedisNode> nodes = null;
-        // is cluster, master/slave, support sentinel, can not found.
 
+        // is cluster, master/slave, support sentinel, can not found.
         logger.info("Connected to Redis");
 
         RedisNodeLookup nodeLookup = null;
@@ -90,24 +90,30 @@ public class RedisServerDetector {
         RedisCommands<String, String> syncCommands = redisSeedConnection.sync();
         String redisInfo = syncCommands.info();
 
+        RedisInfoVo redisInfoVo = null;
+
+        try {
+            redisInfoVo = RedisInfoVo.from(redisInfo, false);
+        }
+        catch (Throwable e) {
+            logger.error("Can not parse redis info command result!", e);
+        }
+
         logger.info("Role " + syncCommands.role().toString());
 
         // TYPE cluster, none cluster, master, slave
-        for (String line : redisInfo.split("\\r?\\n")) {
-            if (line.startsWith("redis_mode")) {
-                String type = line.split("[:]")[1];
+        String type = redisInfoVo.getServer().getRedisMode();
 
-                logger.info("Redis node type [" + type + "]");
-                redisInstanceType = RedisInstanceType.of(type);
-                nodeLookup = RedisLookupFactory.create(redisInstanceType, this.seedAddresses);
-                nodes = nodeLookup.lookup(redisSeedConnection);
-            }
-        }
+        logger.info("Redis node type [" + type + "]");
+        redisInstanceType = RedisInstanceType.of(type);
 
-        if (nodeLookup == null) {
-            nodeLookup = RedisLookupFactory.create(RedisInstanceType.NOT_DETECTED, this.seedAddresses);
-            nodes = nodeLookup.lookup(redisSeedConnection);
-        }
+        nodeLookup = RedisLookupFactory.create(redisInstanceType, this.seedAddresses);
+        nodes = nodeLookup.lookup(redisSeedConnection);
+
+//        if (nodeLookup == null) {
+//            nodeLookup = RedisLookupFactory.create(RedisInstanceType.NOT_DETECTED, this.seedAddresses);
+//            nodes = nodeLookup.lookup(redisSeedConnection);
+//        }
 
         return nodes;
     }

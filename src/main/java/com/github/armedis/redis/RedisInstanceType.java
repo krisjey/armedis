@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 public enum RedisInstanceType {
     CLUSTER("cluster"), //
     STANDALONE("standalone"), //
+    MASTER_SLAVE("master_slave"), //
     SENTINEL("sentinel"), //
     NOT_DETECTED("none"), //
     ;

@@ -21,6 +21,12 @@ import com.linecorp.armeria.server.annotation.Post;
 import com.linecorp.armeria.server.annotation.Put;
 
 /**
+ * Path containing path variables, e.g /hello/{name} or /hello/:name
+ * or
+ * AnnotatedService path variable
+ * 
+ * If you do not use object parameter ex json request then just use buildRedisRequest
+ * 
  * Redis get http request endpoint service.
  * @author krisjey
  *
