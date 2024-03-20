@@ -20,7 +20,7 @@ public class RedisNode {
     }
 
     private RedisNode(String host, int port, RedisInstanceType instanceType) {
-        this.host = host;
+        this.host = requireNonNull(host);
         this.port = port;
         this.instanceType = instanceType;
 
