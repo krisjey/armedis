@@ -13,16 +13,27 @@ public class RedisNode {
 
     private RedisInstanceType instanceType;
 
+    private RedisNodeType redisNodeType;
+
     private RedisURI uri;
 
     public RedisNode(String host, int port) {
-        this(requireNonNull(host), port, RedisInstanceType.NOT_DETECTED);
+        this(requireNonNull(host), port, RedisInstanceType.NOT_DETECTED, RedisNodeType.NOT_DETECTED);
     }
 
-    private RedisNode(String host, int port, RedisInstanceType instanceType) {
+    public RedisNode(String host, int port, RedisInstanceType instanceType) {
+        this(requireNonNull(host), port, instanceType, RedisNodeType.NOT_DETECTED);
+    }
+
+    public RedisNode(String host, int port, RedisNodeType redisNodeType) {
+        this(requireNonNull(host), port, RedisInstanceType.NOT_DETECTED, redisNodeType);
+    }
+
+    public RedisNode(String host, int port, RedisInstanceType instanceType, RedisNodeType redisNodeType) {
         this.host = requireNonNull(host);
         this.port = port;
         this.instanceType = instanceType;
+        this.redisNodeType = redisNodeType;
 
         this.uri = RedisURI.create(host, port);
     }
@@ -37,6 +48,10 @@ public class RedisNode {
 
     public RedisInstanceType getInstanceType() {
         return instanceType;
+    }
+
+    public RedisNodeType getRedisNodeType() {
+        return redisNodeType;
     }
 
     public void setInstanceType(RedisInstanceType instanceType) {

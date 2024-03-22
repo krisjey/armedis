@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.armedis.redis.RedisInstanceType;
 import com.github.armedis.redis.RedisNode;
+import com.github.armedis.redis.RedisNodeType;
 import com.github.armedis.redis.info.RedisInfoVo;
 
 import io.lettuce.core.api.StatefulRedisConnection;
@@ -25,7 +26,9 @@ public class RedisServerDetector {
 
     private Set<RedisNode> seedInfo;
 
-    private Set<RedisNode> actualServers = new HashSet<>();
+    private static Set<RedisNode> allServers = new HashSet<>();
+    private static Set<RedisNode> masterServers = new HashSet<>();
+    private static Set<RedisNode> replicaServers = new HashSet<>();
 
     /**
      * 
@@ -64,11 +67,21 @@ public class RedisServerDetector {
         try (StatefulRedisConnection<String, String> redisSeedConnection = getSeedConnection();) {
             // get nodes
             logger.info("Tring to detect server type.");
-            actualServers = detectRedisServerNodes(redisSeedConnection);
-            logger.info("Detected servers " + actualServers.toString());
+            allServers = detectRedisServerNodes(redisSeedConnection);
+
+            for (RedisNode node : allServers) {
+                if (node.getRedisNodeType().equals(RedisNodeType.REPLICA)) {
+                    replicaServers.add(node);
+                }
+                else {
+                    masterServers.add(node);
+                }
+            }
+
+            logger.info("Detected servers " + allServers.toString());
         }
 
-        return actualServers;
+        return allServers;
     }
 
     // FIXME standalone, cluster로 먼저 구분하고 standalone이면 (single, master-replica, sentinel 구분 필요.)
@@ -125,7 +138,7 @@ public class RedisServerDetector {
     private StatefulRedisConnection<String, String> getSeedConnection() {
         for (RedisNode seed : this.seedInfo) {
             try {
-                RedisSeedConnector redisSeedConnector = new RedisSeedConnector(seed);
+                RedisConnector redisSeedConnector = new RedisConnector(seed);
                 logger.info("Connected server " + seed.toString());
 
                 return redisSeedConnector.connect();
@@ -141,5 +154,17 @@ public class RedisServerDetector {
 
     public RedisInstanceType getRedisInstanceType() {
         return redisInstanceType;
+    }
+
+    public static final Set<RedisNode> getAllNodes() {
+        return allServers;
+    }
+
+    public static final Set<RedisNode> getMasterNodes() {
+        return masterServers;
+    }
+
+    public static final Set<RedisNode> getReplicaNodes() {
+        return replicaServers;
     }
 }

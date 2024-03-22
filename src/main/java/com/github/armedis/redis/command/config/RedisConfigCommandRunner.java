@@ -3,12 +3,14 @@ package com.github.armedis.redis.command.config;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.github.armedis.redis.RedisNode;
 import com.github.armedis.redis.command.AbstractRedisCommandRunner;
 import com.github.armedis.redis.command.RedisClusterWideCommand;
 import com.github.armedis.redis.command.RedisCommandEnum;
@@ -16,7 +18,10 @@ import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.github.armedis.redis.command.RedisCommandExecuteResultFactory;
 import com.github.armedis.redis.command.RedisConfigRequest;
 import com.github.armedis.redis.command.RequestRedisCommandName;
+import com.github.armedis.redis.connection.RedisConnector;
+import com.github.armedis.redis.connection.RedisServerDetector;
 
+import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.cluster.api.sync.RedisClusterCommands;
 
@@ -45,27 +50,34 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
 
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
     }
-
+    
+    // TODO get인지 set인지 구분.
     @Override
     public RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands) {
         logger.info(redisRequest.toString());
-        
-//     TODO  위로 올리던지. 서버 그룹별로 명령어를 던지던지
+
+//     TODO  위로 올리던지. 서버 그룹별로 명령어를 던지던지 아니면 loopup에서 가져오던지.
 
         String key = this.redisRequest.getKey();
         String value = this.redisRequest.getValue();
 
+        String result = null;
+
+        Set<RedisNode> nodes = null;
+
         RedisClusterWideCommand mode = getRedisClusterWideCommandMode(key);
         switch (mode) {
             case MASTER:
+                nodes = RedisServerDetector.getMasterNodes();
 
                 break;
 
             case SLAVE:
-
+                nodes = RedisServerDetector.getReplicaNodes();
                 break;
 
             case ALL:
+                nodes = RedisServerDetector.getAllNodes();
 
                 break;
 
@@ -73,7 +85,16 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
                 logger.error("Can not execute command for cluster mode");
         }
 
-        String result = commands.configSet(key, value);
+        // execute command to each nodes.
+        for (RedisNode node : nodes) {
+            // TODO FIXME do not create connection for every execute.
+            try (StatefulRedisConnection<String, String> connection = new RedisConnector(node).connect();) {
+                result = connection.sync().configSet(key, value);
+            }
+            catch (Exception e) {
+                logger.error("Error command " + this.redisRequest.toString(), e);
+            }
+        }
 
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
     }
@@ -88,9 +109,9 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
         redisClusterWideCommandSet.put("activedefrag", RedisClusterWideCommand.ALL); // no
 
         // server memory
-        redisClusterWideCommandSet.put("maxmemory-policy", RedisClusterWideCommand.MASTER); // noeviction
+        redisClusterWideCommandSet.put("maxmemory-policy", RedisClusterWideCommand.ALL); // volatile-lru, volatile-lfu, volatile-random, volatile-ttl, allkeys-lru, allkeys-lfu, allkeys-random, noeviction
         redisClusterWideCommandSet.put("maxmemory-samples", RedisClusterWideCommand.ALL); // "5"
-        redisClusterWideCommandSet.put("maxmemory", RedisClusterWideCommand.SLAVE); // "0"
+        redisClusterWideCommandSet.put("maxmemory", RedisClusterWideCommand.ALL); // byte
 
         // clients
         redisClusterWideCommandSet.put("timeout", RedisClusterWideCommand.ALL); // "0"
