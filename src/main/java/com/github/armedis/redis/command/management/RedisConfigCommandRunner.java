@@ -1,8 +1,6 @@
 
 package com.github.armedis.redis.command.management;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
