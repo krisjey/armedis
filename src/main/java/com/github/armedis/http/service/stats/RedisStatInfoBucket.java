@@ -90,6 +90,7 @@ public class RedisStatInfoBucket {
 
     @Scheduled(fixedRate = 1000) // 1000밀리초 = 1초
     public void redisStatPolling() throws Throwable {
+        // TODO Cluster랑 None Cluster 분리.
         if (armedisConfiguration.isStatEnabled()) {
             // do nothing
         }
@@ -152,7 +153,7 @@ public class RedisStatInfoBucket {
         }
 
         redisStatsInfo.put("sum", sumRedisInfoVo);
-
+        logger.info("TOTAL OPS " + sumRedisInfoVo.getStats().getInstantaneousOpsPerSec());
         if (redisStatsInfoList.isAtFullCapacity()) {
             redisStatsInfoList.remove();
         }
@@ -178,8 +179,10 @@ public class RedisStatInfoBucket {
         accumulateStatSubVo(sumRedisInfoVo.getErrorstats(), redisInfoVo.getErrorstats());
         accumulateStatSubVo(sumRedisInfoVo.getCluster(), redisInfoVo.getCluster());
 
-//        keyList = redisInfoVo.getKeyspace().operationKeyList();
+//        System.out.println(sumRedisInfoVo.getStats().getInstantaneousInputKbps() + "-" + redisInfoVo.getStats().getInstantaneousInputKbps());
+        // cluster이면 0만 사용.
 
+//        keyList = redisInfoVo.getKeyspace().operationKeyList();
     }
 
     /**

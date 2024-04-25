@@ -41,8 +41,6 @@ public class RedisGetService extends BaseService {
      * @return HttpResponse
      */
     @Get
-    @Put
-    @Post
     @Path(COMMAND_URL)
     @Consumes("application/x-www-form-urlencoded")
     public HttpResponse urlencodedWithoutKey(RedisGetRequest redisRequest) {
@@ -67,11 +65,10 @@ public class RedisGetService extends BaseService {
      * @return
      */
     @Get
-    @Put
-    @Post
     @Path(COMMAND_URL_WITH_KEY)
     @Consumes("application/x-www-form-urlencoded")
     public HttpResponse urlencodedWithKey(RedisGetRequest redisRequest) {
+//        public HttpResponse urlencodedWithKey(AggregatedHttpRequest httpRequest) {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
         // execute redis command by http request params.
@@ -96,8 +93,6 @@ public class RedisGetService extends BaseService {
      * @return HttpResponse
      */
     @Get
-    @Put
-    @Post
     @Path(COMMAND_URL)
     @Consumes("application/json")
     public HttpResponse jsonWithoutKey(AggregatedHttpRequest httpRequest) {
@@ -129,8 +124,6 @@ public class RedisGetService extends BaseService {
      * @return HttpResponse
      */
     @Get
-    @Put
-    @Post
     @Path(COMMAND_URL_WITH_KEY)
     @Consumes("application/json")
     public HttpResponse jsonWithKey(AggregatedHttpRequest httpRequest, @Param("key") String key) {

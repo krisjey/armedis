@@ -3,7 +3,10 @@ package com.github.armedis.http.service.request;
 
 import java.util.Optional;
 
+import com.linecorp.armeria.common.AggregatedHttpRequest;
+
 /**
+ * Created object by every http request<br />
  * Json to redis command object
  *     // http/command with key 
  *     // http/command
@@ -27,27 +30,27 @@ import java.util.Optional;
  *
  */
 public class RedisRequest extends AbstractRedisParam implements ResponseDataTypes {
-    protected String command;
+    private String command;
+
+    public RedisRequest(AggregatedHttpRequest httpRequest) {
+        setRequestMethod(httpRequest.method().toString());
+    }
 
     public String getCommand() {
         return this.command;
     }
 
+    /**
+     * Should be set in the constructor
+     * @param command
+     */
     public void setCommand(String command) {
         this.command = command;
     }
 
-    public String getKey() {
-        return this.key.get();
-    }
-
-    public void setKey(Optional<String> key) {
-        this.key = key;
-    }
-
     @Override
     public String toString() {
-        return "RedisRequest [key=" + key.get() + ", command=" + this.command + "]";
+        return "RedisRequest [key=" + key.get() + ", command=" + this.command + "], method=" + this.requestMethod + "]";
     }
 
     @Override

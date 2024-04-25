@@ -29,7 +29,7 @@ public class RedisRequestBuilderFactory {
 
         requireNonNull(builder, "Requested comand name " + command + ", Builder " + redisCommandName + " is not implemented!");
 
-        return builder;
+        return builder; 
     }
 
 }
