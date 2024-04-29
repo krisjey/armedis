@@ -68,7 +68,6 @@ public class RedisGetService extends BaseService {
     @Path(COMMAND_URL_WITH_KEY)
     @Consumes("application/x-www-form-urlencoded")
     public HttpResponse urlencodedWithKey(RedisGetRequest redisRequest) {
-//        public HttpResponse urlencodedWithKey(AggregatedHttpRequest httpRequest) {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
         // execute redis command by http request params.

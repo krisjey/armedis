@@ -27,76 +27,83 @@ import io.lettuce.core.cluster.api.sync.RedisClusterCommands;
 @Scope("prototype")
 @RequestRedisCommandName(RedisCommandEnum.CONFIG)
 public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
-    private final Logger logger = LoggerFactory.getLogger(RedisConfigCommandRunner.class);
+	private final Logger logger = LoggerFactory.getLogger(RedisConfigCommandRunner.class);
 
-    @SuppressWarnings("unused")
-    private static final boolean classLoaded = detectAnnotation(RedisConfigCommandRunner.class);
+	@SuppressWarnings("unused")
+	private static final boolean classLoaded = detectAnnotation(RedisConfigCommandRunner.class);
 
-    private RedisConfigRequest redisRequest;
+	private RedisConfigRequest redisRequest;
 
-    public RedisConfigCommandRunner(RedisConfigRequest redisRequest) {
-        this.redisRequest = redisRequest;
-    }
+	public RedisConfigCommandRunner(RedisConfigRequest redisRequest) {
+		this.redisRequest = redisRequest;
+	}
 
-    @Override
-    public RedisCommandExecuteResult executeAndGet(RedisCommands<String, String> commands) {
-        logger.info(redisRequest.toString());
+	@Override
+	public RedisCommandExecuteResult executeAndGet(RedisCommands<String, String> commands) {
+		logger.info(redisRequest.toString());
 
-        String key = this.redisRequest.getKey();
-        String value = this.redisRequest.getValue();
-        String result = commands.configSet(key, value);
+		String key = this.redisRequest.getKey();
+		String value = this.redisRequest.getValue();
+		String result = commands.configSet(key, value);
 
-        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
-    }
+		return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
+	}
 
-    // TODO sub command를 get인지 set인지 구분.
-    @Override
-    public RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands) {
-        logger.info(redisRequest.toString());
+	// TODO sub command를 get인지 set인지 구분.
+	@Override
+	public RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands) {
+		logger.info(redisRequest.toString());
 
-        String key = this.redisRequest.getKey();
-        String value = this.redisRequest.getValue();
+		String key = this.redisRequest.getKey();
+		String value = this.redisRequest.getValue();
 
-        String result = null;
+		String result = null;
 
-        Set<RedisNode> nodes = null;
+		Set<RedisNode> nodes = null;
 
-        RedisClusterWideCommand mode = getRedisClusterWideCommandMode(key);
-        switch (mode) {
-            case MASTER:
-                nodes = RedisServerDetector.getMasterNodes();
+		RedisClusterWideCommand mode = getRedisClusterWideCommandMode(key);
+		switch (mode) {
+		case MASTER:
+			nodes = RedisServerDetector.getMasterNodes();
 
-                break;
+			break;
 
-            case SLAVE:
-                nodes = RedisServerDetector.getReplicaNodes();
-                break;
+		case SLAVE:
+			nodes = RedisServerDetector.getReplicaNodes();
+			break;
 
-            case ALL:
-                nodes = RedisServerDetector.getAllNodes();
+		case ALL:
+			nodes = RedisServerDetector.getAllNodes();
 
-                break;
+			break;
 
-            default:
-                logger.error("Can not execute command for cluster mode");
-        }
+		default:
+			logger.error("Can not execute command for cluster mode");
+		}
 
-        // execute command to each nodes.
-        for (RedisNode node : nodes) {
-            // TODO FIXME do not create connection for every execute.
-            try (StatefulRedisConnection<String, String> connection = new RedisConnector(node).connect();) {
-                result = connection.sync().configSet(key, value);
-            }
-            catch (Exception e) {
-                logger.error("Error command " + this.redisRequest.toString(), e);
-            }
-        }
+		// execute command to each nodes.
+		for (RedisNode node : nodes) {
+			// TODO FIXME do not create connection for every execute.
+			RedisConnector connector = new RedisConnector(node);
+			try (StatefulRedisConnection<String, String> connection = connector.connect();) {
+//				set get 분기처리.
+				result = connection.sync().configSet(key, value);
+			} catch (Exception e) {
+				logger.error("Error command " + this.redisRequest.toString(), e);
+			} finally {
+				try {
+					connector.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
 
-        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
-    }
+		return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
+	}
 
-    private RedisClusterWideCommand getRedisClusterWideCommandMode(String subCommand) {
-        return RedisClusterWideCommands.get(subCommand);
-    }
+	private RedisClusterWideCommand getRedisClusterWideCommandMode(String subCommand) {
+		return RedisClusterWideCommands.get(subCommand);
+	}
 
 }
