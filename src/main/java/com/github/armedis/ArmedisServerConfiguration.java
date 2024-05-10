@@ -135,8 +135,8 @@ public class ArmedisServerConfiguration {
             instanceInfo = new DefaultInstanceInfo(String.valueOf(listenPort));
 
             // FIXME remove comment.. currently not used zookeeper.
-            logger.info("Successfully added zookeeper node! [" + instanceInfo.getNodePath() + "] "
-                    + instanceInfo.toJsonObject().toString());
+            logger.info("Successfully added zookeeper node! [" + instanceInfo.getNodePath() + "] " +
+                    instanceInfo.toJsonObject().toString());
 
             logger.info(LogStringBuilder.makeReadableLine(1));
             logger.info(LogStringBuilder.makeHeader("Add shutdownhook"));
@@ -200,17 +200,16 @@ public class ArmedisServerConfiguration {
         int instanceCount = armedisConfiguration.getInstanceCount();
 
         if (instanceCount == 0 || configServicePort == 0) {
-            throw new RuntimeException("Cannot start Server. service port[" + configServicePort + "] instance count["
-                    + instanceCount + "] but request is [" + servicePortFromParam + "]");
+            throw new RuntimeException("Cannot start Server. service port[" + configServicePort + "] instance count[" +
+                    instanceCount + "] but request is [" + servicePortFromParam + "]");
         }
 
-        if (configServicePort <= servicePortFromParam
-                && (configServicePort + instanceCount - 1) >= servicePortFromParam) {
+        if (configServicePort <= servicePortFromParam && (configServicePort + instanceCount - 1) >= servicePortFromParam) {
             // do nothing
         }
         else {
-            throw new RuntimeException("Cannot start Server. service port[" + configServicePort + "] instance count["
-                    + instanceCount + "] but request is [" + servicePortFromParam + "]");
+            throw new RuntimeException("Cannot start Server. service port[" + configServicePort + "] instance count[" +
+                    instanceCount + "] but request is [" + servicePortFromParam + "]");
         }
 
         logger.info("Initialized service port : " + listenPort);

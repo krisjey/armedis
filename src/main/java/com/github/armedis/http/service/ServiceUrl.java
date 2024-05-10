@@ -17,7 +17,7 @@ public final class ServiceUrl {
      * Server active check.
      */
     public static final String RUOK = "/v1/ruok";
-    
+
     /**
      * Redis status check
      */

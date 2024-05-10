@@ -1,6 +1,7 @@
 /**
  * 
  */
+
 package com.github.armedis.redis.command.management;
 
 import java.util.HashMap;
@@ -18,7 +19,6 @@ public class RedisClusterWideCommands {
         redisClusterWideCommandSet.put("save", RedisClusterWideCommand.ALL); // no
         redisClusterWideCommandSet.put("bgsave", RedisClusterWideCommand.ALL); // no
 
-        
         // memory management
         redisClusterWideCommandSet.put("activedefrag", RedisClusterWideCommand.ALL); // no
 

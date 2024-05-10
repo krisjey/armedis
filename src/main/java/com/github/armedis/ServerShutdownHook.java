@@ -24,7 +24,7 @@ public class ServerShutdownHook extends Thread {
     @Override
     public void run() {
         try {
-        	// if use zookeeper delete zookeeper node.
+            // if use zookeeper delete zookeeper node.
             logger.info("Shutdown server");
         }
         catch (Exception e) {

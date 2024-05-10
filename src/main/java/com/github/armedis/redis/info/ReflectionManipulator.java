@@ -1,6 +1,7 @@
 /**
  * 
  */
+
 package com.github.armedis.redis.info;
 
 import java.lang.reflect.Field;
@@ -54,8 +55,7 @@ public class ReflectionManipulator {
             }
         }
         catch (NoSuchFieldException | IllegalAccessException | NumberFormatException | SecurityException e) {
-            logger.error("Can not found decleared field in " + objects.getClass().getSimpleName() + " "
-                    + fieldName + " " + value, e);
+            logger.error("Can not found decleared field in " + objects.getClass().getSimpleName() + " " + fieldName + " " + value, e);
         }
     }
 
@@ -74,8 +74,7 @@ public class ReflectionManipulator {
 
         }
         catch (NoSuchFieldException | IllegalAccessException | NumberFormatException e) {
-            logger.error("Can not found decleared field in " + objects.getClass().getSimpleName() + " "
-                    + fieldName, e);
+            logger.error("Can not found decleared field in " + objects.getClass().getSimpleName() + " " + fieldName, e);
         }
 
         return result;
@@ -96,8 +95,7 @@ public class ReflectionManipulator {
             result = method.invoke(objects);
         }
         catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-            logger.error("Can not found decleared field in " + objects.getClass().getSimpleName() + " "
-                    + fieldName, e);
+            logger.error("Can not found decleared field in " + objects.getClass().getSimpleName() + " " + fieldName, e);
         }
 
         return result;

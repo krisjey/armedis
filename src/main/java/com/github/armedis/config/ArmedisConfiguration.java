@@ -70,7 +70,6 @@ public class ArmedisConfiguration {
         this.addContentSection = addContentSection;
     }
 
-
     /**
      * @return the statEnabled
      */

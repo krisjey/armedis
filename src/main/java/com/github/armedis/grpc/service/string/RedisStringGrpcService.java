@@ -20,7 +20,7 @@ public class RedisStringGrpcService extends RedisStringServiceImplBase {
 
     @Override
     public void set(SetRequest setRequest, StreamObserver<SetResponse> responseObserver) {
-    	logger.info("Unary message get " + setRequest.getKey());
+        logger.info("Unary message get " + setRequest.getKey());
         SetResponse response = SetResponse.newBuilder()
                 .setCode("200")
                 .setResult("hello world " + setRequest.getKey())

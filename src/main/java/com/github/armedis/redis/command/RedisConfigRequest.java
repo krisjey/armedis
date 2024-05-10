@@ -10,7 +10,7 @@ import com.linecorp.armeria.server.annotation.Param;
 
 public class RedisConfigRequest extends RedisRequest {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    
+
     @Param("value")
     protected String value;
 
