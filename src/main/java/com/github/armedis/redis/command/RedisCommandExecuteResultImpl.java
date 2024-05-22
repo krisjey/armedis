@@ -13,15 +13,18 @@ public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult 
     private float floatResult;
     private long longResult;
     private double doubleResult;
+    private ObjectNode jsonResult;
+
     private ResultType resultType;
 
-    public RedisCommandExecuteResultImpl(ResultType resultType, int intResult, String stringResult, float floatResult, long longResult, double doubleResult) {
+    public RedisCommandExecuteResultImpl(ResultType resultType, int intResult, String stringResult, float floatResult, long longResult, double doubleResult, ObjectNode jsonResult) {
         this.resultType = resultType;
         this.intResult = intResult;
         this.stringResult = stringResult;
         this.floatResult = floatResult;
         this.longResult = longResult;
         this.doubleResult = doubleResult;
+        this.jsonResult = jsonResult;
     }
 
     @Override
@@ -37,6 +40,7 @@ public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult 
 
     private ObjectNode createObjectNode() {
         ObjectNode result = mapper.createObjectNode();
+
         switch (resultType) {
             case INTEGER:
                 result.put("result", intResult);
@@ -45,12 +49,17 @@ public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult 
             case LONG:
                 result.put("result", longResult);
                 break;
+
             case FLOAT:
                 result.put("result", floatResult);
                 break;
 
             case DOUBLE:
                 result.put("result", doubleResult);
+                break;
+
+            case JSON_OBJECT:
+                result.set("result", jsonResult);
                 break;
 
             default:

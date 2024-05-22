@@ -1,6 +1,7 @@
 
 package com.github.armedis.redis.command;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.armedis.redis.command.RedisCommandExecuteResultBuilder.ResultType;
 
 public class RedisCommandExecuteResultFactory {
@@ -40,6 +41,14 @@ public class RedisCommandExecuteResultFactory {
     public static RedisCommandExecuteResult buildRedisCommandExecuteResult(Double result) {
 
         RedisCommandExecuteResultBuilder builder = new RedisCommandExecuteResultBuilder(ResultType.DOUBLE);
+        builder = builder.setResult(result);
+
+        return builder.build();
+    }
+
+    public static RedisCommandExecuteResult buildRedisCommandExecuteResult(ObjectNode result) {
+
+        RedisCommandExecuteResultBuilder builder = new RedisCommandExecuteResultBuilder(ResultType.JSON_OBJECT);
         builder = builder.setResult(result);
 
         return builder.build();

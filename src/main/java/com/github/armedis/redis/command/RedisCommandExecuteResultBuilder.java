@@ -1,13 +1,16 @@
 
 package com.github.armedis.redis.command;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 public class RedisCommandExecuteResultBuilder {
     public enum ResultType {
         STRING,
         INTEGER,
         LONG,
         FLOAT,
-        DOUBLE;
+        DOUBLE,
+        JSON_OBJECT;
     }
 
     private int intResult;
@@ -15,6 +18,8 @@ public class RedisCommandExecuteResultBuilder {
     private float floatResult;
     private long longResult;
     private double doubleResult;
+    private ObjectNode jsonResult;
+
     private ResultType resultType;
 
     public RedisCommandExecuteResultBuilder(ResultType resultType) {
@@ -45,13 +50,19 @@ public class RedisCommandExecuteResultBuilder {
         return this;
     }
 
+    public RedisCommandExecuteResultBuilder setResult(ObjectNode jsonResult) {
+        this.jsonResult = jsonResult;
+        return this;
+    }
+
     public RedisCommandExecuteResult build() {
         RedisCommandExecuteResult result = new RedisCommandExecuteResultImpl(resultType,
                 intResult,
                 stringResult,
                 floatResult,
                 longResult,
-                doubleResult);
+                doubleResult,
+                jsonResult);
 
         return result;
     }
