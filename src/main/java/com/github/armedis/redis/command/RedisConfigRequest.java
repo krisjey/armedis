@@ -15,12 +15,10 @@ public class RedisConfigRequest extends RedisRequest {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
-     * README
-     * 값의 존재가 가변일 때 
-     * Nullable 또는 Optional<String> 또는 @Default 처리.
+     * README @Optional java.util.Optional은 필드가 존재하지 않을 때 400 오류 발생함
+     * 값의 존재가 가변일 때는 Nullable 또는 @Default 처리.
      * @Nullable com.linecorp.armeria.common.annotation.Nullable
      * @Default com.linecorp.armeria.server.annotation.Default
-     * @Optional java.util.Optional
      */
     @Nullable
     @Param("value")

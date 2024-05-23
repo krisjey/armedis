@@ -94,6 +94,11 @@ public class RedisCommandExecutor {
         // send all cluster
         // send master
         // send slave
+        
+        // TODO excetion 을 잡아서 메시지 추출 후  result에 담아주기.
+        // TODO excetion 을 잡아서 메시지 추출 후  result에 담아주기.
+        // TODO excetion 을 잡아서 메시지 추출 후  result에 담아주기.
+        // TODO excetion 을 잡아서 메시지 추출 후  result에 담아주기.
 
         StatefulRedisClusterConnection<String, String> connection = this.redisConnectionPool.getClusterConnection();
 
