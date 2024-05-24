@@ -17,6 +17,7 @@ public final class Persistence extends StatsBaseVo {
         keyList.put("rdbLastBgsaveTimeSec", SUM);
         keyList.put("aofEnabled", DIFF);
         keyList.put("aofLastCowSize", SUM);
+        keyList.put("aofLastCowSize", SUM);
 
         return keyList;
     }
@@ -44,6 +45,14 @@ public final class Persistence extends StatsBaseVo {
     private long aofLastCowSize;
     private int moduleForkInProgress;
     private long moduleForkLastCowSize;
+    
+    private long aofCurrentSize;
+    private long aofBaseSize;
+    private long aofPendingRewrite;
+    private long aofBufferLength;
+    private long aofRewriteBufferLength;
+    private long aofPendingBioFsync;
+    private long aofDelayedFsync;
 
     /**
      * @return the loading
@@ -365,5 +374,103 @@ public final class Persistence extends StatsBaseVo {
      */
     public void setModuleForkLastCowSize(long moduleForkLastCowSize) {
         this.moduleForkLastCowSize = moduleForkLastCowSize;
+    }
+
+    /**
+     * @return the aofCurrentSize
+     */
+    public long getAofCurrentSize() {
+        return aofCurrentSize;
+    }
+
+    /**
+     * @param aofCurrentSize the aofCurrentSize to set
+     */
+    public void setAofCurrentSize(long aofCurrentSize) {
+        this.aofCurrentSize = aofCurrentSize;
+    }
+
+    /**
+     * @return the aofBaseSize
+     */
+    public long getAofBaseSize() {
+        return aofBaseSize;
+    }
+
+    /**
+     * @param aofBaseSize the aofBaseSize to set
+     */
+    public void setAofBaseSize(long aofBaseSize) {
+        this.aofBaseSize = aofBaseSize;
+    }
+
+    /**
+     * @return the aofPendingRewrite
+     */
+    public long getAofPendingRewrite() {
+        return aofPendingRewrite;
+    }
+
+    /**
+     * @param aofPendingRewrite the aofPendingRewrite to set
+     */
+    public void setAofPendingRewrite(long aofPendingRewrite) {
+        this.aofPendingRewrite = aofPendingRewrite;
+    }
+
+    /**
+     * @return the aofBufferLength
+     */
+    public long getAofBufferLength() {
+        return aofBufferLength;
+    }
+
+    /**
+     * @param aofBufferLength the aofBufferLength to set
+     */
+    public void setAofBufferLength(long aofBufferLength) {
+        this.aofBufferLength = aofBufferLength;
+    }
+
+    /**
+     * @return the aofRewriteBufferLength
+     */
+    public long getAofRewriteBufferLength() {
+        return aofRewriteBufferLength;
+    }
+
+    /**
+     * @param aofRewriteBufferLength the aofRewriteBufferLength to set
+     */
+    public void setAofRewriteBufferLength(long aofRewriteBufferLength) {
+        this.aofRewriteBufferLength = aofRewriteBufferLength;
+    }
+
+    /**
+     * @return the aofPendingBioFsync
+     */
+    public long getAofPendingBioFsync() {
+        return aofPendingBioFsync;
+    }
+
+    /**
+     * @param aofPendingBioFsync the aofPendingBioFsync to set
+     */
+    public void setAofPendingBioFsync(long aofPendingBioFsync) {
+        this.aofPendingBioFsync = aofPendingBioFsync;
+    }
+
+    /**
+     * @return the aofDelayedFsync
+     */
+    public long getAofDelayedFsync() {
+        return aofDelayedFsync;
+    }
+
+    /**
+     * @param aofDelayedFsync the aofDelayedFsync to set
+     */
+    public void setAofDelayedFsync(long aofDelayedFsync) {
+        this.aofDelayedFsync = aofDelayedFsync;
     }
 }
