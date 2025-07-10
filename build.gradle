@@ -5,54 +5,36 @@
  * For more details take a look at the Java Libraries chapter in the Gradle
  * User Manual available at https://docs.gradle.org/5.4/userguide/java_library_plugin.html
  */
-buildscript {
-    ext {
-    	ideJavaVersion='17'
-        javaVersion='17'
-        armeriaVersion='1.26.4'
-        nettyVersion='4.1.100.Final'
-        
-        springBootVersion = '3.2.0'
-        springDependencyManagementVersion = '1.1.4'
-        protobufGradlePlugin = '0.9.4'
-        
-        lettuceVersion='6.3.2.RELEASE'
-        
-        protocVersion='3.11.1'
-        // README It is not running under the 1.30.1, so the older version 1.29.0 will be used.
-        grpcVersion='1.60.0'
-        
-        slf4jVersion='2.0.4'
-        logbackVersion='1.3.5'
-    }
-
-    repositories {
-        gradlePluginPortal()
-    }
-
-    dependencies {
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
-        classpath "com.google.protobuf:protobuf-gradle-plugin:${protobufGradlePlugin}"
-    }
-}
-
 plugins {
     id "java"
     id "eclipse"
-    id "io.spring.dependency-management" version "${springDependencyManagementVersion}"
-    id "org.springframework.boot" version "${springBootVersion}"
     id "application" // gradle task plugin for distTar
+
+    id "io.spring.dependency-management" version "1.1.7"
+    id "org.springframework.boot" version "3.5.3"
     
     id "org.ajoberstar.grgit" version "4.1.1"
     id "com.gorylenko.gradle-git-properties" version "2.4.1"  // add git information to actuator endpoint
-    id "com.google.protobuf" version "${protobufGradlePlugin}"
+    id "com.google.protobuf" version "0.9.5"
 }
 
 ext {
-	hashVersion = "1.0.0-${grgit.head().abbreviatedId}"
-	print "current hash version $hashVersion"
+    ideJavaVersion='17'
+    javaVersion='17'
+    armeriaVersion='1.32.5'
+    nettyVersion='4.2.1.Final'
+    
+    lettuceVersion='6.7.1.RELEASE'
+    
+    protocVersion='3.25.5'
+    grpcVersion='1.71.0'
+    
+    slf4jVersion='2.0.16'
+    logbackVersion='1.5.16'
+    hashVersion = "1.0.0-${grgit.head().abbreviatedId}"
+    print "current hash version $hashVersion"
 
-	print grgit.branch.current.name
+    print grgit.branch.current.name
 }
 
 java {
@@ -70,7 +52,7 @@ clean {
 }
 
 tasks.withType(JavaCompile) {
-	javaCompile -> println "Hello, " + javaCompile.name
+    javaCompile -> println "Hello, " + javaCompile.name
 
     options.encoding = 'UTF-8'
     // source and target compatibility
@@ -91,8 +73,8 @@ tasks.named('test') {
 eclipse {
     classpath {
         defaultOutputDir = file('classes')
-        downloadJavadoc = false
-        downloadSources = true
+        downloadJavadoc = true
+        downloadSources = false
 
         file.whenMerged { classpath -> classpath.entries.sort() }
     }
@@ -108,7 +90,7 @@ protobuf {
         artifact = "com.google.protobuf:protoc:${protocVersion}"
 
         // Set the location of generated source code by protoc compiler
-        //generatedFilesBaseDir = "$projectDir/gen-src"
+        // generatedFilesBaseDir = "$projectDir/gen-src"
     }
 
     plugins {
@@ -146,23 +128,23 @@ sourceSets {
         }
     }
     test {
-    	java {
-	    	srcDirs 'src/test/java'
-    	}
+        java {
+            srcDirs 'src/test/java'
+        }
     }
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 configurations {
     all {
-    	// for slf4j + logback setting start.
+        // for slf4j + logback setting start.
         exclude group: "org.springframework.boot", module : "spring-boot-starter-logging"
         exclude group: "org.slf4j", module: "slf4j-log4j12"
-    	exclude group: "log4j", module: "log4j"
-    	// for slf4j + logback setting end.
+        exclude group: "log4j", module: "log4j"
+        // for slf4j + logback setting end.
     }
 }
 
@@ -181,22 +163,18 @@ dependencies {
 
     // Adjust the list as you need.
     ['armeria',
-    'armeria-brave',
     'armeria-grpc',
     'armeria-jetty11',
     'armeria-kafka',
     'armeria-logback12',
     'armeria-retrofit2',
     'armeria-rxjava3',
-    'armeria-saml',
-    'armeria-thrift0.18',
-    'armeria-tomcat10',
     'armeria-zookeeper3'].each {
         implementation "com.linecorp.armeria:${it}:${armeriaVersion}"
     }
 
     // Logging
-    implementation 'ch.qos.logback:logback-classic:1.4.11'
+    implementation 'ch.qos.logback:logback-classic:1.5.16'
 
     implementation "com.linecorp.armeria:armeria-spring-boot3-autoconfigure:${armeriaVersion}"
     implementation "com.linecorp.armeria:armeria-spring-boot3-actuator-starter:${armeriaVersion}"
@@ -206,9 +184,10 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.springframework.boot:spring-boot-configuration-processor"
 
-    implementation group: 'org.apache.commons', name: 'commons-text', version: '1.10.0'
-    implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
-    implementation group: 'org.apache.commons', name: 'commons-pool2', version: '2.12.0'
+    implementation group: 'org.apache.commons', name: 'commons-text', version: '1.13.1'
+    implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.5.0'
+    implementation group: 'org.apache.commons', name: 'commons-pool2', version: '2.12.1'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.19.0'
 
     implementation "io.lettuce:lettuce-core:${lettuceVersion}"
 
@@ -219,6 +198,8 @@ dependencies {
     implementation "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
     implementation "ch.qos.logback:logback-classic:${logbackVersion}"
     implementation "ch.qos.logback:logback-core:${logbackVersion}"
+    
+    compileOnly 'javax.annotation:javax.annotation-api:1.3.2'
 
     // Use JUnit test framework
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

@@ -410,17 +410,12 @@ public class RedisStatInfoBucket {
 
     private List<RedisClusterNodeInfo> convertNodeInfoList(String clusterNodes) {
         List<RedisClusterNodeInfo> redisNodeInfo = new ArrayList<RedisClusterNodeInfo>();
-        try {
-            List<String> nodeInfoStrings = IOUtils.readLines(new StringReader(clusterNodes));
+        List<String> nodeInfoStrings = IOUtils.readLines(new StringReader(clusterNodes));
 
-            for (String nodeInfoString : nodeInfoStrings) {
-                RedisClusterNodeInfo nodeInfo = RedisClusterNodeInfoConverter.convert(nodeInfoString);
+        for (String nodeInfoString : nodeInfoStrings) {
+            RedisClusterNodeInfo nodeInfo = RedisClusterNodeInfoConverter.convert(nodeInfoString);
 
-                redisNodeInfo.add(nodeInfo);
-            }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
+            redisNodeInfo.add(nodeInfo);
         }
 
         return redisNodeInfo;
