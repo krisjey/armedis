@@ -26,9 +26,9 @@ public class RedisStatsService extends BaseService {
 
 	@Autowired
 	private RedisStatInfoBucket redisStatInfoBucket;
-	
-    @Autowired
-    private ArmedisConfiguration armedisConfiguration;
+
+	@Autowired
+	private ArmedisConfiguration armedisConfiguration;
 
 	/**
 	 * Are you ok service for server instance.

@@ -10,7 +10,7 @@ public abstract class AbstractRedisCommandRunner implements RedisCommandRunner {
 
     protected static boolean detectAnnotation(Class<?> clazz) {
         RequestRedisCommandName settedAnnotation = clazz.getAnnotation(RequestRedisCommandName.class);
-//        if (clazz.getSimpleName().toLowerCase().startsWith("redis" + settedAnnotation.value().getCommand() + "commandrunner")) {
+
         if (clazz.getSimpleName().startsWith("Redis" + StringUtils.capitalize(settedAnnotation.value().getCommand()) + "CommandRunner")) {
             logger.info(clazz.getSimpleName() + " loaded!");
             return true;

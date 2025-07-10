@@ -1,6 +1,7 @@
 
 package com.github.armedis.http.service.request;
 
+import static com.linecorp.armeria.common.MediaType.PLAIN_TEXT_UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -13,6 +14,8 @@ import com.github.armedis.http.service.request.string.RedisGetRequestBuilder;
 import com.github.armedis.http.service.request.string.RedisSetRequestBuilder;
 import com.github.armedis.redis.command.RedisGetRequest;
 import com.github.armedis.redis.command.RedisSetRequest;
+import com.linecorp.armeria.common.AggregatedHttpRequest;
+import com.linecorp.armeria.common.HttpMethod;
 
 /**
  * // Redis RedisRequestBuilder는 RedisRequest 클래스를 생성한다.
@@ -44,7 +47,11 @@ public class RedisRequestBuilderTest {
         assertThat(builder).isExactlyInstanceOf(RedisGetRequestBuilder.class);
 
         JsonNode jsonNode = new ObjectMapper().readTree("{\"key\":\"" + key + "\"}");
-        RedisRequest redisRequest = builder.build(jsonNode);
+        
+        final AggregatedHttpRequest aReq = AggregatedHttpRequest.of(
+                HttpMethod.POST, "/foo", PLAIN_TEXT_UTF_8, "bar");
+        
+        RedisRequest redisRequest = builder.build(null, jsonNode);
         assertThat(redisRequest).isNotNull();
         assertThat(redisRequest).isExactlyInstanceOf(RedisGetRequest.class);
 
@@ -63,7 +70,7 @@ public class RedisRequestBuilderTest {
         assertThat(builder).isExactlyInstanceOf(RedisSetRequestBuilder.class);
 
         JsonNode jsonNode = new ObjectMapper().readTree("{\"key\":\"" + key + "\", \"value\":\"" + value + "\"}");
-        RedisRequest redisRequest = builder.build(jsonNode);
+        RedisRequest redisRequest = builder.build(null, jsonNode);
         assertThat(redisRequest).isNotNull();
         assertThat(redisRequest).isExactlyInstanceOf(RedisSetRequest.class);
 

@@ -8,17 +8,20 @@ import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.armedis.redis.RedisInstanceType;
 import com.github.armedis.redis.RedisNode;
-import com.github.armedis.redis.connection.RedisNodeLookup;
+import com.github.armedis.redis.RedisNodeType;
 
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.cluster.models.partitions.ClusterPartitionParser;
 import io.lettuce.core.cluster.models.partitions.Partitions;
 import io.lettuce.core.cluster.models.partitions.RedisClusterNode;
+import io.lettuce.core.cluster.models.partitions.RedisClusterNode.NodeFlag;
 
 public class RedisClusterNodeLookup implements RedisNodeLookup {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @SuppressWarnings("deprecation")
     @Override
     public Set<RedisNode> lookup(StatefulRedisConnection<String, String> redisSeedConnection) {
         Set<RedisNode> actualServers = new HashSet<>();
@@ -37,8 +40,12 @@ public class RedisClusterNodeLookup implements RedisNodeLookup {
             Partitions partitions = ClusterPartitionParser.parse(clusterNodes);
 
             for (RedisClusterNode node : partitions.getPartitions()) {
-                logger.info(node.toString());
-                actualServers.add(new RedisNode(node.getUri().getHost(), node.getUri().getPort()));
+                if (node.getFlags().contains(NodeFlag.UPSTREAM) || node.getFlags().contains(NodeFlag.MASTER)) {
+                    actualServers.add(new RedisNode(node.getUri().getHost(), node.getUri().getPort(), RedisInstanceType.CLUSTER, RedisNodeType.MASTER));
+                }
+                else {
+                    actualServers.add(new RedisNode(node.getUri().getHost(), node.getUri().getPort(), RedisInstanceType.CLUSTER, RedisNodeType.REPLICA));
+                }
             }
         }
         catch (InterruptedException | ExecutionException e) {

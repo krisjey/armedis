@@ -5,16 +5,21 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.armedis.redis.RedisNode;
+import com.github.armedis.redis.RedisNodeType;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 
+/**
+ * Redis Master-slave nodes
+ */
 public class RedisNoneClusterNodeLookup implements RedisNodeLookup {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private String seedAddresses;
@@ -78,7 +83,7 @@ public class RedisNoneClusterNodeLookup implements RedisNodeLookup {
                         slavePort = item.split("[=]")[1];
                     }
                 }
-                slaveNodes.add(new RedisNode(slaveHost, Integer.parseInt(slavePort)));
+                slaveNodes.add(new RedisNode(slaveHost, Integer.parseInt(slavePort), RedisNodeType.SLAVE));
             }
         }
 
@@ -134,7 +139,7 @@ public class RedisNoneClusterNodeLookup implements RedisNodeLookup {
             }
         }
 
-        return new RedisNode(masterHost, masterPort);
+        return new RedisNode(masterHost, masterPort, RedisNodeType.MASTER);
     }
 
     private String detectMasterHost(String info) {

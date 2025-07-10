@@ -7,17 +7,17 @@ import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 
-public enum RedisInstanceType {
-    CLUSTER("cluster"), //
-    STANDALONE("standalone"), //
-    MASTER_SLAVE("master_slave"), //
+public enum RedisNodeType {
+    MASTER("master"), //
+    REPLICA("replica"), //
+    SLAVE("slave"), //
     SENTINEL("sentinel"), //
     NOT_DETECTED("none"), //
     ;
 
     private String name;
 
-    RedisInstanceType(String name) {
+    RedisNodeType(String name) {
         this.name = name;
     }
 
@@ -25,10 +25,10 @@ public enum RedisInstanceType {
         return this.name;
     }
 
-    private static final Map<String, RedisInstanceType> redisInstanceTypes;
+    private static final Map<String, RedisNodeType> redisInstanceTypes;
     static {
-        final ImmutableMap.Builder<String, RedisInstanceType> builder = ImmutableMap.builder();
-        for (RedisInstanceType e : values()) {
+        final ImmutableMap.Builder<String, RedisNodeType> builder = ImmutableMap.builder();
+        for (RedisNodeType e : values()) {
             builder.put(e.getName(), e);
         }
 
@@ -38,12 +38,12 @@ public enum RedisInstanceType {
     /**
      * Returns the class of the specified HTTP status code.
      */
-    public static RedisInstanceType of(String name) {
+    public static RedisNodeType of(String name) {
         name = requireNonNull(name);
 
-        RedisInstanceType type = redisInstanceTypes.get(name);
+        RedisNodeType type = redisInstanceTypes.get(name);
         if (type == null) {
-            type = RedisInstanceType.NOT_DETECTED;
+            type = RedisNodeType.NOT_DETECTED;
         }
 
         return type;
