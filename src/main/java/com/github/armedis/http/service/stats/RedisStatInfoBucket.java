@@ -1,6 +1,5 @@
 package com.github.armedis.http.service.stats;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -153,7 +152,7 @@ public class RedisStatInfoBucket {
         }
 
         redisStatsInfo.put("sum", sumRedisInfoVo);
-        logger.info("TOTAL OPS " + sumRedisInfoVo.getStats().getInstantaneousOpsPerSec());
+        logger.debug("TOTAL OPS " + sumRedisInfoVo.getStats().getInstantaneousOpsPerSec());
         if (redisStatsInfoList.isAtFullCapacity()) {
             redisStatsInfoList.remove();
         }
