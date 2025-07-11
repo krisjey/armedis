@@ -28,13 +28,26 @@ public class ReflectionManipulator {
      * @param value
      */
     public static void setFieldValue(Object objects, String fieldName, String value) {
+        Class<? extends Object> clazz = objects.getClass();
+
         try {
             // FIXME Errorstats # Errorstats errorstat_ERR:count=3602
-            if (objects.getClass().getSimpleName().equals("Errorstats")) {
+            if (clazz.getSimpleName().equals("Errorstats")) {
                 value = StringUtils.remove(value, "count=");
             }
 
-            Field field = objects.getClass().getDeclaredField(fieldName);
+            if (objects instanceof StatsBaseVo) {
+                if (((StatsBaseVo) objects).operationKeyList().containsKey(fieldName)) {
+                    // do nothing.
+                }
+                else {
+                    logger.debug(clazz.getSimpleName() + " does not have  " + fieldName);
+                    return;
+                }
+            }
+
+            Field field = clazz.getDeclaredField(fieldName);
+
             field.setAccessible(true);
 
             if (field.getType() == int.class) {
@@ -54,7 +67,7 @@ public class ReflectionManipulator {
             }
         }
         catch (NoSuchFieldException | IllegalAccessException | NumberFormatException | SecurityException e) {
-            logger.error("Can not found decleared field in " + objects.getClass().getSimpleName() + " "
+            logger.error("Can not found decleared field in " + clazz.getSimpleName() + " "
                     + fieldName + " " + value, e);
         }
     }
