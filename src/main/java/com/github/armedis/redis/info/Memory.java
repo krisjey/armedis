@@ -12,6 +12,7 @@ public final class Memory extends StatsBaseVo {
         keyList.put("usedMemoryRss", SUM);
         keyList.put("usedMemoryPeak", SUM);
         keyList.put("maxmemory", SUM);
+        keyList.put("totalSystemMemory", SUM);
         keyList.put("totalSystemMemoryHuman", DIFF);
         keyList.put("usedMemoryLua", SUM);
         keyList.put("maxmemoryPolicy", DIFF);

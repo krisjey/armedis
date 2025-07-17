@@ -110,7 +110,7 @@ public class RedisStatInfoBucket {
         RedisStatsInfo redisStatsInfo = new RedisStatsInfo(currentTime);
 
         String info = null;
-        String dummyNodeIp = null;
+        String redisNodeIp = null;
 
         // statsInfo
         for (RedisClusterNodeInfo redisNodeInfo : redisNodeInfoList) {
@@ -118,7 +118,7 @@ public class RedisStatInfoBucket {
                 StatefulRedisClusterConnection<String, String> connection = redisConnectionPool.getClusterConnection();
                 StatefulRedisConnection<String, String> nodeConnection = connection.getConnection(redisNodeInfo.id());
 
-                dummyNodeIp = redisNodeInfo.ip();
+                redisNodeIp = redisNodeInfo.ip();
                 // send info command
                 info = nodeConnection.sync().info();
                 redisConnectionPool.returnObject(connection);
@@ -126,7 +126,7 @@ public class RedisStatInfoBucket {
                 // update stat info
                 RedisInfoVo redisInfo = RedisInfoVo.from(info, armedisConfiguration.isAddContentSection());
 
-                redisInfo.getServer().setHost(dummyNodeIp);
+                redisInfo.getServer().setHost(redisNodeIp);
                 redisInfo.getServer().setTcpPort(redisNodeInfo.listenPort());
 
                 printStatPollingLog(redisStatsInfo, redisNodeInfo, redisInfo);
@@ -143,7 +143,7 @@ public class RedisStatInfoBucket {
         // calculate sum.
         // Create dummy info object from last data. info object can not create
         RedisInfoVo sumRedisInfoVo = RedisInfoVo.from(info, armedisConfiguration.isAddContentSection());
-        sumRedisInfoVo.getServer().setHost(dummyNodeIp);
+        sumRedisInfoVo.getServer().setHost(redisNodeIp);
 
         for (Entry<String, RedisInfoVo> item : redisStatsInfo.getRedisInfoList().entrySet()) {
             RedisInfoVo redisInfoVo = item.getValue();
@@ -208,7 +208,7 @@ public class RedisStatInfoBucket {
             Object sumValue = ReflectionManipulator.getMethodInvokeResult(sumBaseVo, fieldName);
             Object targetValue = ReflectionManipulator.getMethodInvokeResult(baseVo, fieldName);
 
-            if (sumValue == null || targetValue == null) {
+            if ((sumValue == null || targetValue == null) && !operation.equals(StatsBaseVo.EMPTY)) {
                 logger.info("[{}] [{}] [{}]", fieldName, sumValue, targetValue);
             }
 
@@ -323,7 +323,7 @@ public class RedisStatInfoBucket {
                     }
                     case "Long" -> {
                         if (sumValueNumber.longValue() != targetValueNumber.longValue()) {
-                            resultSumValue = String.valueOf(targetValueNumber.longValue());
+                            resultSumValue = String.valueOf(-targetValueNumber.longValue());
                         }
                     }
                     default -> resultSumValue = String.format("%d, %d", sumValueNumber, targetValueNumber);
