@@ -15,13 +15,17 @@ public class Server extends StatsBaseVo {
         keyList.put("gccVersion", DIFF);
         keyList.put("processId", CONCAT);
         keyList.put("processSupervised", DIFF);
+        keyList.put("multiplexingApi", DIFF);
         keyList.put("host", DIFF);
         keyList.put("tcpPort", DIFF);
         keyList.put("uptimeInSeconds", MIN);
+        keyList.put("uptimeInDays", MIN);
         keyList.put("hz", DIFF);
         keyList.put("configuredHz", DIFF);
         keyList.put("ioThreadsActive", DIFF);
         keyList.put("configFile", DIFF);
+        keyList.put("redisBuildId", DIFF);
+        keyList.put("monotonicClock", DIFF);
 
         return keyList;
     }
