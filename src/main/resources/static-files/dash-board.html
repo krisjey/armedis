@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armedis | Starter</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="dist-bak/css/adminlte.min.css">
+
+  <style>
+    .label {
+      font-size: 30px;
+      text-align: center;
+    }
+    .each-progress {
+      margin: 15px;
+    }
+    .inner-card-col-4 {
+      float: left;
+    }
+  </style>
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+<div id="sidebar"></div>
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+<!-- Content Header (Page header) -->
+<div class="content-header">
+  <div class="container-fluid">
+    <h1 class="m-0">Dash Board</h1>
+  </div><!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<div class="content">
+  <div class="container-fluid">
+    <!-- interactive Chart -->
+    <div class="row">
+      <div class="col-md-6">
+        <!-- TPS interactive chart -->
+        <div class="card card-primary card-outline">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="far fa-chart-bar"></i>
+              TPS
+            </h3>
+          </div>
+          <div class="card-body">
+            <div id="TPSChart" style="height: 300px;"></div>
+          </div>
+          <!-- /.card-body-->
+        </div>
+        <!-- /.card -->
+      </div>
+      <!-- /.col -->
+      <div class="col-md-6">
+        <!-- Hit Rate interactive chart -->
+        <div class="card card-primary card-outline">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="far fa-chart-bar"></i>
+              Hit Rate
+            </h3>
+          </div>
+          <div class="card-body">
+            <div id="HitRateChart" style="height: 300px;"></div>
+          </div>
+          <!-- /.card-body-->
+        </div>
+        <!-- /.card -->
+      </div>
+      <!-- /.col -->
+    </div>
+    <!-- /.row -->
+    <!-- memory Chart -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Memory</h2>
+          </div>
+          <div class="card-body">
+            <div class="col-md-4 inner-card-col-4">
+              <div class="info-box">
+                <div class="info-box-content bg-lightblue">
+                  <span class="info-box-text" style="text-align: center">System Memory</span>
+                  <span class="info-box-number label" id ="system_memory_label"></span>
+                </div>
+                <!-- /.info-box-content -->
+              </div>
+              <!-- /.info-box -->
+              <div class="info-box">
+                <div class="info-box-content bg-olive">
+                  <span class="info-box-text" style="text-align: center">Max Memory</span>
+                  <span class="info-box-number label" id="max_memory_label"></span>
+                </div>
+                <!-- /.info-box-content -->
+              </div>
+              <!-- /.info-box -->
+            </div>
+            <div class="col-md-4 inner-card-col-4">
+              <div class="each-progress">
+                <h6>Used Memory</h6>
+                <div class="progress progress-sm" style="background-color: lightgray">
+                  <div class="progress-bar bg-warning" id="used_memory" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: 47%"></div>
+                </div>
+                <small id="used_memory_percent"></small>
+              </div>
+              <div class="each-progress">
+                <h6>RSS</h6>
+                <div class="progress progress-sm" style="background-color: lightgray">
+                  <div class="progress-bar bg-maroon" id="rss" role="progressbar" aria-valuenow="47" aria-valuemin="0" aria-valuemax="100" style="width: 47%"></div>
+                </div>
+                <small id="rss_percent"></small>
+              </div>
+              <div class="each-progress">
+                <h6>Max Memory</h6>
+                <div class="progress progress-sm" style="background-color: lightgray">
+                  <div class="progress-bar bg-orange" id="max_memory" role="progressbar" aria-valuenow="47" aria-valuemin="0" aria-valuemax="100" style="width: 47%"></div>
+                </div>
+                <small id="max_memory_percent"></small>
+              </div>
+
+            </div>
+            <div class="col-md-4 inner-card-col-4">
+              <div id="MemoryChart" style="height: 250px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /.col -->
+    </div>
+    <!-- /.row -->
+    <div class="row">
+      <div class="col-md-12">
+        <!-- interactive table -->
+        <div class="card">
+          <div class="card-body">
+            <div id="redis-stat" style="min-height: 300px;" class="table-bordered"></div>
+          </div>
+          <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+      </div>
+      <!-- /.col -->
+    </div>
+    <!-- /.row -->
+    <div class="row">
+      <div class="col-md-12">
+        <!-- interactive table -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Instance Information</h2>
+          </div>
+          <!-- /.card-header -->
+          <div class="card-body p-0">
+            <div id="instance-info" class="table-bordered" ></div>
+          </div>
+          <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+      </div>
+      <!-- /.col -->
+    </div>
+    <!-- /.row -->
+
+  </div><!-- /.container-fluid -->
+</div>
+<!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+<!-- Control Sidebar -->
+<aside class="control-sidebar control-sidebar-dark">
+<!-- Control sidebar content goes here -->
+<div class="p-3">
+  <h5>Title</h5>
+  <p>Sidebar content</p>
+</div>
+</aside>
+<!-- /.control-sidebar -->
+
+<!-- Main Footer -->
+<footer class="main-footer">
+<!-- To the right -->
+<div class="float-right d-none d-sm-inline">
+  Anything you want
+</div>
+<!-- Default to the left -->
+<strong>Copyright &copy; 2014-2021 <a href="https://adminlte.io">AdminLTE.io</a>.</strong> All rights reserved.
+</footer>
+</div>
+<!-- ./wrapper -->
+
+<!-- REQUIRED SCRIPTS -->
+
+<!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.min.js"></script>
+<!-- FLOT CHARTS -->
+<script src="plugins/flot/jquery.flot.js"></script>
+<!-- jsGrid -->
+<script src="plugins/jsgrid/jsgrid.min.js"></script>
+<!-- FLOT RESIZE PLUGIN - allows the chart to redraw when the window is resized -->
+<script src="plugins/flot/plugins/jquery.flot.resize.js"></script>
+<script>
+$(function () {
+$("#sidebar").load("sidebar.html")
+
+// 값 초기화
+var currentTime = null,
+    totalPoints = 100,
+    totalRows   = 11
+var data        = [],
+    TPSData     = [],
+    HitRateData = [],
+    UsedMemoryData = [],
+    RssData     = [],
+    RedisStatData = [],
+    InstanceInfoData = []
+var ip = null,
+    redisList = {},
+    instanceInfoTableField = [],
+    instanceInfoTableContent = ["version", "mode", "role", "uptime", "master_info", "slave_info", "aof_enable","hz", "rdb_last_save_time", "memory_policy", "connected_clients", "pid", "maxclients", "blocked_clients", "mem_fragmentation_ratio"]
+
+// 실시간 그래프 - TPS 차트
+var TPSChart_plot = $.plot('#TPSChart', [
+    {
+      TPSData: setTPSData(data)
+    }
+  ],
+  {
+    grid: {
+      borderColor: '#f3f3f3',
+      borderWidth: 1,
+      tickColor: '#f3f3f3'
+    },
+    series: {
+      color: '#3c8dbc',
+      lines: {
+        lineWidth: 2,
+        show: true,
+        fill: true,
+      },
+    },
+    yaxis: {
+      min: 0,
+      max: 200,
+      show: true
+    },
+    xaxis: {
+      min: 0,
+      max: totalPoints,
+      show: true
+    }
+  }
+)
+
+// 실시간 그래프 - Hit Rate 차트
+var HitRateChart_plot = $.plot('#HitRateChart', [
+    {
+      HitRateData: setHitRateData(data)
+    }
+  ],
+  {
+    grid: {
+      borderColor: '#f3f3f3',
+      borderWidth: 1,
+      tickColor: '#f3f3f3'
+    },
+    series: {
+      color: '#3c8dbc',
+      lines: {
+        lineWidth: 2,
+        show: true,
+        fill: true,
+      },
+    },
+    yaxis: {
+      min: 0,
+      max: 30,
+      show: true
+    },
+    xaxis: {
+      min: 0,
+      max: totalPoints,
+      show: true
+    }
+  }
+)
+
+// 실시간 그래프 - Used Memory 차트
+var MemoryChart_plot = $.plot('#MemoryChart', [
+    {
+      UsedMemoryData: setUsedMemoryData(data),
+      RssData: setRssData(data)
+    }
+  ],
+  {
+    grid: {
+      borderColor: '#f3f3f3',
+      borderWidth: 1,
+      tickColor: '#f3f3f3'
+    },
+    series: {
+      color: '#3c8dbc',
+      lines: {
+        lineWidth: 2,
+        show: true,
+        fill: true,
+      },
+    },
+    yaxis: {
+      min: 0,
+      max: 80000000,
+      show: true
+    },
+    xaxis: {
+      min: 0,
+      max: totalPoints,
+      show: true
+    }
+  }
+)
+
+// 실시간 그래프 - RSS Memory 차트
+var RssChart_plot = $.plot('#MemoryChart', [
+    {
+      RssData: setRssData(data)
+    }
+  ],
+  {
+    grid: {
+      borderColor: '#f3f3f3',
+      borderWidth: 1,
+      tickColor: '#f3f3f3'
+    },
+    series: {
+      color: '#FF99FF',
+      lines: {
+        lineWidth: 2,
+        show: true,
+        fill: true,
+      },
+    },
+    yaxis: {
+      min: 0,
+      max: 80000000,
+      show: true
+    },
+    xaxis: {
+      min: 0,
+      max: totalPoints,
+      show: true
+    }
+  }
+)
+
+// 실시간 테이블 - Redis Stat 차트
+function RedisStatTable_update() {
+  $("#redis-stat").jsGrid({
+    height: "auto",
+    width: "100%",
+
+    data: RedisStatData,
+
+    fields: [
+      { name: "Time", type: "text" },
+      { name: "CPU", type: "number" },
+      { name: "Clients", type: "number" },
+      { name: "bClients", type: "number" },
+      { name: "Mem", type: "number" },
+      { name: "RSS", type: "number" },
+      { name: "keys", type: "number" },
+      { name: "CPS", type: "number" },
+      { name: "EXP", type: "number" },
+      { name: "EVT", type: "number" },
+      { name: "HitRate", type: "number" },
+      { name: "HIT", type: "number" },
+      { name: "IN", type: "number" },
+      { name: "OUT", type: "number" }
+    ]
+  })
+}
+
+// 실시간 테이블 - InstanceInfo 차트
+function InstanceInfoTable_update() {
+  $("#instance-info").jsGrid({
+    height: "100%",
+    width: "100%",
+
+    data: InstanceInfoData,
+
+    fields: instanceInfoTableField
+  })
+}
+
+// 데이터 -> 차트 데이터 변환 / y -> [x, y]
+function changeChartData(data) {     // Zip the generated y values with the x values
+  var plotData = []
+
+  if (data.length < totalPoints) {
+    for (var i=0; i<totalPoints-data.length; i++) {
+      plotData.push([i, 0])
+    }
+  }
+  for (var i = 0; i < data.length; ++i) {
+    plotData.push([i+(totalPoints-data.length), data[i]])
+  }
+  return plotData
+}
+
+// TPS 데이터 값 가져오기
+function setTPSData(data) {
+  data.forEach(elem => {
+    if (currentTime == null || elem.epochTime > currentTime) {
+      TPSData.push(elem.redisInfoList.sum.stats.instantaneousOpsPerSec)
+      if (TPSData.length > totalPoints) {
+        TPSData.shift()
+      }
+    }
+  })
+
+  // TPS 그래프 Y의 max 값 구하기
+  if (TPSData.length > 0) {
+    var YMax = Math.ceil(Math.max(...TPSData)/10)*10
+    console.log("YMax: ", YMax)
+    TPSChart_plot.getOptions().yaxis.max = YMax
+    TPSChart_plot.draw();
+  }
+
+  return changeChartData(TPSData)
+}
+
+// Hit Rate 데이터 값 가져오기
+function setHitRateData(data) {
+  data.forEach(elem => {
+    if (currentTime == null || elem.epochTime > currentTime) {
+      var hitRate = 0
+      if (elem.redisInfoList.sum.stats.keyspaceHits + elem.redisInfoList.sum.stats.keyspaceMisses > 0) {
+        hitRate = elem.redisInfoList.sum.stats.keyspaceHits / (elem.redisInfoList.sum.stats.keyspaceHits + elem.redisInfoList.sum.stats.keyspaceMisses)
+      }
+      HitRateData.push(hitRate)
+      if (HitRateData.length > totalPoints) {
+        HitRateData.shift()
+      }
+    }
+  })
+
+  return changeChartData(HitRateData)
+}
+
+function setUsedMemoryData(data) {
+  data.forEach(elem => {
+    if (currentTime == null || elem.epochTime > currentTime) {
+      UsedMemoryData.push(elem.redisInfoList.sum.memory.usedMemory)
+      if (UsedMemoryData.length > totalPoints) {
+        UsedMemoryData.shift()
+      }
+    }
+  })
+
+  return changeChartData(UsedMemoryData)
+}
+
+function setRssData(data) {
+  data.forEach(elem => {
+    if (currentTime == null || elem.epochTime > currentTime) {
+      RssData.push(elem.redisInfoList.sum.memory.usedMemoryRss)
+      if (RssData.length > totalPoints) {
+        RssData.shift()
+      }
+    }
+  })
+
+  return changeChartData(RssData)
+}
+
+// Redis Stat 데이터 값 가져오기
+function setRedisStat(data) {
+  data.forEach(elem => {
+    if (currentTime == null || elem.epochTime > currentTime) {
+      var hitRate = 0
+      if (elem.redisInfoList.sum.stats.keyspaceHits+elem.redisInfoList.sum.stats.keyspaceMisses > 0) {
+        hitRate = elem.redisInfoList.sum.stats.keyspaceHits/(elem.redisInfoList.sum.stats.keyspaceHits+elem.redisInfoList.sum.stats.keyspaceMisses)
+      }
+      var newRow = {
+        Time: elem.formatedEpochTime.substring(11),
+        CPU: (Number(elem.redisInfoList.sum.cpu.usedCpuSys)+Number(elem.redisInfoList.sum.cpu.usedCpuUser)).toFixed(2),
+        Clients: elem.redisInfoList.sum.clients.connectedClients.toFixed(2),
+        bClients: elem.redisInfoList.sum.clients.blockedClients.toFixed(2),
+        Mem: elem.redisInfoList.sum.memory.usedMemoryHuman,
+        RSS: elem.redisInfoList.sum.memory.usedMemoryRssHuman,
+        keys: 0, //elem.redisInfoList.sum.keyspace."0".keys,
+        CPS: elem.redisInfoList.sum.stats.instantaneousOpsPerSec,
+        EXP: elem.redisInfoList.sum.stats.expiredKeys,
+        EVT: elem.redisInfoList.sum.stats.evictedKeys,
+        HitRate: hitRate.toFixed(3),
+        HIT: elem.redisInfoList.sum.stats.keyspaceHits,
+        IN: elem.redisInfoList.sum.stats.instantaneousInputKbps.toFixed(2),
+        OUT: elem.redisInfoList.sum.stats.instantaneousOutputKbps.toFixed(2)
+      }
+      RedisStatData.push(newRow)
+      if (RedisStatData.length > totalRows) {
+        RedisStatData.shift()
+      }
+    }
+  })
+}
+
+function setInstanceInfo(data) {
+  var dataObj = Object.keys(data)
+  InstanceInfoData.length = 0
+
+  for (var i=0; i<instanceInfoTableContent.length; i++) {
+    var dataRow = {Content:instanceInfoTableContent[i]}   // table row
+    for (var j=0; j<Object.keys(redisList).length; j++) {
+      dataRow[redisList[Object.keys(redisList)[j]]] = "-"
+    }
+    InstanceInfoData.push(dataRow)
+  }
+
+  for (var redisNum=0; redisNum<Object.keys(data[dataObj[dataObj.length-1]].redisInfoList).length-1; redisNum++) {
+    var key = Object.keys(data[dataObj[dataObj.length-1]].redisInfoList)[redisNum]
+    var redisInfo = data[dataObj[dataObj.length-1]].redisInfoList[key]
+
+    for (var j=0; j<instanceInfoTableContent.length; j++) {
+      if (InstanceInfoData[j].Content == "version") {
+        InstanceInfoData[j][redisList[key]] = redisInfo.server.redisVersion
+      } else if (InstanceInfoData[j].Content == "mode") {
+        InstanceInfoData[j][redisList[key]] = redisInfo.server.redisMode
+      } else if (InstanceInfoData[j].Content == "role") {
+        InstanceInfoData[j][redisList[key]] = redisInfo.replication.role
+      } else if (InstanceInfoData[j].Content == "uptime") {
+        InstanceInfoData[j][redisList[key]] = redisInfo.server.uptimeInSeconds
+      } else if (InstanceInfoData[j].Content == "master_info") {
+        InstanceInfoData[j][redisList[key]] = redisInfo.server.host+":"+redisInfo.server.tcpPort
+      } else if (InstanceInfoData[j].Content == "slave_info") {
+        InstanceInfoData[j][redisList[key]] = redisInfo.replication.masterHost+":"+redisInfo.replication.masterPort
+      } else if (InstanceInfoData[j].Content == "aof_enable") {
+        InstanceInfoData[j][redisList[key]] = redisInfo.persistence.aofEnabled
+      } else if (InstanceInfoData[j].Content == "hz") {
+        InstanceInfoData[j][redisList[key]] = redisInfo.server.hz
+      } else if (InstanceInfoData[j].Content == "rdb_last_save_time") {
+        InstanceInfoData[j][redisList[key]] = redisInfo.persistence.rdbLastSaveTime
+      } else if (InstanceInfoData[j].Content == "memory_policy") {
+        InstanceInfoData[j][redisList[key]] = redisInfo.memory.maxmemoryPolicy
+      } else if (InstanceInfoData[j].Content == "connected_clients") {
+        InstanceInfoData[j][redisList[key]] = redisInfo.clients.connectedClients
+      } else if (InstanceInfoData[j].Content == "pid") {
+        InstanceInfoData[j][redisList[key]] = redisInfo.server.processId
+      } else if (InstanceInfoData[j].Content == "maxclients") {
+        InstanceInfoData[j][redisList[key]] = redisInfo.clients.maxclients
+      } else if (InstanceInfoData[j].Content == "blocked_clients") {
+        InstanceInfoData[j][redisList[key]] = redisInfo.clients.blockedClients
+      } else if (InstanceInfoData[j].Content == "mem_fragmentation_ratio") {
+        InstanceInfoData[j][redisList[key]] = redisInfo.memory.memFragmentationRatio
+      }
+    }
+  }
+}
+
+function initSetRedis(data) {
+  var dataObj = Object.keys(data)
+  if (dataObj.length > 0) {
+    if (ip == null) {
+      var obj = data[dataObj[dataObj.length-1]].redisInfoList[Object.keys(data[dataObj[dataObj.length-1]].redisInfoList)[0]]
+      ip = obj.server.host
+    }
+
+    instanceInfoTableField.push( { name: "Content", title: " " } )
+    for (var i=0; i<Object.keys(data[dataObj[dataObj.length-1]].redisInfoList).length-1; i++) {
+      var key = Object.keys(data[dataObj[dataObj.length-1]].redisInfoList)[i]
+      var redisInfo = data[dataObj[dataObj.length-1]].redisInfoList[key]
+
+      redisList[key] = String(redisInfo.server.tcpPort)
+
+      instanceInfoTableField.push( { name: redisList[key] } )
+    }
+  }
+}
+
+function inputMemoryValue(memory_obj, text, value, total_value) {
+  percent = value/total_value*100
+  memory_obj.setAttribute("aria-valuenow", percent)
+  memory_obj.style.width = percent + "%"
+
+  return percent
+}
+
+function setMemory(data) {
+  var dataObj = Object.keys(data)
+  var total_memory_value = data[dataObj.length-1].redisInfoList.sum.memory.totalSystemMemory
+
+  var used_memory = data[dataObj.length-1].redisInfoList.sum.memory.usedMemoryHuman
+  var rss = data[dataObj.length-1].redisInfoList.sum.memory.usedMemoryRssHuman
+  var max_memory = data[dataObj.length-1].redisInfoList.sum.memory.maxmemoryHuman
+
+  document.getElementById("used_memory_percent").innerText = used_memory + "(" + inputMemoryValue(document.getElementById("used_memory"), used_memory, data[dataObj.length-1].redisInfoList.sum.memory.usedMemory, total_memory_value).toFixed(2) + "%" + ")"
+  document.getElementById("rss_percent").innerText = rss + "(" + inputMemoryValue(document.getElementById("rss"), rss, data[dataObj.length-1].redisInfoList.sum.memory.usedMemoryRss, total_memory_value).toFixed(2) + "%" + ")"
+  document.getElementById("max_memory_percent").innerText = max_memory + "(" + inputMemoryValue(document.getElementById("max_memory"), max_memory, data[dataObj.length-1].redisInfoList.sum.memory.maxmemory, total_memory_value).toFixed(2) + "%" + ")"
+
+  document.getElementById("system_memory_label").innerText = data[dataObj.length-1].redisInfoList.sum.memory.totalSystemMemoryHuman
+  document.getElementById("max_memory_label").innerText = data[dataObj.length-1].redisInfoList.sum.memory.maxmemoryHuman
+}
+
+var updateInterval = 1000 //Fetch data ever x milliseconds
+function update() {armedis
+  // API 호출
+  fetch("/v1/redis/stats")
+  .then(response => response.json())
+  .then(data => {
+    var dataObj = Object.keys(data)
+    if (ip == null) {
+      initSetRedis(data)
+    }
+    TPSChart_plot.setData([setTPSData(data)])
+    HitRateChart_plot.setData([setHitRateData(data)])
+    MemoryChart_plot.setData([setUsedMemoryData(data), setRssData(data)])
+    //RssChart_plot.setData([setRssData(data)])
+    setRedisStat(data)
+    setInstanceInfo(data)
+    setMemory(data)
+
+    currentTime = data[data.length - 1].epochTime
+  })
+
+  // Since the axes don't change, we don't need to call plot.setupGrid()
+  TPSChart_plot.draw()
+  HitRateChart_plot.draw()
+  MemoryChart_plot.draw()
+  //RssChart_plot.draw()
+  RedisStatTable_update()
+  InstanceInfoTable_update()
+  setTimeout(update, updateInterval)
+}
+update()
+})
+</script>
+</body>
+</html>

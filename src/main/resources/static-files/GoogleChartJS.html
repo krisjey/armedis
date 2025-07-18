@@ -1,0 +1,258 @@
+ 
+<!DOCTYPE html>
+<html>
+	<head>
+		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+	</head>
+	<body>
+		<div>
+			<h1>Dash Board</h1>
+		</div>
+		<div>
+			<div id="chartTPS" style="float: left;"></div>
+			<div id="chartHit" style="float: left;"></div>
+			<div id="myChart2"></div>
+		</div>
+		<div>
+			<table>
+				<thead>
+					<tr>
+						<th>time</th>
+						<th>tps</th>
+						<th>hit</th>
+						<th>mis</th>
+					</tr>
+				</thead>
+				<tbody id="statTable"></tbody>
+			</table>
+		</div>
+		<div>
+			<table>
+				<thead>
+					<tr>
+						<th>192.168.56.105:17001</th>
+						<th>192.168.56.105:17002</th>
+						<th>192.168.56.105:17003</th>
+						<th>192.168.56.105:17004</th>
+						<th>192.168.56.105:17005</th>
+						<th>192.168.56.105:17006</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<th>redis_version</th>
+						<td id = "redisVersion17001"></td>
+						<td id = "redisVersion17002"></td>
+						<td id = "redisVersion17003"></td>
+						<td id = "redisVersion17004"></td>
+						<td id = "redisVersion17005"></td>
+						<td id = "redisVersion17006"></td>
+					<tr>
+				</tbody>
+			</table>
+		</div>
+		<script>
+			
+			var YMax = 100;
+	    	
+	    	google.charts.load('current', {'packages':['corechart','gauge']});
+      		google.charts.setOnLoadCallback(drawChartTPS);
+      		google.charts.setOnLoadCallback(drawChartHitRate);
+      		google.charts.setOnLoadCallback(drawChart2);
+			window.onload = function() {
+				renderStatTable();
+				updateInstanceInformation()
+			}
+			
+	    	function drawChartTPS() {
+	    	
+	    		// 그래프 초기값 설정
+	    		var initDataTPS = [['Time', 'TPS']];
+	    		for (var i=0; i<YMax; i++) {
+					initDataTPS.push(['', 0]);
+				}
+	    		var currentTimeTPS = null;
+	    		
+	    		// 그래프 설정
+		        var TPSData = google.visualization.arrayToDataTable(initDataTPS);
+		
+		        var options = {
+		          	title: 'TPS',
+		          	width: 600,
+		          	height:400,
+		          	hAxis: {textPosition: 'none'},
+		          	vAxis: {minValue:0}
+		        };
+		        
+		        // 초기 그래프 출력
+		        var chart = new google.visualization.AreaChart(document.getElementById('chartTPS'));
+		        chart.draw(TPSData, options);
+		        
+		        // 1초에 한 번 값 업데이트
+		        setInterval(function() {
+		        	var newTime = null;
+		        	fetch("/v1/redis/stats")
+					.then(response => response.json())
+					.then(data => {
+						data.forEach(elem => {
+							 if (currentTimeTPS == null || elem.epochTime > currentTimeTPS) {	// 초기 업데이트와 새로운 시간대의 값 없데이트
+							 	TPSData.addRow([elem.formatedEpochTime, elem.redisInfoList.sum.stats.instantaneousOpsPerSec]);
+							 	if (TPSData.getNumberOfRows() > YMax) {		// 그래프 X축 일정 폭 유지
+							 		TPSData.removeRow(0);
+							 	}
+							 }
+						});
+						currentTimeTPS = data[data.length-1].epochTime;
+						});
+						
+					chart.draw(TPSData, options);
+		       	}, 1000);
+		    }
+		    
+		    
+		    function drawChartHitRate() {
+		    	
+		    	// 그래프 초기값 설정
+		    	var initDataHit = [['Time', 'Hit Rate']];
+				for (var i=0; i<YMax; i++) {
+					initDataHit.push(['', 0]);
+				}
+		    	var currentTimeHit = null;
+		    	
+		    	// 그래프 설정
+		        var HitData = google.visualization.arrayToDataTable(initDataHit);
+		
+		        var options = {
+		          	title: 'Hit Rate',
+		          	width: 600,
+		          	height:400,
+		          	hAxis: {textPosition: 'none'},
+		          	vAxis: {minValue:0}
+		        };
+		        
+		        // 초기 그래프 출력
+		        var chart = new google.visualization.AreaChart(document.getElementById('chartHit'));
+		        chart.draw(HitData, options);
+		        
+		        // 1초에 한 번 값 업데이트
+		        setInterval(function() {
+		        	var newTime = null;
+		        	fetch("/v1/redis/stats")
+					.then(response => response.json())
+					.then(data => {
+						data.forEach(elem => {
+							 if (currentTimeHit == null || elem.epochTime > currentTimeHit) {	// 초기 업데이트와 새로운 시간대의 값 없데이트
+							 	var hitRate = 0;
+							 	if (elem.redisInfoList.sum.stats.keyspaceHits+elem.redisInfoList.sum.stats.keyspaceMisses > 0) {	
+							 		hitRate = elem.redisInfoList.sum.stats.keyspaceHits / (elem.redisInfoList.sum.stats.keyspaceHits+elem.redisInfoList.sum.stats.keyspaceMisses);
+							 	}
+							 	HitData.addRow([elem.formatedEpochTime, hitRate]);
+							 	if (HitData.getNumberOfRows() > YMax) {		// 그래프 X축 일정 폭 유지
+							 		HitData.removeRow(0);
+							 	}
+							 }
+						});
+						currentTimeHit = data[data.length-1].epochTime;
+						});
+						
+					chart.draw(HitData, options);
+		       	}, 1000);
+		    }
+		    
+		    function renderStatTable() {
+		    	var tableRowMax = 20;
+		    	var currentTimeStatTab = null;
+		    	
+		    	setInterval(function() {
+		        	fetch("/v1/redis/stats")
+					.then(response => response.json())
+					.then(data => {
+						data.forEach(elem => {
+							 if (currentTimeStatTab == null || elem.epochTime > currentTimeStatTab) {
+							 	var row = statTable.insertRow(statTable.rows.length);
+							 	var cellTime = row.insertCell(0);
+							 	var cellTPS = row.insertCell(1);
+							 	var cellHit = row.insertCell(2);
+							 	var cellMiss = row.insertCell(3);
+							 	cellTime.innerHTML = elem.formatedEpochTime;
+							 	cellTPS.innerHTML = elem.redisInfoList.sum.stats.instantaneousOpsPerSec;
+							 	cellHit.innerHTML = elem.redisInfoList.sum.stats.keyspaceHits;
+							 	cellMiss.innerHTML = elem.redisInfoList.sum.stats.keyspaceMisses;
+							 	
+							 	if (statTable.rows.length > tableRowMax) {
+							 		statTable.deleteRow(0);
+							 	}
+							 }
+						});
+						currentTimeStatTab = data[data.length-1].epochTime;
+						});
+		       	}, 1000);
+		    }
+			function updateInstanceInformation() {
+				var currentTimeInstInfo = null;
+				
+	      		setInterval(function() {
+		       		fetch("/v1/redis/stats")
+					.then(response => response.json())
+					.then(data => {
+						data.forEach(elem => {
+							if (currentTimeInstInfo == null || elem.epochTime > currentTimeInstInfo) {
+								var redisInfoList = elem.redisInfoList;
+								var redisKeys = Object.keys(redisInfoList);
+								document.getElementById("redisVersion17001").innerHTML = redisInfoList[redisKeys[0]].server.redisVersion;
+								document.getElementById("redisVersion17002").innerHTML = redisInfoList[redisKeys[1]].server.redisVersion;
+								document.getElementById("redisVersion17003").innerHTML = redisInfoList[redisKeys[2]].server.redisVersion;
+								document.getElementById("redisVersion17004").innerHTML = redisInfoList[redisKeys[3]].server.redisVersion;
+								document.getElementById("redisVersion17005").innerHTML = redisInfoList[redisKeys[4]].server.redisVersion;
+								document.getElementById("redisVersion17006").innerHTML = redisInfoList[redisKeys[5]].server.redisVersion;
+							}
+					})
+					currentTimeInstInfo = data[data.length-1].epochTime;
+					});
+		       	}, 1000);
+	      	}
+	        function drawChart2() {
+	
+		        var data = google.visualization.arrayToDataTable([
+		        	['Label', 'Value'],
+		        	['TPS', 80],
+		        	['Hits', 55],
+		        	['Misses', 68]
+		        ]);
+		
+		        var options = {
+		        	width: 400, height: 120,
+		        	redFrom: 90, redTo: 100,
+		        	yellowFrom:75, yellowTo: 90,
+		        	minorTicks: 5
+		        };
+		
+		        var chart = new google.visualization.Gauge(document.getElementById('myChart2'));
+		
+		        chart.draw(data, options);
+	
+		        var TPS;
+		        var Hits;
+		        var Misses;
+		        setInterval(function() {
+		       		fetch("/v1/redis/stats")
+						.then(response => response.json())
+						.then(data => 
+							data.forEach(elem => {
+								//console.log(elem.redisInfoList.sum.stats);
+								TPS = elem.redisInfoList.sum.stats.instantaneousOpsPerSec;
+								Hits = elem.redisInfoList.sum.stats.keyspaceHits;
+								Misses = elem.redisInfoList.sum.stats.keyspaceMisses;
+						}))
+					.catch(error => console.log("실패! ", error));
+					data.setValue(0, 1, TPS);
+					data.setValue(1, 1, Hits);
+					data.setValue(2, 1, Misses);
+					chart.draw(data, options);
+		       	}, 1000);
+	      	}
+	      	
+
+		</script>
+	</body>
+</html>
