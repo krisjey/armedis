@@ -17,8 +17,6 @@ import com.linecorp.armeria.server.annotation.Consumes;
 import com.linecorp.armeria.server.annotation.Get;
 import com.linecorp.armeria.server.annotation.Param;
 import com.linecorp.armeria.server.annotation.Path;
-import com.linecorp.armeria.server.annotation.Post;
-import com.linecorp.armeria.server.annotation.Put;
 
 /**
  * Redis get http request endpoint service.

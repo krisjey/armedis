@@ -79,19 +79,24 @@ public class ReflectionManipulator {
      * @param fieldName
      * @param value
      */
+    @SuppressWarnings("unchecked")
     public static <T> T getFieldValue(Object objects, String fieldName) {
-        T result = null;
+        Object result = null;
         try {
             Field field = objects.getClass().getDeclaredField(fieldName);
-            result = (T) field.get(objects);
-
+            result = field.get(objects);
+            Class<?> declaredType = field.getType();
+            
+            if (result != null && !declaredType.isInstance(result)) {
+                throw new ClassCastException("Expected " + declaredType.getName() + " but got " + result.getClass().getName());
+            }
         }
-        catch (NoSuchFieldException | IllegalAccessException | NumberFormatException e) {
+        catch (NoSuchFieldException | IllegalAccessException e) {
             logger.error("Can not found decleared field in " + objects.getClass().getSimpleName() + " "
                     + fieldName, e);
         }
 
-        return result;
+        return (T) result;
     }
 
     /**
