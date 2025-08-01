@@ -1,8 +1,6 @@
 
 package com.github.armedis.http.service.request;
 
-import java.util.Optional;
-
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 
 /**
