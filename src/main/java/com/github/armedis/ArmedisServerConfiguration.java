@@ -117,14 +117,14 @@ public class ArmedisServerConfiguration {
 
             // Add static file serving
             FileServiceBuilder fileServiceBuilder = FileService.builder(ClassLoader.getSystemClassLoader(),
-                    "/static-files");
+                    "/static");
 
             // Specify cache control directives.
             ServerCacheControl cc = ServerCacheControl.builder().maxAgeSeconds(86400).cachePublic().build();
             fileServiceBuilder.cacheControl(cc); // /* http cache "max-age=86400, public" */
             fileServiceBuilder.serveCompressedFiles(true); // for compress
 
-            builder.serviceUnder("/stats", fileServiceBuilder.build());
+            builder.serviceUnder("/", fileServiceBuilder.build());
 
 //			builder.decorator(DecodingService.newDecorator());
         };
