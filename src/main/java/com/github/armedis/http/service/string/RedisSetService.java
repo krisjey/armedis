@@ -10,7 +10,7 @@ import com.github.armedis.http.service.BaseService;
 import com.github.armedis.http.service.ResponseCode;
 import com.github.armedis.http.service.request.RedisRequest;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
-import com.github.armedis.redis.command.RedisSetRequest;
+import com.github.armedis.redis.command.string.RedisSetRequest;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.server.annotation.Consumes;

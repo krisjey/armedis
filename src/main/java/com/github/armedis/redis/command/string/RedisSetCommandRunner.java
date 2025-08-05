@@ -10,7 +10,6 @@ import com.github.armedis.redis.command.AbstractRedisCommandRunner;
 import com.github.armedis.redis.command.RedisCommandEnum;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.github.armedis.redis.command.RedisCommandExecuteResultFactory;
-import com.github.armedis.redis.command.RedisSetRequest;
 import com.github.armedis.redis.command.RequestRedisCommandName;
 
 import io.lettuce.core.api.sync.RedisCommands;

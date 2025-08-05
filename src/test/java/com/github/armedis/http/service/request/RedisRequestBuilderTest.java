@@ -12,8 +12,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.armedis.http.service.request.string.RedisGetRequestBuilder;
 import com.github.armedis.http.service.request.string.RedisSetRequestBuilder;
-import com.github.armedis.redis.command.RedisGetRequest;
-import com.github.armedis.redis.command.RedisSetRequest;
+import com.github.armedis.redis.command.string.RedisGetRequest;
+import com.github.armedis.redis.command.string.RedisSetRequest;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.common.HttpMethod;
 

@@ -6,7 +6,7 @@ import java.util.Optional;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.armedis.http.service.request.BaseRedisRequestBuilder;
 import com.github.armedis.http.service.request.RedisRequest;
-import com.github.armedis.redis.command.RedisSetRequest;
+import com.github.armedis.redis.command.string.RedisSetRequest;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 
 /**
