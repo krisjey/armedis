@@ -194,33 +194,22 @@ public class ArmedisServerConfiguration {
 
     /**
      * Configuration 정보를 사용하여 armedis 서버의 runtime 을 구성한다.
+     * 1. 두 곳 모두 지정되지 않은 경우 에러
+     * 2. 한 쪽에 지정된 경우 (별도 로직 필요 없음)
+     * 3. 양쪽에 지정된 경우 JVM Option 우선 (Spring Boot의 기본 동작)
+     * ex) application.properties에 service.port=8080, JVM Option에 -Dservice.port=9090 설정 시 servicePort 값은 9090이 됩니다.
      */
     private int initializeServicePort() {
-        String paramServicePort = System.getProperty(ConstantNames.SERVICE_PORT_PARAM_NAME);
-        int listenPort = 0;
+        Integer servicePort = armedisConfiguration.getServicePort();
+        Integer instanceCount = armedisConfiguration.getInstanceCount();
 
-        int servicePortFromParam = listenPort = Integer.parseInt(paramServicePort == null ? "0" : paramServicePort);
-
-        int configServicePort = armedisConfiguration.getServicePort();
-        int instanceCount = armedisConfiguration.getInstanceCount();
-
-        if (instanceCount == 0 || configServicePort == 0) {
-            throw new RuntimeException("Cannot start Server. service port[" + configServicePort + "] instance count["
-                    + instanceCount + "] but request is [" + servicePortFromParam + "]");
+        if (servicePort == 0 || instanceCount == 0) {
+            throw new RuntimeException("Cannot start Server. service port[" + servicePort + "] instance count[" + instanceCount + "]");
         }
 
-        if (configServicePort <= servicePortFromParam
-                && (configServicePort + instanceCount - 1) >= servicePortFromParam) {
-            // do nothing
-        }
-        else {
-            throw new RuntimeException("Cannot start Server. service port[" + configServicePort + "] instance count["
-                    + instanceCount + "] but request is [" + servicePortFromParam + "]");
-        }
+        logger.info("Initialized service port : " + servicePort);
 
-        logger.info("Initialized service port : " + listenPort);
-
-        return listenPort;
+        return servicePort;
     }
 
     public DefaultInstanceInfo getInstanceInfo() {

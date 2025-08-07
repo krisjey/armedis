@@ -2,7 +2,9 @@
 package com.github.armedis.config;
 
 public class ConstantNames {
-    public static final String SERVICE_PORT_PARAM_NAME = "SERVICE_PORT";
+    public static final String SERVICE_PORT_PARAM_NAME = "server.service.port";
+
+    public static final String SERVICE_INSTANCE_COUNT_PARAM_NAME = "server.service.instanceCount";
 
     /**
      * Request timeout of HTTP request
