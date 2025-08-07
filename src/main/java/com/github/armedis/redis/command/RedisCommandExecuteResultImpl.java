@@ -1,27 +1,37 @@
 
 package com.github.armedis.redis.command;
 
+import java.util.List;
+import java.util.Map;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.armedis.redis.command.RedisCommandExecuteResultBuilder.ResultType;
 
 public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult {
     static final ObjectMapper mapper = new ObjectMapper();
 
+    private boolean boolResult;
     private int intResult;
     private String stringResult;
     private float floatResult;
     private long longResult;
     private double doubleResult;
+    private Map<String, String> mapResult;
+    private List<Long> listResult;
     private ResultType resultType;
 
-    public RedisCommandExecuteResultImpl(ResultType resultType, int intResult, String stringResult, float floatResult, long longResult, double doubleResult) {
+    public RedisCommandExecuteResultImpl(ResultType resultType, boolean boolResult, int intResult, String stringResult, float floatResult, long longResult, double doubleResult, Map<String, String> mapResult, List<Long> listResult) {
         this.resultType = resultType;
+        this.boolResult = boolResult;
         this.intResult = intResult;
         this.stringResult = stringResult;
         this.floatResult = floatResult;
         this.longResult = longResult;
         this.doubleResult = doubleResult;
+        this.mapResult = mapResult;
+        this.listResult = listResult;
     }
 
     @Override
@@ -38,6 +48,9 @@ public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult 
     private ObjectNode createObjectNode() {
         ObjectNode result = mapper.createObjectNode();
         switch (resultType) {
+            case BOOLEAN:
+                result.put("result", boolResult);
+                break;
             case INTEGER:
                 result.put("result", intResult);
                 break;
@@ -51,6 +64,14 @@ public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult 
 
             case DOUBLE:
                 result.put("result", doubleResult);
+                break;
+
+            case MAP:
+                result.set("result", mapper.convertValue(mapResult, ObjectNode.class));
+                break;
+                
+            case LIST:
+                result.set("result", mapper.convertValue(listResult, ArrayNode.class));
                 break;
 
             default:

@@ -5,13 +5,13 @@ import com.github.armedis.http.service.request.RedisRequest;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.server.annotation.Param;
 
-public class RedisHgetRequest extends RedisRequest {
+public class RedisHexistsRequest extends RedisRequest {
     @Param("field")
     protected String field;
     
-    public RedisHgetRequest(AggregatedHttpRequest httpRequest) {
+    public RedisHexistsRequest(AggregatedHttpRequest httpRequest) {
         super(httpRequest);
-        this.setCommand("Hget");
+        this.setCommand("Hexists");
     }
 
     /**
