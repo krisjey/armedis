@@ -5,13 +5,16 @@ import com.github.armedis.http.service.request.RedisRequest;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.server.annotation.Param;
 
-public class RedisHgetRequest extends RedisRequest {
+public class RedisHsetRequest extends RedisRequest {
     @Param("field")
     protected String field;
     
-    public RedisHgetRequest(AggregatedHttpRequest httpRequest) {
+    @Param("value")
+    protected String value;
+    
+    public RedisHsetRequest(AggregatedHttpRequest httpRequest) {
         super(httpRequest);
-        this.setCommand("Hget");
+        this.setCommand("Hset");
     }
 
     /**
@@ -27,4 +30,19 @@ public class RedisHgetRequest extends RedisRequest {
     public void setField(String field) {
         this.field = field;
     }
+
+    /**
+     * @return the value
+     */
+    public String getValue() {
+        return value;
+    }
+
+    /**
+     * @param value the value to set
+     */
+    public void setValue(String value) {
+        this.value = value;
+    }
+
 }

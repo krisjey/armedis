@@ -73,8 +73,8 @@ tasks.named('test') {
 eclipse {
     classpath {
         defaultOutputDir = file('classes')
-        downloadJavadoc = true
-        downloadSources = false
+        downloadJavadoc = false
+        downloadSources = true
 
         file.whenMerged { classpath -> classpath.entries.sort() }
     }

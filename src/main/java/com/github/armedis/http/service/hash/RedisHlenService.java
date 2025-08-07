@@ -10,7 +10,7 @@ import com.github.armedis.http.service.BaseService;
 import com.github.armedis.http.service.ResponseCode;
 import com.github.armedis.http.service.request.RedisRequest;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
-import com.github.armedis.redis.command.hash.RedisHsetRequest;
+import com.github.armedis.redis.command.hash.RedisHlenRequest;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.server.annotation.Consumes;
@@ -27,10 +27,10 @@ import com.linecorp.armeria.server.annotation.Put;
  *
  */
 @Component
-public class RedisHsetService extends BaseService {
+public class RedisHlenService extends BaseService {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private static final String REDIS_COMMAND = "hset";
+	private static final String REDIS_COMMAND = "hlen";
 
 	private static final String COMMAND_URL = "/v1/" + REDIS_COMMAND;
 
@@ -43,10 +43,12 @@ public class RedisHsetService extends BaseService {
 	 * @param redisRequest
 	 * @return HttpResponse
 	 */
-	@Post
+	@Get
+    @Put
+    @Post
 	@Path(COMMAND_URL)
 	@Consumes("application/x-www-form-urlencoded")
-	public HttpResponse urlencodedWithoutKey(RedisHsetRequest redisRequest) {
+	public HttpResponse urlencodedWithoutKey(RedisHlenRequest redisRequest) {
 		logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
 		// execute redis command by http request params.
@@ -67,11 +69,12 @@ public class RedisHsetService extends BaseService {
 	 * @param redisRequest
 	 * @return
 	 */
+	@Get
 	@Put
 	@Post
 	@Path(COMMAND_URL_WITH_KEY)
 	@Consumes("application/x-www-form-urlencoded")
-	public HttpResponse urlencodedWithKey(RedisHsetRequest redisRequest) {
+	public HttpResponse urlencodedWithKey(RedisHlenRequest redisRequest) {
 		logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
 		// execute redis command by http request params.

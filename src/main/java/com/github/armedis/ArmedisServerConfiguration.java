@@ -69,6 +69,8 @@ public class ArmedisServerConfiguration {
     public ArmeriaServerConfigurator armeriaServerConfigurator(ArmeriaAnnotatedHttpService... services) {
         int listenPort = initializeServicePort();
 
+        logger.info("Armedis Listen port " + listenPort);
+
         setArmeriaListenPort(listenPort);
 
         addShutdownHook(listenPort);
@@ -125,6 +127,9 @@ public class ArmedisServerConfiguration {
             fileServiceBuilder.serveCompressedFiles(true); // for compress
 
             builder.serviceUnder("/", fileServiceBuilder.build());
+
+            // redirect /#/index.html Fragment issue
+//            builder.decorator(IndexHtmlRedirectDecorator.newDecorator());
 
 //			builder.decorator(DecodingService.newDecorator());
         };
