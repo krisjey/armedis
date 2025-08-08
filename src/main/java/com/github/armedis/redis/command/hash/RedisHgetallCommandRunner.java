@@ -19,7 +19,7 @@ import io.lettuce.core.cluster.api.sync.RedisClusterCommands;
 
 @Component
 @Scope("prototype")
-@RequestRedisCommandName(RedisCommandEnum.GET)
+@RequestRedisCommandName(RedisCommandEnum.HGETALL)
 public class RedisHgetallCommandRunner extends AbstractRedisCommandRunner {
     private final Logger logger = LoggerFactory.getLogger(RedisHgetallCommandRunner.class);
 

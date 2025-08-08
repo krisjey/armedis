@@ -1,7 +1,5 @@
 
-package com.github.armedis.redis.command.hash;
-
-import java.util.List;
+package com.github.armedis.redis.command.generic;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,16 +17,16 @@ import io.lettuce.core.cluster.api.sync.RedisClusterCommands;
 
 @Component
 @Scope("prototype")
-@RequestRedisCommandName(RedisCommandEnum.HTTL)
-public class RedisHttlCommandRunner extends AbstractRedisCommandRunner {
-    private final Logger logger = LoggerFactory.getLogger(RedisHttlCommandRunner.class);
+@RequestRedisCommandName(RedisCommandEnum.HEXPIRE)
+public class RedisExpireCommandRunner extends AbstractRedisCommandRunner {
+    private final Logger logger = LoggerFactory.getLogger(RedisExpireCommandRunner.class);
 
     @SuppressWarnings("unused")
-    private static final boolean classLoaded = detectAnnotation(RedisHttlCommandRunner.class);
+    private static final boolean classLoaded = detectAnnotation(RedisExpireCommandRunner.class);
 
-    private RedisHttlRequest redisRequest;
+    private RedisExpireRequest redisRequest;
 
-    public RedisHttlCommandRunner(RedisHttlRequest redisRequest) {
+    public RedisExpireCommandRunner(RedisExpireRequest redisRequest) {
         this.redisRequest = redisRequest;
     }
 
@@ -38,8 +36,8 @@ public class RedisHttlCommandRunner extends AbstractRedisCommandRunner {
         logger.info(redisRequest.toString());
 
         String key = this.redisRequest.getKey();
-        String field = this.redisRequest.getField();
-        List<Long> result = commands.httl(key, field);
+        Long seconds = this.redisRequest.getSeconds();
+        Boolean result = commands.expire(key, seconds);
 
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
     }
@@ -49,8 +47,8 @@ public class RedisHttlCommandRunner extends AbstractRedisCommandRunner {
         logger.info(redisRequest.toString());
 
         String key = this.redisRequest.getKey();
-        String field = this.redisRequest.getField();
-        List<Long> result = commands.httl(key, field);
+        Long seconds = this.redisRequest.getSeconds();
+        Boolean result = commands.expire(key, seconds);
 
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
     }
