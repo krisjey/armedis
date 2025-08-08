@@ -17,7 +17,7 @@ import io.lettuce.core.cluster.api.sync.RedisClusterCommands;
 
 @Component
 @Scope("prototype")
-@RequestRedisCommandName(RedisCommandEnum.GET)
+@RequestRedisCommandName(RedisCommandEnum.HEXISTS)
 public class RedisHexistsCommandRunner extends AbstractRedisCommandRunner {
     private final Logger logger = LoggerFactory.getLogger(RedisHexistsCommandRunner.class);
 

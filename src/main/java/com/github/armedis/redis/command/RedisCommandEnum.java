@@ -44,6 +44,8 @@ public enum RedisCommandEnum {
     SETNX("setnx"),
     SETRANGE("setrange"),
     STRLEN("strlen"),
+    TTL("ttl"),
+    EXPIRE("expire"),
 
     // hash commands
     HDEL("hdel"),
@@ -61,6 +63,8 @@ public enum RedisCommandEnum {
     HSTRLEN("hstrlen"),
     HVALS("hvals"),
     HSCAN("hscan"),
+    HEXPIRE("hexpire"),
+    HTTL("httl"),
 
     // Set commands
     SADD("sadd"),
