@@ -44,6 +44,7 @@ public class RedisSetService extends BaseService {
 	 * @return HttpResponse
 	 */
 	@Post
+	@Put
 	@Path(COMMAND_URL)
 	@Consumes("application/x-www-form-urlencoded")
 	public HttpResponse urlencodedWithoutKey(RedisSetRequest redisRequest) {
@@ -68,6 +69,7 @@ public class RedisSetService extends BaseService {
 	 * @return
 	 */
 	@Post
+	@Put
 	@Path(COMMAND_URL_WITH_KEY)
 	@Consumes("application/x-www-form-urlencoded")
 	public HttpResponse urlencodedWithKey(RedisSetRequest redisRequest) {
@@ -96,7 +98,6 @@ public class RedisSetService extends BaseService {
 	 * @param httpRequest
 	 * @return HttpResponse
 	 */
-	@Get
 	@Put
 	@Post
 	@Path(COMMAND_URL)
@@ -131,7 +132,6 @@ public class RedisSetService extends BaseService {
 	 * @param key
 	 * @return HttpResponse
 	 */
-	@Get
 	@Put
 	@Post
 	@Path(COMMAND_URL_WITH_KEY)

@@ -134,6 +134,10 @@ sourceSets {
     }
 }
 
+tasks.named('processResources') {
+    exclude('application.properties', 'logback-spring.xml')
+}
+
 repositories {
     mavenCentral()
 }

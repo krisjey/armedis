@@ -44,6 +44,7 @@ public class RedisSetexService extends BaseService {
 	 * @return HttpResponse
 	 */
 	@Post
+	@Put
 	@Path(COMMAND_URL)
 	@Consumes("application/x-www-form-urlencoded")
 	public HttpResponse urlencodedWithoutKey(RedisSetexRequest redisRequest) {
@@ -68,6 +69,7 @@ public class RedisSetexService extends BaseService {
 	 * @return
 	 */
 	@Post
+	@Put
 	@Path(COMMAND_URL_WITH_KEY)
 	@Consumes("application/x-www-form-urlencoded")
 	public HttpResponse urlencodedWithKey(RedisSetexRequest redisRequest) {
@@ -96,9 +98,8 @@ public class RedisSetexService extends BaseService {
 	 * @param httpRequest
 	 * @return HttpResponse
 	 */
-	@Get
-	@Put
 	@Post
+	@Put
 	@Path(COMMAND_URL)
 	@Consumes("application/json")
 	public HttpResponse jsonWithoutKey(AggregatedHttpRequest httpRequest) {
@@ -131,9 +132,8 @@ public class RedisSetexService extends BaseService {
 	 * @param key
 	 * @return HttpResponse
 	 */
-	@Get
-	@Put
 	@Post
+	@Put
 	@Path(COMMAND_URL_WITH_KEY)
 	@Consumes("application/json")
 	public HttpResponse jsonWithKey(AggregatedHttpRequest httpRequest, @Param("key") String key) {
