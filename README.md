@@ -7,9 +7,12 @@ An HTTP2/gRPC interface for Redis, Support Redis stand-alone/cluster mode.
 # Load map
 ## Redis Http interface, Support redis cluster, stand alone mode.
 
--DSERVICE_PORT=8080 -Dservice.instanceCount=1
+
+
 
 <!--
+java -DSERVICE_PORT=8080 -Dservice.instanceCount=1 -Dlogging.config=./logback-spring.xml -jar armedis-1.0.0-SNAPSHOT.jar
+
 add testcase for service.
 for description
 

@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -12,6 +13,7 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import com.github.armedis.config.ApplicationPropertiesLoader;
+import com.linecorp.armeria.spring.ArmeriaSettings;
 
 /**
  * Armidis is a Redis Rest/gRPC API server based on Armeria F/W.
@@ -30,6 +32,9 @@ import com.github.armedis.config.ApplicationPropertiesLoader;
 public class ArmedisServer implements ApplicationRunner {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    
+    @Autowired
+    private ArmeriaSettings settings;
 
     public static void main(String[] args) throws IOException {
         long startTime = System.currentTimeMillis();
@@ -47,10 +52,11 @@ public class ArmedisServer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         String loadedMessage = "Spring application loaded!(ArmedisServer.run())";
-        logger.info(loadedMessage);
+        logger.info(loadedMessage + settings.getPorts());
+        logger.info("Stats url is /index.htm");
 
         // TODO print connected redis config.
-
+        
         // TODO start redis info generator.
 
         System.out.println(loadedMessage);
