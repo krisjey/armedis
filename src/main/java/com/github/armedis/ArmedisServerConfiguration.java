@@ -29,6 +29,7 @@ import com.linecorp.armeria.server.docs.DocService;
 import com.linecorp.armeria.server.encoding.EncodingService;
 import com.linecorp.armeria.server.file.FileService;
 import com.linecorp.armeria.server.file.FileServiceBuilder;
+import com.linecorp.armeria.server.file.HttpFile;
 import com.linecorp.armeria.server.grpc.GrpcService;
 import com.linecorp.armeria.server.grpc.GrpcServiceBuilder;
 import com.linecorp.armeria.server.logging.AccessLogWriter;
@@ -118,15 +119,21 @@ public class ArmedisServerConfiguration {
             builder.service(grpcServiceBuilder.build());
 
             // Add static file serving
-            FileServiceBuilder fileServiceBuilder = FileService.builder(ClassLoader.getSystemClassLoader(),
-                    "/static");
+//            ClassLoader cl = ClassLoader.getSystemClassLoader();
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            FileServiceBuilder fileServiceBuilder = FileService.builder(cl, "/static");
 
             // Specify cache control directives.
             ServerCacheControl cc = ServerCacheControl.builder().maxAgeSeconds(86400).cachePublic().build();
             fileServiceBuilder.cacheControl(cc); // /* http cache "max-age=86400, public" */
+            fileServiceBuilder.autoIndex(false);
+            fileServiceBuilder.autoDecompress(true);
             fileServiceBuilder.serveCompressedFiles(true); // for compress
+            FileService fileService = fileServiceBuilder.build();
 
-            builder.serviceUnder("/", fileServiceBuilder.build());
+            HttpFile index = HttpFile.of(cl, "/static/index.htm");
+
+            builder.serviceUnder("/", fileService.orElse(index.asService()));
 
             // redirect /#/index.html Fragment issue
 //            builder.decorator(IndexHtmlRedirectDecorator.newDecorator());
