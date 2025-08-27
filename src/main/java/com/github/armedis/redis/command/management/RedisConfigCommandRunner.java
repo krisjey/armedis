@@ -14,7 +14,6 @@ import com.github.armedis.redis.command.RedisClusterWideCommand;
 import com.github.armedis.redis.command.RedisCommandEnum;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.github.armedis.redis.command.RedisCommandExecuteResultFactory;
-import com.github.armedis.redis.command.RedisConfigRequest;
 import com.github.armedis.redis.command.RequestRedisCommandName;
 import com.github.armedis.redis.connection.RedisConnector;
 import com.github.armedis.redis.connection.RedisServerDetector;

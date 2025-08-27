@@ -10,7 +10,7 @@ import com.github.armedis.http.service.BaseService;
 import com.github.armedis.http.service.ResponseCode;
 import com.github.armedis.http.service.request.RedisRequest;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
-import com.github.armedis.redis.command.RedisConfigRequest;
+import com.github.armedis.redis.command.management.RedisConfigRequest;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.server.annotation.Consumes;
@@ -32,7 +32,7 @@ public class RedisConfigService extends BaseService {
 
 	private static final String REDIS_COMMAND = "config";
 
-	private static final String COMMAND_URL = "/v1/management/" + REDIS_COMMAND;
+	private static final String COMMAND_URL = "/v1/management/settings/" + REDIS_COMMAND;
 
 	private static final String COMMAND_URL_WITH_KEY = COMMAND_URL + "/:key";
 

@@ -1,5 +1,5 @@
 
-package com.github.armedis.redis.command;
+package com.github.armedis.redis.command.management;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
