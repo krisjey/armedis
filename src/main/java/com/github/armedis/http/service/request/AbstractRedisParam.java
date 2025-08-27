@@ -3,6 +3,7 @@ package com.github.armedis.http.service.request;
 
 import java.util.Optional;
 
+import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.server.annotation.Default;
 import com.linecorp.armeria.server.annotation.Header;
 import com.linecorp.armeria.server.annotation.Param;
@@ -18,7 +19,7 @@ public class AbstractRedisParam {
     /**
      * set value at constructor 
      */
-    protected String requestMethod;
+    protected HttpMethod requestMethod;
 
     /**
      * @return the key
@@ -37,14 +38,14 @@ public class AbstractRedisParam {
     /**
      * @return the requestMethod
      */
-    public String getRequestMethod() {
+    public HttpMethod getRequestMethod() {
         return requestMethod;
     }
 
     /**
-     * @param requestMethod the requestMethod to set
+     * @param httpMethod the requestMethod to set
      */
-    public void setRequestMethod(String requestMethod) {
-        this.requestMethod = requestMethod;
+    public void setRequestMethod(HttpMethod httpMethod) {
+        this.requestMethod = httpMethod;
     }
 }

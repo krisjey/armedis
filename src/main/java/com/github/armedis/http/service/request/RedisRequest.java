@@ -31,7 +31,7 @@ public class RedisRequest extends AbstractRedisParam implements ResponseDataType
     private String command;
 
     public RedisRequest(AggregatedHttpRequest httpRequest) {
-        setRequestMethod(httpRequest.method().toString());
+        setRequestMethod(httpRequest.method());
     }
 
     public String getCommand() {
