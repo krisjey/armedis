@@ -17,7 +17,6 @@ public class RedisClusterWideCommands {
         // management/server
         redisClusterWideCommandSet.put("save", RedisClusterWideCommand.ALL); // no
         redisClusterWideCommandSet.put("bgsave", RedisClusterWideCommand.ALL); // no
-
         
         // memory management
         redisClusterWideCommandSet.put("activedefrag", RedisClusterWideCommand.ALL); // no
