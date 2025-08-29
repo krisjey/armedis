@@ -1,155 +1,337 @@
 <div class="page-content">
-    <div class="container-fluid">
+  <div class="container-fluid">
+  <!-- start page title -->
+  <div class="row">
+    <div class="col-12">
+		<div class="page-title-box d-sm-flex align-items-center justify-content-between">
+			<h4 class="mb-sm-0">Redis Config 관리자</h4>
 
-        <!-- start page title -->
-        <div class="row">
-            <div class="col-12">
-                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                    <h4 class="mb-sm-0">Sitemap</h4>
+			<div class="page-title-right">
+				<ol class="breadcrumb m-0">
+					<li class="breadcrumb-item"><a href="javascript: void(0);">Armedis</a></li>
+					<li class="breadcrumb-item active">Management</li>
+				</ol>
+			</div>
 
-                    <div class="page-title-right">
-                        <ol class="breadcrumb m-0">
-                            <li class="breadcrumb-item"><a href="javascript: void(0);">Armedis</a></li>
-                            <li class="breadcrumb-item active">Management</li>
-                        </ol>
-                    </div>
+		</div>
+	</div>
+  </div>
+  <!-- end page title -->
 
-                </div>
-            </div>
+  <div class="row">
+	<ul class="nav nav-tabs mb-3" id="categoryTabs">
+	  <li class="nav-item"><a class="nav-link active" data-cat="All" href="#">전체</a></li>
+	  <li class="nav-item"><a class="nav-link" data-cat="Memory" href="#">Memory</a></li>
+      <li class="nav-item"><a class="nav-link" data-cat="Clients" href="#">Clients</a></li>
+      <li class="nav-item"><a class="nav-link" data-cat="Persistence" href="#">Persistence</a></li>
+      <li class="nav-item"><a class="nav-link" data-cat="Network" href="#">Network</a></li>
+      <li class="nav-item"><a class="nav-link" data-cat="Security" href="#">Security</a></li>
+      <li class="nav-item"><a class="nav-link" data-cat="Logging" href="#">Logging</a></li>
+      <li class="nav-item"><a class="nav-link" data-cat="Cluster" href="#">Cluster</a></li>
+	</ul>
+	
+	<!-- 검색창 -->
+	<div class="input-group mb-3">
+	  <span class="input-group-text">🔍</span>
+	  <input type="text" id="searchInput" class="form-control" placeholder="키워드 검색">
+	  <button id="resetBtn" class="btn btn-outline-secondary">초기화</button>
+	</div>
+	
+	<!-- 설정 테이블 -->
+	<table class="table table-striped" id="configTable">
+	  <thead>
+        <tr>
+          <th>설정 키</th>
+          <th>현재값</th>
+          <th>설명</th>
+          <th>편집</th>
+	    </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <!-- 편집 모달 -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true" style="position: fixed;">
+<!--      <div class="modal-dialog">-->
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="modalTitle"></h5>
+	        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+	      </div>
+          <div class="modal-body">
+	        <p>현재값: <span id="modalCurrent">-</span></p>
+	        <div id="modalInputContainer"></div>
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+	        <button type="button" id="saveBtn" class="btn btn-primary">저장</button>
+	      </div>
         </div>
-        <!-- end page title -->
-
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h4 class="card-title mb-0">Responsive Sitemap</h4>
-                    </div>
-                    <div class="card-body">
-                        <div class="sitemap-content">
-                            <figure class="sitemap-horizontal">
-                                <ul class="administration">
-                                    <li>
-                                        <ul class="director">
-                                            <li>
-                                                <a href="javascript:void(0);" class="fw-semibold"><span>Armedis
-                                                        Admin</span></a>
-                                                <ul class="subdirector">
-                                                    <li><a href="javascript:void(0);" class="fw-semibold"><span>Contact
-                                                                Us</span></a>
-                                                    </li>
-                                                </ul>
-                                                <ul class="departments">
-                                                    <li><a href="javascript:void(0);" class="fw-semibold"><span>Main
-                                                                Pages</span></a>
-                                                    </li>
-
-                                                    <li class="department">
-                                                        <a href="javascript:void(0);" class="fw-semibold"><span>Account
-                                                                Management</span></a>
-                                                        <ul>
-                                                            <li><a href="javascript:void(0);"><span>Sign
-                                                                        Up</span></a></li>
-                                                            <li><a href="javascript:void(0);"><span>Login</span></a>
-                                                            </li>
-                                                            <li><a href="javascript:void(0);"><span>Profile
-                                                                        Settings</span></a></li>
-                                                            <li><a href="javascript:void(0);"><span>Modify
-                                                                        Reservation</span></a></li>
-                                                            <li><a href="javascript:void(0);"><span>Cancel
-                                                                        Reservation</span></a></li>
-                                                            <li><a href="javascript:void(0);"><span>Write
-                                                                        Reviews</span></a></li>
-                                                        </ul>
-                                                    </li>
-                                                    <li class="department">
-                                                        <a href="javascript:void(0);" class="fw-semibold"><span>About
-                                                                Us</span></a>
-                                                        <ul>
-                                                            <li><a href="javascript:void(0);"><span>Overview</span></a>
-                                                            </li>
-                                                            <li><a href="javascript:void(0);"><span>Connect
-                                                                        Via Social Media</span></a></li>
-                                                            <li><a href="javascript:void(0);"><span>Careers</span></a>
-                                                            </li>
-                                                            <li><a href="javascript:void(0);"><span>Team
-                                                                        Members</span></a></li>
-                                                            <li><a href="javascript:void(0);"><span>Policies</span></a>
-                                                            </li>
-                                                        </ul>
-                                                    </li>
-                                                    <li class="department">
-                                                        <a href="javascript:void(0);" class="fw-semibold"><span>Book a
-                                                                Trip</span></a>
-                                                        <ul>
-                                                            <li><a href="javascript:void(0);"><span>Travel
-                                                                        Details</span></a></li>
-                                                            <li><a href="javascript:void(0);"><span>Reservation
-                                                                        Process</span></a></li>
-                                                            <li><a href="javascript:void(0);"><span>Payment
-                                                                        Option</span></a></li>
-                                                            <li><a
-                                                                    href="javascript:void(0);"><span>Comfirmation</span></a>
-                                                            </li>
-                                                        </ul>
-                                                    </li>
-                                                    <li class="department">
-                                                        <a href="javascript:void(0);"
-                                                            class="fw-semibold"><span>Destination</span></a>
-                                                        <ul>
-                                                            <li><a
-                                                                    href="javascript:void(0);"><span>Architecture</span></a>
-                                                            </li>
-                                                            <li><a href="javascript:void(0);"><span>Art</span></a>
-                                                            </li>
-                                                            <li><a
-                                                                    href="javascript:void(0);"><span>Entertainment</span></a>
-                                                            </li>
-                                                            <li><a href="javascript:void(0);"><span>History</span></a>
-                                                            </li>
-                                                            <li><a href="javascript:void(0);"><span>Science</span></a>
-                                                            </li>
-                                                            <li><a href="javascript:void(0);"><span>Sports</span></a>
-                                                            </li>
-                                                            <li><a href="javascript:void(0);"><span>Music</span></a>
-                                                            </li>
-                                                            <li><a href="javascript:void(0);"><span>Tracking
-                                                                        Camp</span></a></li>
-                                                        </ul>
-                                                    </li>
-                                                    <li class="department">
-                                                        <a href="javascript:void(0);" class="fw-semibold"><span>Travel
-                                                                Tips</span></a>
-                                                        <ul>
-                                                            <li><a href="javascript:void(0);"><span>General
-                                                                        Travel</span></a></li>
-                                                            <li><a href="javascript:void(0);"><span>Helpth
-                                                                        Concerns</span></a></li>
-                                                            <li><a href="javascript:void(0);"><span>Safety
-                                                                        Measures</span></a></li>
-                                                            <li><a href="javascript:void(0);"><span>FAQ's</span></a>
-                                                            </li>
-                                                        </ul>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                </ul>
-                            </figure>
-                        </div>
-                        <!--end sitemap-content-->
-                    </div>
-                    <!--end card-body-->
-                </div>
-                <!--end card-->
-            </div>
-            <!--end col-->
-        </div>
-        <!--end row-->
-    </div>
-    <!-- container-fluid -->
+      </div>
+    </div> 
+  </div>
+  <!-- container-fluid -->
 </div>
-<!-- End Page-content -->
+<!-- End Page-content -->  
 
 <script src="/assets/js/common.js"></script>
+
+<style>
+	.current-value { font-weight: bold; }
+</style>
+<!-- 로컬 JS 참조 -->
+<!-- <script src="/assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script> -->
+
+<script>
+	// 설정 메타데이터
+	var configKeys = [
+	//{ key:'maxmemory',            cat:'Memory',      desc:'최대 메모리 사용량 (바이트)',               type:'number' },
+	//{ key:'maxmemory-policy',     cat:'Memory',      desc:'메모리 초과 시 키 삭제 정책',               type:'dropdown', options:['noeviction','allkeys-lru','volatile-lru','volatile-random'] },
+	//{ key:'maxclients',           cat:'Client',      desc:'동시 접속 가능한 최대 클라이언트 수',         type:'number' },
+	//{ key:'timeout',              cat:'Client',      desc:'유휴 클라이언트 연결 종료 시간(초)',         type:'number' },
+	//{ key:'save',                 cat:'Persistence', desc:'RDB 스냅샷 주기',                          type:'text' },
+	//{ key:'appendonly',           cat:'Persistence', desc:'AOF 사용 여부',                            type:'toggle' },
+	//{ key:'appendfsync',          cat:'Persistence', desc:'AOF 동기화 정책',                          type:'dropdown', options:['always','everysec','no'] },
+	//{ key:'tcp-keepalive',        cat:'Network',     desc:'TCP keepalive 시간(초)',                    type:'number' },
+	//{ key:'bind',                 cat:'Network',     desc:'바인드할 IP 리스트',                          type:'text' },
+	//{ key:'requirepass',          cat:'Security',    desc:'클라이언트 인증 비밀번호',                    type:'password' },
+	//{ key:'rename-command',       cat:'Security',    desc:'명령어 이름 변경',                          type:'keyvalue' },
+	//{ key:'loglevel',             cat:'Logging',     desc:'로그 레벨',                                 type:'dropdown', options:['debug','verbose','notice','warning'] },
+	//{ key:'logfile',              cat:'Logging',     desc:'로그 파일 경로',                             type:'text' },
+	//{ key:'cluster-enabled',      cat:'Cluster',     desc:'클러스터 모드 사용 여부',                    type:'toggle' },
+	//{ key:'cluster-node-timeout', cat:'Cluster',     desc:'클러스터 노드 타임아웃(밀리초)',              type:'number' }
+	];
+
+	var tableBody = document.querySelector("#configTable tbody");
+	var editModal  = new bootstrap.Modal(document.getElementById("editModal"));
+	var currentEdit = null;
+	var kvMap = {};
+	var allItems = [];
+
+	// 테이블 렌더링
+	function renderTable(cat="All", filter="") {
+      tableBody.innerHTML = "";
+      configKeys.filter(i => (cat==="All" || i.cat===cat) && (i.key.includes(filter) || i.desc.includes(filter)))
+	            .forEach(i => {
+                  var tr = document.createElement("tr");
+                  tr.innerHTML = `
+                    <td>${i.key}</td>
+                    <td><span class="current-value" data-key="${i.key}">${i.val ?? "-"}</span></td>
+                    <td>${i.desc}</td>
+                    <td><button class="btn btn-sm btn-outline-primary edit-btn" data-key="${i.key}" data-cat="${i.cat}">✏️</button></td>
+                    `;
+                  tableBody.appendChild(tr);
+                });
+      document.querySelectorAll(".edit-btn").forEach(btn => btn.addEventListener("click", openModal));
+	}
+
+	// 모달 열기
+	function openModal(e) {
+		var itemsList = []; 
+        var key = e.currentTarget.dataset.key;
+        var cat = e.currentTarget.dataset.cat;
+        currentEdit = configKeys.find(i => i.key === key);
+        document.getElementById("modalTitle").textContent = `${key} 설정 변경`;
+        document.getElementById("modalCurrent").textContent = "불러오는 중...";
+        kvMap = {};
+        renderModalInput(currentEdit, "");
+        editModal.show();
+        
+		itemsList = configKeys.filter(item => item.key === key && item.cat === cat)[0];
+		var currentVal = itemsList.val ?? "";
+
+		document.getElementById("modalCurrent").textContent = currentVal;
+		if (currentEdit.type==="keyvalue") 
+		try { 
+			kvMap = JSON.parse(currentVal);
+		} catch {
+			document.getElementById("modalCurrent").textContent = "-";
+		};
+		renderModalInput(currentEdit, currentVal);
+
+	  //fetch(`/api/config/current?key=${key}`)
+	//	.then(res => res.json())
+	//	.then(data => {
+	//	  document.getElementById('modalCurrent').textContent = data.value;
+	//	  if (currentEdit.type==='keyvalue') try { kvMap = JSON.parse(data.value); } catch {};
+	//	    renderModalInput(currentEdit, data.value);
+	//	})
+	//	.catch(() => document.getElementById('modalCurrent').textContent = '-');
+	}
+
+	// 입력 컴포넌트 생성
+	function renderModalInput(cfg, curr) {
+      var cont = document.getElementById("modalInputContainer");
+	  cont.innerHTML = "";
+      var html = "";
+      switch(cfg.type) {
+         case "number":
+         html = `<input id="modalInput" type="number" class="form-control" value="${curr}">`;
+         break;
+         case "dropdown":
+         html = `<select id="modalInput" class="form-select">${cfg.options.map(o=>`<option value="${o}"${o===curr?' selected':''}>${o}</option>`).join('')}</select>`;
+         break;
+         case "toggle":
+         html = `<div class="form-check form-switch"><input id="modalInput" class="form-check-input" type="checkbox"${curr==='yes'?' checked':''}><label class="form-check-label">${cfg.desc}</label></div>`;
+         break;
+         case "password":
+         html = `<input id="modalInput" type="password" class="form-control" placeholder="새 비밀번호">`;
+         break;
+         case "text":
+         html = `<textarea id="modalInput" class="form-control" rows="3">${curr}</textarea>`;
+         break;
+         case "keyvalue":
+         html = `<div id="kvContainer" class="mb-2"></div><button id="addKvBtn" class="btn btn-sm btn-outline-secondary mb-3">+ 추가</button>`;
+         break;
+      }
+      cont.innerHTML = html;
+      if (cfg.type === "keyvalue") initKeyValue();
+    }
+
+	// keyvalue 초기화 및 렌더
+	function initKeyValue() {
+		var kvCont = document.getElementById("kvContainer"), addBtn = document.getElementById("addKvBtn");
+		addBtn.onclick = () => { 
+			kvMap[""] = ""; renderKV();
+		};
+
+		function renderKV() {
+			kvCont.innerHTML = "";
+			Object.entries(kvMap).forEach(([k,v]) => {
+				var row = document.createElement("div");
+				row.className = "d-flex mb-2";
+				row.innerHTML = `<input class="form-control me-2" data-key="key" value="${k}" placeholder="명령어">` +
+								`<input class="form-control me-2" data-key="value" value="${v}" placeholder="새 이름">` +
+								`<button class="btn btn-sm btn-danger">-</button>`;
+				row.querySelector("button").onclick=()=>{
+					delete kvMap[k];
+					renderKV();
+				};
+				row.querySelectorAll("input").forEach(inp=>{
+					inp.oninput=()=>{
+						const newKey=row.querySelector("[data-key=key]").value;
+						const newVal=row.querySelector("[data-key=value]").value;
+						delete kvMap[k]; if(newKey) kvMap[newKey]=newVal; renderKV();
+					};
+				});
+				kvCont.appendChild(row);
+			});
+		}
+		renderKV();
+	}
+
+	// 저장 처리
+	document.getElementById("saveBtn").onclick=()=>{
+	  	var val;
+	  	if (currentEdit.type === "toggle") val = document.getElementById("modalInput").checked ? "yes":"no";
+	  	else if (currentEdit.type === "keyvalue") val = JSON.stringify(kvMap);
+	  	else val = document.getElementById("modalInput").value;
+	  	  
+		fetch("/v1/management/config/" + currentEdit.key,{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({value:val})})
+			.then(res=> {
+				res.json()
+			})
+			.then(data => { 
+				document.querySelector(`.current-value[data-key="${currentEdit.key}"]`).textContent=data.value;
+				editModal.hide();
+			})
+			.catch(err=>alert('저장 실패: '+err));
+
+	 // fetch('/api/config/set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:currentEdit.key,value:val})})
+	//	.then(res=>res.json())
+	//	.then(data=>{ document.querySelector(`.current-value[data-key="${currentEdit.key}"]`).textContent=data.value; editModal.hide(); })
+	//	.catch(err=>alert('저장 실패: '+err));
+	};
+
+	// 탭 & 검색 이벤트
+	document.querySelectorAll("#categoryTabs .nav-link")
+	  	.forEach(tab=>tab.onclick=e=>{
+			e.preventDefault();
+			document.querySelectorAll("#categoryTabs .nav-link").forEach(t=>t.classList.remove("active")); 
+		    tab.classList.add("active"); 
+			renderTable(tab.dataset.cat,document.getElementById("searchInput").value);
+	  });
+
+	document.getElementById("searchInput").oninput=()=>{
+		var cat=document.querySelector("#categoryTabs .nav-link.active").dataset.cat;
+		renderTable(cat,document.getElementById("searchInput").value);
+	};
+
+	document.getElementById("resetBtn").onclick=()=>{
+		document.getElementById("searchInput").value="";
+		renderTable();
+	};
+
+	// 조회
+	function getList(){
+		fetch("/v1/redis/stats")
+			.then(res=> { 
+				return res.json();
+			})
+			.then(data=> {
+				allItems = convertToConfigKeys(data[0].redisInfoList["sum"]);
+				allItems = allItems.filter(i => (i.cat === 'Memory' && i.key === "maxmemory") 
+					|| (i.cat === 'Memory' && i.key === "maxmemoryPolicy")
+					|| (i.cat === 'Clients' && i.key === "maxclients")
+					|| (i.cat === 'Persistence' && i.key === "aofEnabled")
+				)
+				configKeys = allItems; 
+				renderTable('All');
+			})
+			.catch(err=>alert("저장 실패: " + err));
+    }
+
+	function convertToConfigKeys(data){
+		var result = [];
+		var sections = data;
+
+		for (var [cat, values] of Object.entries(sections)){
+        	for (var [key, val] of Object.entries(values)) {
+          		result.push({
+            		key: key,
+            		cat: capitaliz(cat),
+            		desc: "-",
+					type: inputType(key),
+					options: inputOption(key),
+            		val: values[key]
+          		});
+        	}
+      	}
+      	return result;
+    }
+	
+    function capitaliz(str) {
+      	return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+	function inputType(str){
+		var optionType = "";
+		switch(str) {
+			case 'maxmemoryPolicy':
+				optionType = "dropdown";
+         		break;
+			default:
+				optionType = 'text';
+		}
+		return optionType;
+	}
+
+	function inputOption(str){
+		var optionValue = "";
+		switch(str) {
+			case "maxmemoryPolicy":
+				optionValue = ["noeviction","allkeys-lru","volatile-lru","volatile-random"];
+         		break;
+			default:
+				optionValue = "";
+		}
+		return optionValue;
+	}
+
+	// 초기 렌더링
+	getList();
+	//renderTable();
+</script>
+
+		
+		
