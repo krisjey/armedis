@@ -1,6 +1,8 @@
 
 package com.github.armedis.redis.command.management;
 
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,18 +14,18 @@ public class RedisConfigRequest extends RedisRequest {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     
     @Param("value")
-    protected String value;
+    protected Optional<String> value;
 
     public RedisConfigRequest(AggregatedHttpRequest httpRequest) {
         super(httpRequest);
         this.setCommand("Config");
     }
 
-    public String getValue() {
+    public Optional<String> getValue() {
         return this.value;
     }
 
-    public void setValue(String value) {
+    public void setValue(Optional<String> value) {
         this.value = value;
     }
 }
