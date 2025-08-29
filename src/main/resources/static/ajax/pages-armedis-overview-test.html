@@ -1,0 +1,571 @@
+<div class="page-content">
+    <div class="container-fluid">
+        <!-- Top statistics row (4 boxes) -->
+        <div class="grid-4">
+            <div class="card p-2">
+                <div class="top-stat">
+                    <div style="width:100%;display:flex;align-items:center;justify-content:space-between;">
+                        <div>
+                            <div class="stat-value text-danger" id="opsValue">0</div>
+                            <div class="stat-label">Ops/sec</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="small-muted">Connected Clients</div>
+                            <div id="clientsValue" class="badge-value" style="color:#0d6efd;">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-2">
+                <div class="top-stat">
+                    <div style="width:100%;display:flex;align-items:center;justify-content:space-between;">
+                        <div>
+                            <div class="stat-value text-primary" id="keysValue">0</div>
+                            <div class="stat-label">Number of Keys</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="small-muted">Eviction Policy</div>
+                            <div id="evictPolicy" class="badge-value" style="color:#0056b3;">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-2">
+                <div class="top-stat">
+                    <div style="width:100%;display:flex;align-items:center;justify-content:space-between;">
+                        <div>
+                            <div class="stat-value" id="usedMemory">0 MB</div>
+                            <div class="stat-label">Used Memory</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="small-muted">Memory Limit</div>
+                            <div id="memoryLimit" class="badge-value">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-2">
+                <div class="top-stat">
+                    <div style="width:100%;display:flex;align-items:center;justify-content:space-between;">
+                        <div>
+                            <div class="stat-value" id="uptimeValue">0 min</div>
+                            <div class="stat-label">Uptime</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="small-muted">Version</div>
+                            <div id="versionValue" class="badge-value">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Network gauges & memory sparkline & keyspace -->
+        <div class="grid-3">
+            <!-- Network gauges -->
+            <div class="card p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="mb-0">Network</h6>
+                    <span class="small-muted">Input / Output (MB/s)</span>
+                </div>
+                <div style="display:flex;gap:14px;align-items:center;">
+                    <div id="gaugeInput" class="gauge-large" style="flex:1"></div>
+                    <div id="gaugeOutput" class="gauge-large" style="flex:1"></div>
+                </div>
+            </div>
+
+            <!-- Memory bars -->
+            <div class="card p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="mb-0">Memory</h6>
+                    <span id="memorySummary" class="small-muted">Used / Peak / Limit</span>
+                </div>
+                <div id="memoryBar" class="sparkbars"></div>
+                <div class="mt-2 d-flex justify-content-between small-muted">
+                    <div>Used: <span id="usedMemoryVal">0</span></div>
+                    <div>Peak: <span id="peakMemoryVal">0</span></div>
+                    <div>Limit: <span id="limitMemoryVal">0</span></div>
+                </div>
+            </div>
+
+            <!-- Keyspace -->
+            <div class="card p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="mb-0">Keyspace</h6>
+                    <span class="small-muted">Hits / Misses</span>
+                </div>
+                <div class="mb-2">
+                    <div class="ks-bar">
+                        <div id="ksHits" class="ks-fill" style="width:60%"></div>
+                    </div>
+                    <div class="mt-2 ks-bar">
+                        <div id="ksMiss" class="ks-fill"
+                            style="width:10%;background:linear-gradient(90deg,#f6c343,#ea7f28)"></div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between small-muted">
+                    <div>Hits: <strong id="hitsCount">0</strong></div>
+                    <div>Misses: <strong id="missesCount">0</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle section: client connections, command stats, slow logs -->
+        <div class="row g-3">
+            <div class="col-lg-6">
+                <div class="card p-3" style="min-height:360px;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">Client connections</h6>
+                        <span class="small-muted">Address · Total duration · Idle · Last command</span>
+                    </div>
+                    <div style="overflow:auto; max-height:260px;">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr class="small-muted">
+                                    <th>Client</th>
+                                    <th>Total duration</th>
+                                    <th>Idle time</th>
+                                    <th>Last command</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clientTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card p-3" style="min-height:360px;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">Command statistics</h6>
+                        <span class="small-muted">Number of calls · Total Duration · Duration per call</span>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-7" style="max-height:260px;overflow:auto;">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr class="small-muted">
+                                        <th>Command</th>
+                                        <th>Calls</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="commandTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-5">
+                            <h6 class="small-muted">Slow queries log</h6>
+                            <div style="max-height:220px;overflow:auto;">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr class="small-muted">
+                                            <th>Timestamp</th>
+                                            <th>Duration</th>
+                                            <th>Command</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="slowLogBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Redis Cluster section -->
+        <div class="card p-3 mt-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <h6 class="mb-0">Redis Cluster</h6>
+                    <div class="small-muted">State · Role · Nodes</div>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <div class="blue-box" style="width:90px;">
+                        <div class="small-muted">State</div>
+                        <div class="big" id="clusterState">ok</div>
+                    </div>
+                    <div class="blue-box" style="width:110px;">
+                        <div class="small-muted">Role</div>
+                        <div class="big" id="clusterRole">master</div>
+                    </div>
+                    <div class="badge-panel" style="min-width:120px;">
+                        <div class="small-muted">Total known nodes</div>
+                        <div id="knownNodes" class="badge-value">0</div>
+                    </div>
+                    <div class="badge-panel" style="min-width:120px;">
+                        <div class="small-muted">Master nodes w/ slots</div>
+                        <div id="masterNodesWithSlots" class="badge-value">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="overflow:auto; max-height:220px;">
+                <table class="table table-sm">
+                    <thead>
+                        <tr class="small-muted">
+                            <th>Id</th>
+                            <th>Address</th>
+                            <th>Flags</th>
+                            <th>Replica's Master</th>
+                            <th>Ping</th>
+                            <th>Pong</th>
+                            <th>State</th>
+                            <th>Hash slot</th>
+                        </tr>
+                    </thead>
+                    <tbody id="nodesTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- container-fluid -->
+</div>
+<!-- End Page-content -->
+
+<!-- apexcharts -->
+<script src="/assets/libs/apexcharts/apexcharts.min.js"></script>
+
+<!-- areacharts init -->
+<script src="/assets/js/pages/apexcharts-radialbar.init.js"></script>
+
+<script src="/assets/js/common.js"></script>
+
+<script>
+    // ---------- ApexCharts 인스턴스 생성 ----------
+    var gaugeOptions = function (label, color) {
+        return {
+            chart: { type: 'radialBar', height: 150 },
+            series: [0],
+            plotOptions: {
+                radialBar: {
+                    hollow: { size: '55%' },
+                    dataLabels: {
+                        name: { show: true, fontSize: '12px', color: '#6c757d' },
+                        value: { show: true, fontSize: '18px', formatter: function (val) { return val; } }
+                    },
+                    track: { background: '#f1f3f5' }
+                }
+            },
+            labels: [label],
+            colors: [color],
+        };
+    };
+
+    var chartGaugeInput = new ApexCharts(document.querySelector("#gaugeInput"), gaugeOptions('Input', '#1abc9c'));
+    var chartGaugeOutput = new ApexCharts(document.querySelector("#gaugeOutput"), gaugeOptions('Output', '#e74c3c'));
+    chartGaugeInput.render(); chartGaugeOutput.render();
+
+    var memoryBar = new ApexCharts(document.querySelector("#memoryBar"), {
+        chart: { type: 'bar', height: 60, sparkline: { enabled: true } },
+        series: [{ data: [0, 0, 0] }],
+        stroke: { width: 0 },
+        plotOptions: { bar: { columnWidth: '60%', borderRadius: 4 } },
+        tooltip: { enabled: true, y: { formatter: function (val) { return val + " MB"; } } },
+        xaxis: { categories: ['Used', 'Peak', 'Limit'] }
+    });
+    memoryBar.render();
+
+    // ---------- 로컬 데모 펑션 (API 실패 시 사용) ----------
+    function demoData() {
+        var ops = Math.floor(100000 + Math.random() * 40000);
+        var clients = Math.floor(20 + Math.random() * 120);
+        var keys = Math.floor(30000 + Math.random() * 60000);
+        var uptimeMin = Math.floor(10 + Math.random() * 120);
+        return {
+            ops_sec: ops,
+            clients: clients,
+            keys: keys,
+            uptime: uptimeMin + ' min',
+            version: '6.0.6',
+            eviction_policy: 'allkeys-lru',
+            network: { input: (5 + Math.random() * 15).toFixed(1), output: (5 + Math.random() * 20).toFixed(1) },
+            memory: { used: (10 + Math.random() * 80).toFixed(2), peak: (30 + Math.random() * 120).toFixed(2), limit: 30720 },
+            keyspace: { hits: Math.floor(30_000_000 + Math.random() * 30_000_000), misses: Math.floor(500_000 + Math.random() * 2_000_000) },
+            clients_list: (function () { var arr = []; for (var i = 0; i < 8; i++) { arr.push({ addr: '127.0.0.1:53' + (90 + i), total: (8 + i) + ' min', idle: (i * 1) + ' min', lastcmd: i % 2 ? 'get' : 'set' }); } return arr; })(),
+            commands: [{ name: 'set', calls: '56.6M', total: '51.9s' }, { name: 'get', calls: '56.6M', total: '25.4s' }, { name: 'config', calls: '5.0', total: '954.3ms' }],
+            slowlog: [{ ts: 'a few seconds ago', dur: '0 µs', cmd: 'SET memtier-652650 ...' }, { ts: 'a few seconds ago', dur: '1 µs', cmd: 'GET memtier-652780 ...' }],
+            cluster: {
+                state: 'ok',
+                role: 'master',
+                known: 6,
+                masters_with_slots: 3,
+                nodes: [
+                    { id: '81d7...', addr: '127.0.0.1:7002@17002', flags: 'master', masterReplica: '-', ping: 'a few seconds ago', pong: 'a few seconds ago', state: 'connected', slot: '10923-16383' },
+                    { id: '25a2...', addr: '127.0.0.1:7001@17001', flags: 'master', masterReplica: '-', ping: 'a few seconds ago', pong: 'a few seconds ago', state: 'connected', slot: '5461-10922' },
+                    { id: '3a6b...', addr: '127.0.0.1:7000@17000', flags: 'myself,master', masterReplica: '-', ping: 'a few seconds ago', pong: 'a few seconds ago', state: 'connected', slot: '0-5460' }
+                ]
+            }
+        };
+    }
+
+    // ---------- 데이터 바인딩 함수 ----------
+    function bindData(data) {
+        // top stats
+        $('#opsValue').text((data.ops_sec || 0).toLocaleString());
+        $('#clientsValue').text((data.clients || 0).toLocaleString());
+        $('#keysValue').text((data.keys || 0).toLocaleString());
+        $('#uptimeValue').text(data.uptime || '-');
+        $('#versionValue').text(data.version || '-');
+        $('#evictPolicy').text(data.eviction_policy || '-');
+
+        // memory
+        var used = Number(data.memory?.used || 0);
+        var peak = Number(data.memory?.peak || 0);
+        var limit = Number(data.memory?.limit || data.memory?.limit || 0);
+        $('#usedMemory').text(used + ' MB');
+        $('#memoryLimit').text(limit ? (limit + ' MB') : '-');
+        $('#usedMemoryVal').text(used);
+        $('#peakMemoryVal').text(peak);
+        $('#limitMemoryVal').text(limit);
+
+        memoryBar.updateSeries([{ data: [used, peak, limit || 0] }]);
+
+        // network gauges
+        var inVal = Number(data.network?.input || 0);
+        var outVal = Number(data.network?.output || 0);
+        chartGaugeInput.updateSeries([inVal.toFixed(1)]);
+        chartGaugeOutput.updateSeries([outVal.toFixed(1)]);
+
+        // keyspace
+        var hits = Number(data.keyspace?.hits || 0);
+        var misses = Number(data.keyspace?.misses || 0);
+        var total = Math.max(hits + misses, 1);
+        var hitsPct = Math.round((hits / total) * 100);
+        var missesPct = Math.round((misses / total) * 100);
+        $('#ksHits').css('width', Math.max(2, hitsPct) + '%');
+        $('#ksMiss').css('width', Math.max(2, missesPct) + '%');
+        $('#hitsCount').text((hits / 1000000).toFixed(2) + 'M');
+        $('#missesCount').text((misses / 1000).toFixed(0) + 'k');
+
+        // client table
+        var clientsHtml = '';
+        (data.clients_list || []).forEach(c => {
+            clientsHtml += `<tr><td class="small">${c.addr || c.addr}</td><td class="small">${c.total || c.total}</td><td class="small">${c.idle || c.idle}</td><td class="small">${c.lastcmd || c.lastcmd}</td></tr>`;
+        });
+        $('#clientTableBody').html(clientsHtml);
+
+        // command table
+        var cmdHtml = '';
+        (data.commands || []).forEach(cmd => {
+            cmdHtml += `<tr><td class="small">${cmd.name}</td><td class="small">${cmd.calls}</td><td class="small">${cmd.total}</td></tr>`;
+        });
+        $('#commandTableBody').html(cmdHtml);
+
+        // slowlog
+        var slowHtml = '';
+        (data.slowlog || []).forEach(s => {
+            slowHtml += `<tr><td class="small">${s.ts}</td><td class="small">${s.dur}</td><td class="small text-truncate" style="max-width:420px">${s.cmd}</td></tr>`;
+        });
+        $('#slowLogBody').html(slowHtml);
+
+        // cluster
+        $('#clusterState').text(data.cluster?.state || '-');
+        $('#clusterRole').text(data.cluster?.role || '-');
+        $('#knownNodes').text(data.cluster?.known ?? 0);
+        $('#masterNodesWithSlots').text(data.cluster?.masters_with_slots ?? 0);
+
+        var nodesHtml = '';
+        (data.cluster?.nodes || []).forEach(n => {
+            nodesHtml += `<tr><td class="small">${n.id}</td><td class="small">${n.addr}</td><td class="small">${n.flags}</td><td class="small">${n.masterReplica || '-'}</td><td class="small">${n.ping}</td><td class="small">${n.pong}</td><td class="small">${n.state}</td><td class="small">${n.slot || '-'}</td></tr>`;
+        });
+        $('#nodesTableBody').html(nodesHtml);
+    }
+
+    // ---------- 실제 데이터 가져오는 함수: AJAX (5초 간격) ----------
+    var API_ENDPOINT = '/assets/json/redis-stats.json'; // 필요에 따라 변경하세요
+
+    function loadDashboard() {
+        $.ajax({
+            url: API_ENDPOINT,
+            method: 'GET',
+            dataType: 'json',
+            timeout: 3500,
+            success: function (resp) {
+                // 기대되는 응답 포맷:
+                // resp.ops_sec, resp.clients, resp.keys, resp.uptime, resp.version, resp.eviction_policy,
+                // resp.network.input, resp.network.output,
+                // resp.memory.used, resp.memory.peak, resp.memory.limit,
+                // resp.keyspace.hits, resp.keyspace.misses,
+                // resp.clients_list (array), resp.commands (array), resp.slowlog (array),
+                // resp.cluster.{state,role,known,masters_with_slots,nodes}
+                bindData(resp);
+            },
+            error: function () {
+                // API 호출 실패 시 데모 데이터로 대체 (또는 로컬 캐시/에러 표시)
+                console.warn('API fail -> using demo data');
+                bindData(demoData());
+            }
+        });
+    }
+
+    // 초기 로드 및 5초 간격 갱신
+    $(function () {
+        loadDashboard();
+        setInterval(loadDashboard, 5000);
+    });
+</script>
+<style>
+    :root {
+        --bg: #f4f7fb;
+        --card: #ffffff;
+        --muted: #9aa6b2;
+        --green: #2ecc71;
+        --red: #e74c3c;
+        --blue: #2b8cff;
+        --panel-border: rgba(0, 0, 0, 0.06);
+        --accent: #0d6efd;
+        font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, "Helvetica Neue", Arial;
+    }
+
+    body {
+        background: var(--bg);
+        color: #24313a;
+    }
+
+    .card {
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+        background: var(--card);
+        box-shadow: 0 6px 16px rgba(20, 30, 40, 0.04);
+    }
+
+    .top-stat {
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+    }
+
+    .stat-value {
+        font-weight: 800;
+        font-size: 28px;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 6px;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+    }
+
+    /* grid like screenshot */
+    .grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .gauge-large {
+        height: 150px;
+    }
+
+    .sparkbars {
+        height: 56px;
+    }
+
+    /* small badges style */
+    .badge-panel {
+        padding: 10px 12px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    .badge-value {
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .badge-sub {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 4px;
+    }
+
+    /* small tables */
+    .table-sm td,
+    .table-sm th {
+        padding: 6px 8px;
+        vertical-align: middle;
+    }
+
+    .small-muted {
+        font-size: 12px;
+        color: var(--muted);
+    }
+
+    /* keyspace bar */
+    .ks-bar {
+        height: 12px;
+        border-radius: 6px;
+        background: #f1f6f0;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+    }
+
+    .ks-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #1abc9c, #16a085);
+        display: block;
+    }
+
+    /* right side blue boxes */
+    .blue-box {
+        background: linear-gradient(180deg, #1d6fe0, #0d47a1);
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .blue-box .big {
+        font-weight: 800;
+        font-size: 20px;
+    }
+
+    /* responsive tweaks */
+    @media (max-width: 1000px) {
+        .grid-4 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 640px) {
+
+        .grid-4,
+        .grid-3,
+        .grid-2 {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
