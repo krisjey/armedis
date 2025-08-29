@@ -1,0 +1,589 @@
+<div class="page-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xl-6">
+                <!-- TCP START -->
+                <div class="card" id="tpsCard">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0"></h4>
+                    </div><!-- end card header -->
+
+                    <div class="card-body">
+                        <div id="area_chart_stacked" data-colors='["--vz-primary"]' class="apex-charts" dir="ltr"></div>
+                    </div><!-- end card-body -->
+                </div><!-- end card -->
+                <!-- TCP END -->
+            </div>
+            <!-- end col -->
+            <div class="col-xl-6">
+                <!-- Hit Rate START -->
+                <div class="card" id="hitRateCard">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0"></h4>
+                    </div><!-- end card header -->
+                    
+                    <div class="card-body">
+                        <div id="area_chart_stacked" data-colors='["--vz-primary"]' class="apex-charts" dir="ltr"></div>
+                    </div><!-- end card-body -->
+                </div><!-- end card -->
+                <!-- Hit Rate END -->
+            </div>
+            <!-- end col -->
+        </div>
+        <!-- end row -->
+
+        <div class="row">
+            <div class="col-xl-12">
+                <!-- Memory START -->
+                <div class="card" id="memoryCard">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0"></h4>
+                    </div><!-- end card header -->
+                    
+                    <div class="card-body">
+                        <div 
+                            id="area_chart_stacked" 
+                            data-colors='["--vz-primary", "--vz-danger", "--vz-warning"]'
+                            class="apex-charts" 
+                            dir="ltr"></div>
+                    </div><!-- end card-body -->
+                </div><!-- end card -->
+                <!-- Memory END -->
+            </div>
+            <!-- end col -->
+        </div>
+        <!-- end row -->
+
+        <div class="row">
+            <div class="col-xl-12">
+                <!-- Analysis START -->
+                <div class="card" id="redisAnalysis">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0"></h5>
+                    </div><!-- end card header -->
+                    
+                    <div class="card-body">
+                        <table class="table table-bordered dt-responsive nowrap table-striped align-middle" style="width:100%">
+                            <thead>
+                                <tr></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div><!-- end card-body -->
+                </div><!-- end card -->
+                <!-- Analysis END -->
+            </div>
+            <!-- end col -->
+        </div>
+        <!-- end row -->
+        
+        <div class="row">
+            <div class="col-xl-12">
+                <!-- Instance Information START -->
+                <div class="card" id="instanceInformation">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0"></h5>
+                    </div><!-- end card header -->
+
+                    <div class="card-body">
+                        <!-- <table class="table table-bordered dt-responsive nowrap table-striped align-middle" style="width:100%">
+                            <thead>
+                                <tr></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table> -->
+                    </div><!-- end card-body -->
+                </div><!-- end card -->
+                <!-- Instance Information END -->
+            </div>
+            <!-- end col -->
+        </div>
+        <!-- end row -->
+    </div>
+    <!-- container-fluid -->
+</div>
+<!-- End Page-content -->
+
+<!-- Date library -->
+<script src="/assets/libs/moment/moment.js"></script>
+
+<!-- apexcharts -->
+<script src="/assets/libs/apexcharts/apexcharts.min.js"></script>
+
+<!-- areacharts init -->
+<script src="/assets/js/pages/apexcharts-area.init.js"></script>
+
+<script src="/assets/js/common.js"></script>
+
+<script>
+    var intervalId = undefined;
+    var charts = {};
+    var statsData = [];
+    var tpsSeries = [{ name: "TPS", data: [] }];
+    var hitRateSeries = [{ name: "HitRate", data: [] }];
+    var memorySeries = [
+        { name: "Max Memory", data: [] },
+        { name: "RSS", data: [] },
+        { name: "Used Memory", data: []}
+    ];
+    var tables = [
+        { id: "redisAnalysis", headers: ['Time', 'CPU', 'Clients', 'bClients', 'Mem', 'RSS', 'keys', 'CPS', 'EXP', 'EVT', 'HitRate', 'HIT', 'IN', 'OUT'] }
+    ];
+
+    // 차트 영역 생성
+    function createChartCard(cardId, series) {
+        var parent = document.getElementById(cardId);
+        var chartElement = parent.querySelector("#area_chart_stacked");
+        var yaxis = {};
+        
+        if (cardId === "memoryCard") {
+            yaxis = {
+                labels: {
+                    formatter: function (value) {
+                        return getMemoryCapacityUnit(value);
+                    },
+                    style: {
+                        colors: "#666"
+                    }
+                }                
+            }
+        } else if (cardId === "hitRateCard") {
+            yaxis = {
+                max: 100,
+                labels: {
+                    formatter: function (value) {
+                        return value.toFixed(0)
+                    },
+                    style: {
+                        colors: "#666"
+                    }
+                }
+            }
+        } else {
+            yaxis = {
+                labels: {
+                    formatter: function (value) {
+                        return value.toFixed(0) // Y축 레이블 포맷 (정수)
+                    },
+                    style: {
+                        colors: "#666"
+                    }
+                }
+            }
+        }
+        
+        // 차트
+        var chartOptions = {
+            chart: {
+                id: "area-chart",
+                type: "area",
+                height: 350,
+                toolbar: {
+                    show: true,
+                    tools: {
+                        download: true,
+                        selection: false,
+                        zoom: false,
+                        zoomin: false,
+                        zoomout: false,
+                        pan: true,
+                        reset: false
+                    }
+                },
+                animations: {
+                    enabled: true, // 데이터 업데이트 시 부드러운 애니메이션 효과
+                    easing: "linear",
+                    animateGradually: {
+                        enabled: true,
+                    },
+                    dynamicAnimation: {
+                        enabled: true,
+                        speed: 1000
+                    }
+                }
+            },
+            xaxis: {
+                type: "datetime", // X축 타입을 datetime으로 설정\
+                labels: {
+                    formatter: function (val) {
+                        return moment(val).format("HH:mm");
+                    },
+                    style: {
+                        colors: "#666"
+                    }
+                }
+            },
+            yaxis,
+            series,
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: "smooth",
+                width: 2
+            },
+            fill: {
+                opacity: 0.06,
+                colors: getChartColorsArray(cardId),
+                type: "solid"
+            },
+            tooltip: {
+                enabled: true,
+                followCursor: true,                
+                x: {
+                    format: "HH:mm:ss" // 툴팁 X축 포맷 (시간과 날짜 포함)
+                }
+            },
+            colors: getChartColorsArray(cardId),
+            legend: {
+                position: "bottom"
+            },
+            grid: {
+                row: {
+                    colors: ["#f3f3f3", "transparent"], // 교차 행 색상
+                    opacity: 0.5
+                }
+            }
+        }
+
+        var chart = new ApexCharts(chartElement, chartOptions);
+        chart.render();
+        charts[cardId] = chart;
+    }
+
+    // 차트 그리기
+    function addDataPoint(cardId, series) {
+        var seriesCount = series.length;
+        if (seriesCount > 0) {
+            var datas = [];
+            series.forEach(elem => {
+                datas.push({ data: [_.last(elem.data)] });
+            });
+            
+            charts[cardId].appendData(datas);
+            charts[cardId].updateOptions({
+                xaxis: {
+                    min: series[0].data[0].x,
+                    max: series[0].data[series[0].data.length - 1].x
+                }
+            }, false, true);
+        }
+    }
+
+    // card box 설정
+    function initCard() {
+        var cards = [
+            { id: "tpsCard", title: "TPS" },
+            { id: "hitRateCard", title: "Hit Rate" },
+            { id: "memoryCard", title: "Memory" },
+            { id: "redisAnalysis", title: "Analysis" },
+            { id: "instanceInformation", title: "Instance Information"}
+        ];
+        
+        cards.forEach(elem => {
+            var parent = document.getElementById(elem.id);
+            var cardHeaderElement = parent.querySelector(".card-header .card-title");
+
+            // 차트 제목
+            cardHeaderElement.innerText = elem.title;
+        })
+    }
+
+    // 차트 초기설정
+    function initChart() {
+        createChartCard("tpsCard", tpsSeries);
+        createChartCard("hitRateCard", hitRateSeries);
+        createChartCard("memoryCard", memorySeries);
+    }
+    
+    // TPS 차트 데이터 설정
+    function setTPSData() {
+        var cardId = "tpsCard";
+        var tpsTotalPoints = 50;
+        
+        var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
+        tpsSeries[0].data.push({
+            x: moment().toDate().getTime(),
+            y: lastStatsSumStats.instantaneousOpsPerSec
+        });
+        
+        if (tpsSeries[0].data.length > tpsTotalPoints) {
+            tpsSeries[0].data.shift();
+        }
+
+        addDataPoint(cardId, tpsSeries);
+    }
+    
+    // Hit Rate 차트 데이터 설정
+    function setHitRateData() {
+        var cardId = "hitRateCard";
+        var hitRateTotalPoints = 50;
+        
+        var beforeStats = _.nth(statsData, -2).redisInfoList.sum.stats;
+        var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
+
+        var keyspaceHits = lastStatsSumStats.keyspaceHits - beforeStats.keyspaceHits;
+        var keyspaceMisses = lastStatsSumStats.keyspaceMisses - beforeStats.keyspaceMisses;
+        var newHitRate = keyspaceHits / (keyspaceHits + keyspaceMisses) * 100;
+        if (Number.isNaN(newHitRate)) {
+            newHitRate = 0;
+        }
+        
+        hitRateSeries[0].data.push({
+            x: moment().toDate().getTime(),
+            y: newHitRate
+        })
+        if (hitRateSeries[0].data.length > hitRateTotalPoints) {
+            hitRateSeries[0].data.shift();
+        }
+
+        addDataPoint(cardId, hitRateSeries);
+    }
+
+    // Memory 차트 데이터 설정
+    function setMemory() {
+        var cardId = "memoryCard";
+        var memoryTotalPoints = 100;
+
+        var maxmemory = _.last(statsData).redisInfoList.sum.memory.maxmemory ?? 0;
+        var usedMemoryRss = _.last(statsData).redisInfoList.sum.memory.usedMemoryRss ?? 0;
+        var usedMemory = _.last(statsData).redisInfoList.sum.memory.usedMemory ?? 0;
+        
+        memorySeries[0].data.push({
+            x: moment().toDate().getTime(),
+            y: maxmemory
+        });
+        memorySeries[1].data.push({
+            x: moment().toDate().getTime(),
+            y: usedMemoryRss
+        });
+        memorySeries[2].data.push({
+            x: moment().toDate().getTime(),
+            y: usedMemory
+        });
+
+        memorySeries.forEach(elem => {
+            if (elem.data.length > memoryTotalPoints) {
+                elem.data.shift();
+            }
+        })
+
+        addDataPoint(cardId, memorySeries);
+    }
+
+    // Table Header 설정
+    function createTableHeader(cardId, headers) {
+        var parent = document.getElementById(cardId);
+        var tableTr = parent.querySelector("table thead tr");
+        
+        tableTr.innerHTML = "";
+        headers.forEach(elem => {
+            var tableTh = document.createElement("th");
+            tableTh.style.textAlign = "center";
+            tableTh.innerText = elem;
+            tableTr.appendChild(tableTh);
+        });
+    }
+
+    // Table Header 초기설정
+    function initTableHeader() {
+        tables.forEach(elem => {
+            createTableHeader(elem.id, elem.headers);
+        });
+    }
+
+    // Redis stat 데이터 설정
+    function setRedisStat() {
+        var cloneStatsData = _.cloneDeep(statsData);
+        var statsSum = cloneStatsData.map(elem => {
+            elem.redisInfoList = _.pick(elem.redisInfoList, ["sum"]);
+            return { ...elem }
+        });
+        
+        var redisStatDatas = [];
+        var totalRows = 10;
+        statsSum.forEach(elem => {
+            var hitRate = 0
+            if (elem.redisInfoList.sum.stats.keyspaceHits+elem.redisInfoList.sum.stats.keyspaceMisses > 0) {
+                hitRate = elem.redisInfoList.sum.stats.keyspaceHits / (elem.redisInfoList.sum.stats.keyspaceHits + elem.redisInfoList.sum.stats.keyspaceMisses);
+            }
+            var newRow = {
+                Time: moment(elem.formatedEpochTime).format("HH:mm:ss"),
+                CPU: (Number(elem.redisInfoList.sum.cpu.usedCpuSys) + Number(elem.redisInfoList.sum.cpu.usedCpuUser)).toFixed(2) ?? "-",
+                Clients: elem.redisInfoList.sum.clients.connectedClients.toFixed(2) ?? "-",
+                bClients: elem.redisInfoList.sum.clients.blockedClients.toFixed(2) ?? "-",
+                Mem: getMemoryCapacityUnit(elem.redisInfoList.sum.memory.usedMemory) ?? "-",
+                RSS: getMemoryCapacityUnit(elem.redisInfoList.sum.memory.usedMemoryRss) ?? "-",
+                keys: elem.redisInfoList.sum.keyspace["0"].keys ?? "-",
+                CPS: elem.redisInfoList.sum.stats.instantaneousOpsPerSec ?? "-",
+                EXP: elem.redisInfoList.sum.stats.expiredKeys ?? "-",
+                EVT: elem.redisInfoList.sum.stats.evictedKeys ?? "-",
+                HitRate: (hitRate * 100).toFixed(3) ?? "-",
+                HIT: elem.redisInfoList.sum.stats.keyspaceHits ?? "-",
+                IN: elem.redisInfoList.sum.stats.instantaneousInputKbps.toFixed(2) ?? "-",
+                OUT: elem.redisInfoList.sum.stats.instantaneousOutputKbps.toFixed(2) ?? "-"
+            }
+            redisStatDatas.push(newRow)
+            if (redisStatDatas.length > totalRows) {
+                redisStatDatas.shift();
+            }
+            
+            var cardId = "redisAnalysis";
+            var parent = document.getElementById(cardId);
+            
+            var parent = document.getElementById(cardId);
+            var tableTbody = parent.querySelector("table tbody");
+            tableTbody.innerHTML = "";
+            redisStatDatas.forEach(elem => {
+                var tableTr = document.createElement("tr");
+                var keys = Object.keys(elem);
+                keys.forEach(key => {
+                    var tableTd = document.createElement("td");
+                    tableTd.style.textAlign = "center";
+                    tableTd.innerText = elem[key];
+                    tableTr.appendChild(tableTd);
+                })
+                tableTbody.appendChild(tableTr);
+            });
+        });
+    }
+
+    // Redis 정보 조회
+    async function getStats() {
+        var response = await fetch("/v1/redis/stats");
+        if (!response.ok) throw new Error("HTTP " + res.status);
+
+        var data = await response.json();
+        statsData = data;
+
+        setTPSData();
+        setHitRateData();
+        setMemory();
+        setRedisStat();
+        setInstanceInfo();
+    }
+
+    // Instance Information 데이터 설정
+    function setInstanceInfo() {
+        var instanceInfoData = [];
+        var redisList = {};
+        var instanceInfoTableContent = ['version', 'mode', 'role', 'uptime', 'master_info', 'slave_info', 'aof_enable','hz', 'rdb_last_save_time', 'memory_policy', 'connected_clients', 'pid', 'maxclients', 'blocked_clients', 'mem_fragmentation_ratio'];
+        var redisInfoHeaders = [];
+        var redisHost = '';
+        var dataObj = Object.keys(statsData);
+        
+        var lastStats = _.last(statsData).redisInfoList;
+        var statsRedisServer = _.omit(lastStats, ["sum"]);
+
+        // header 설정
+        redisInfoHeaders = _.orderBy(Object.getOwnPropertyNames(statsRedisServer).map((item) => statsRedisServer[item].server.tcpPort), [], ["asc"]);
+        redisInfoHeaders.unshift("information");
+        
+        // row datas 설정
+        for (var i=0; i<instanceInfoTableContent.length; i++) {
+            var dataRow = {}
+            redisInfoHeaders.forEach(elem => {
+                if (elem === "information") {
+                    dataRow[elem] = instanceInfoTableContent[i];
+                } else {
+                    dataRow[elem] = "-";
+                }
+            });
+
+            instanceInfoData.push(dataRow);
+        }
+        
+        const keys = Object.getOwnPropertyNames(statsRedisServer);
+        instanceInfoData.forEach(elem => {
+            var ports = Object.keys(elem);
+            ports.forEach(port => {
+                if (port !== "information") {
+                    var key = _.filter(keys, value => _.includes(value, port))[0];
+                    var redisInfo = lastStats[key];
+                    
+                    instanceInfoTableContent.some(instance => {
+                        if (elem["information"] == "version") {
+                            elem[port] = redisInfo.server.redisVersion;
+                            return true;
+                        } else if (elem["information"] == "mode") {
+                            elem[port] = redisInfo.server.redisMode;
+                            return true;
+                        } else if (elem["information"] == "role") {
+                            elem[port] = redisInfo.replication.role;
+                            return true;
+                        } else if (elem["information"] == "uptime") {
+                            var duration = moment.duration(redisInfo.server.uptimeInSeconds, "seconds");
+                            elem[port] = duration.humanize();
+                            return true;
+                        } else if (elem["information"] == "master_info") {
+                            elem[port] = redisInfo.server.host+":"+redisInfo.server.tcpPort;
+                            return true;
+                        } else if (elem["information"] == "slave_info") {
+                            var slaveInfo = redisInfo.replication.masterHost+":"+redisInfo.replication.masterPort;
+                            if (redisInfo.replication.masterHost === null && redisInfo.replication.masterPort === 0) {
+                                slaveInfo = "연결 없음";
+                            }
+                            elem[port] = slaveInfo;
+                            return true;
+                        } else if (elem["information"] == "aof_enable") {
+                            elem[port] = redisInfo.persistence.aofEnabled;
+                            return true;
+                        } else if (elem["information"] == "hz") {
+                            elem[port] = redisInfo.server.hz;
+                            return true;
+                        } else if (elem["information"] == "rdb_last_save_time") {
+                            elem[port] = moment.unix(redisInfo.persistence.rdbLastSaveTime).format("YYYY-MM-DD HH:mm:ss");
+                            return true;
+                        } else if (elem["information"] == "memory_policy") {
+                            elem[port] = redisInfo.memory.maxmemoryPolicy;
+                            return true;
+                        } else if (elem["information"] == "connected_clients") {
+                            elem[port] = redisInfo.clients.connectedClients;
+                            return true;
+                        } else if (elem["information"] == "pid") {
+                            elem[port] = redisInfo.server.processId;
+                            return true;
+                        } else if (elem["information"] == "maxclients") {
+                            elem[port] = redisInfo.clients.maxclients;
+                            return true;
+                        } else if (elem["information"] == "blocked_clients") {
+                            elem[port] = redisInfo.clients.blockedClients;
+                            return true;
+                        } else if (elem["information"] == "mem_fragmentation_ratio") {
+                            elem[port] = redisInfo.memory.memFragmentationRatio;
+                            // elem[port] = ((redisInfo.memory.memFragmentationRatio - 1) * 100).toFixed(2) + "%";
+                            return true;
+                        }
+                    });
+                }
+            })
+            
+        });
+
+        // 테이블 그리기
+        var cardId = "instanceInformation";
+        var parent = document.getElementById(cardId);
+        var cardBody = parent.querySelector(".card-body");
+        cardBody.innerHTML = "";
+        cardBody.appendChild(createTable(redisInfoHeaders, instanceInfoData, "table table-bordered dt-responsive nowrap table-striped align-middle", { width: "100%" }));    
+    }
+
+    // Life Cycle START
+    window.pageHooks = window.pageHooks || {};
+    window.pageHooks["pages-armedis-realtime-stats.html"] = {
+        // 페이지가 로드 됐을 때
+        onLoad: function () {
+            initCard();
+            initChart();
+            initTableHeader();
+            intervalId = setInterval(getStats, 1000);
+        },
+        // 페이지를 떠날 때
+        onUnload: function () {
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        }
+    };
+    // Life Cycle END
+</script>

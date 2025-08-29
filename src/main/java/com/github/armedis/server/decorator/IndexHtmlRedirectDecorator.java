@@ -14,10 +14,10 @@ public class IndexHtmlRedirectDecorator implements DecoratingHttpServiceFunction
         String path = req.path();
 
         // 루트 경로로 들어왔을 경우만 리디렉트 수행
-        if ("/".equals(path)) {
-//            return HttpResponse.ofRedirect("/#/index.html");
+        /*if ("/".equals(path)) {
+        //            return HttpResponse.ofRedirect("/#/index.html");
             return HttpResponse.ofRedirect(HttpStatus.MOVED_PERMANENTLY, "/#/index.html");
-        }
+        }*/
 
         // favicon.ico나 다른 경로는 원래 서비스로 처리
         return delegate.serve(ctx, req);

@@ -1,0 +1,816 @@
+<div class="page-content">
+    <div class="container-fluid">
+
+        <!-- start page title -->
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                    <h4 class="mb-sm-0">Sitemap</h4>
+
+                    <div class="page-title-right">
+                        <ol class="breadcrumb m-0">
+                            <li class="breadcrumb-item"><a href="javascript: void(0);">Armedis</a></li>
+                            <li class="breadcrumb-item active">Overview</li>
+                        </ol>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- end page title -->
+
+        <div class="row">
+            <div class="col-xxl-2">
+                <div class="d-flex flex-column h-100">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card card-animate" id="opsCard">
+                                <div class="card-header align-items-center d-flex">
+                                    <h4 class="card-title mb-0 flex-grow-1"></h4>
+                                </div><!-- end card header -->
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <!-- <p class="fw-medium text-muted mb-0">Ops/sec</p> -->
+                                            <h2 class="mt-4 ff-secondary fw-semibold">
+                                                <span class="counter-value" data-target="0"></span>ops
+                                            </h2>
+                                        </div>
+                                    </div>
+                                </div><!-- end card body -->
+                            </div> <!-- end card-->
+                        </div> <!-- end col-->
+                    </div> <!-- end row-->
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card card-animate" id="connectedClientsCard">
+                                <div class="card-header align-items-center d-flex">
+                                    <h4 class="card-title mb-0 flex-grow-1"></h4>
+                                </div><!-- end card header -->
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <!-- <p class="fw-medium text-muted mb-0">Connected Clients</p> -->
+                                            <h2 class="mt-4 ff-secondary fw-semibold">
+                                                <span class="counter-value" data-target="6"></span>
+                                            </h2>
+                                        </div>
+                                    </div>
+                                </div><!-- end card body -->
+                            </div> <!-- end card-->
+                        </div> <!-- end col-->
+                    </div> <!-- end row-->
+                </div>
+            </div> <!-- end col-->
+
+            <div class="col-xxl-8">
+                <div class="row h-100">
+                    <div class="col-xl-6">
+                        <div class="card card-animate card-height-100" id="networkCard">
+                            <div class="card-header align-items-center d-flex">
+                                <h4 class="card-title mb-0 flex-grow-1"></h4>
+                            </div><!-- end card header -->
+
+                            <!-- card body -->
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div id="input_radialbar" data-colors='["--vz-primary"]' class="apex-charts"
+                                            dir="ltr"></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div id="output_radialbar" data-colors='["--vz-primary"]' class="apex-charts"
+                                            dir="ltr"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- end card body -->
+                        </div><!-- end card -->
+                    </div><!-- end col -->
+
+                    <div class="col-xl-6">
+                        <div class="card card-animate card-height-100" id="memoryCard">
+                            <div class="card-header align-items-center d-flex">
+                                <h4 class="card-title mb-0 flex-grow-1"></h4>
+                            </div>
+                            <div class="card-body p-0">
+                            </div><!-- end card body -->
+                        </div><!-- end card -->
+                    </div> <!-- end col-->
+                </div> <!-- end row-->
+            </div><!-- end col -->
+
+            <div class="col-xxl-2">
+                <div class="d-flex flex-column h-100">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card card-animate" id="uptimeCard">
+                                <div class="card-header align-items-center d-flex">
+                                    <h4 class="card-title mb-0 flex-grow-1"></h4>
+                                </div><!-- end card header -->
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <!-- <p class="fw-medium text-muted mb-0">Uptime</p> -->
+                                            <h2 class="mt-4 ff-secondary fw-semibold">
+                                                <span class="counter-value" data-target="2"></span>day
+                                            </h2>
+                                        </div>
+                                    </div>
+                                </div><!-- end card body -->
+                            </div> <!-- end card-->
+                        </div> <!-- end col-->
+                    </div> <!-- end row-->
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card card-animate" id="versionCard">
+                                <div class="card-header align-items-center d-flex">
+                                    <h4 class="card-title mb-0 flex-grow-1"></h4>
+                                </div><!-- end card header -->
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <!-- <p class="fw-medium text-muted mb-0">Version</p> -->
+                                            <h2 class="mt-4 ff-secondary fw-semibold">
+                                                <span class="counter-value">6.2.5</span>
+                                            </h2>
+                                        </div>
+                                    </div>
+                                </div><!-- end card body -->
+                            </div> <!-- end card-->
+                        </div> <!-- end col-->
+                    </div> <!-- end row-->
+                </div>
+            </div> <!-- end col-->
+        </div> <!-- end row-->
+
+        <div class="row">
+            <div class="col-xxl-2">
+                <div class="d-flex flex-column h-100">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card card-animate" id="numberOfKeysCard">
+                                <div class="card-header align-items-center d-flex">
+                                    <h4 class="card-title mb-0 flex-grow-1"></h4>
+                                </div><!-- end card header -->
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <!-- <p class="fw-medium text-muted mb-0">Number of Keys</p> -->
+                                            <h2 class="mt-4 ff-secondary fw-semibold">
+                                                <span class="counter-value" data-target="0"></span>
+                                            </h2>
+                                        </div>
+                                    </div>
+                                </div><!-- end card body -->
+                            </div> <!-- end card-->
+                        </div> <!-- end col-->
+                    </div> <!-- end row-->
+                </div>
+            </div> <!-- end col-->
+
+            <div class="col-xxl-8">
+                <div class="row h-100">
+                    <div class="col-xl-6">
+                        <div class="card card-animate card-height-100" id="keysCard">
+                            <div class="card-header align-items-center d-flex">
+                                <h4 class="card-title mb-0 flex-grow-1"></h4>
+                            </div><!-- end card header -->
+
+                            <!-- card body -->
+                            <div class="card-body">
+                                <!-- <div id="bar_chart" data-colors='["--vz-primary", "--vz-success"]' class="apex-charts" dir="ltr"></div> -->
+
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <h6 class="mb-0"></h6>
+                                    <span class="small-muted">Expried / Evicted</span>
+                                </div>
+                                <div class="mb-2">
+                                    <div class="ks-bar">
+                                        <div id="ksExpired" class="ks-fill" style="width:60%"></div>
+                                    </div>
+                                    <div class="mt-2 ks-bar">
+                                        <div id="ksEvicted" class="ks-fill"
+                                            style="width:10%;background:linear-gradient(90deg,#f6c343,#ea7f28)"></div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between small-muted">
+                                    <div>Expried: <strong id="expriedCount">0</strong></div>
+                                    <div>Evicted: <strong id="evictedCount">0</strong></div>
+                                </div>
+                            </div>
+                            <!-- end card body -->
+                        </div><!-- end card -->
+                    </div><!-- end col -->
+
+                    <div class="col-xl-6">
+                        <div class="card card-animate card-height-100" id="keyspaceCard">
+                            <div class="card-header align-items-center d-flex">
+                                <h4 class="card-title mb-0 flex-grow-1"></h4>
+                            </div>
+                            <div class="card-body">
+                                <!-- <div id="bar_chart" data-colors='["--vz-success"]' class="apex-charts" dir="ltr"></div> -->
+
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <h6 class="mb-0"></h6>
+                                    <span class="small-muted">Hits / Misses</span>
+                                </div>
+                                <div class="mb-2">
+                                    <div class="ks-bar">
+                                        <div id="ksHits" class="ks-fill" style="width:60%"></div>
+                                    </div>
+                                    <div class="mt-2 ks-bar">
+                                        <div id="ksMiss" class="ks-fill"
+                                            style="width:10%;background:linear-gradient(90deg,#f6c343,#ea7f28)"></div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between small-muted">
+                                    <div>Hits: <strong id="hitsCount">0</strong></div>
+                                    <div>Misses: <strong id="missesCount">0</strong></div>
+                                </div>
+                            </div><!-- end card body -->
+                        </div><!-- end card -->
+                    </div> <!-- end col-->
+
+                </div> <!-- end row-->
+            </div><!-- end col -->
+
+            <div class="col-xxl-2">
+                <div class="d-flex flex-column h-100">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card card-animate" id="evictionPolicyCard">
+                                <div class="card-header align-items-center d-flex">
+                                    <h4 class="card-title mb-0 flex-grow-1"></h4>
+                                </div><!-- end card header -->
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <!-- <p class="fw-medium text-muted mb-0">Eviction Policy</p> -->
+                                            <h2 class="mt-4 ff-secondary fw-semibold">
+                                                <span class="counter-value">noeviction</span>
+                                            </h2>
+                                        </div>
+                                    </div>
+                                </div><!-- end card body -->
+                            </div> <!-- end card-->
+                        </div> <!-- end col-->
+                    </div> <!-- end row-->
+                </div>
+            </div> <!-- end col-->
+        </div> <!-- end row-->
+
+        <div class="row">
+            <div class="col-xl-3">
+                <div class="card card-animate" id="clientConnectionsCard">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0"></h4>
+                    </div><!-- end card header -->
+
+                    <div class="card-body">
+                        <table class="table table-bordered dt-responsive nowrap table-striped align-middle"
+                            style="width:100%">
+                            <thead>
+                                <tr></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div><!-- end card-body -->
+                </div><!-- end card -->
+            </div> <!-- end col -->
+
+            <div class="col-xl-3">
+                <div class="card card-animate" id="commandStatisticsCard">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0"></h4>
+                    </div><!-- end card header -->
+
+                    <div class="card-body">
+                        <table class="table table-bordered dt-responsive nowrap table-striped align-middle"
+                            style="width:100%">
+                            <thead>
+                                <tr></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div><!-- end card-body -->
+                </div><!-- end card -->
+            </div> <!-- end col -->
+
+            <div class="col-xl-6">
+                <div class="card card-animate" id="slowQueriesLogCard">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0"></h4>
+                    </div><!-- end card header -->
+
+                    <div class="card-body">
+                        <table class="table table-bordered dt-responsive nowrap table-striped align-middle"
+                            style="width:100%">
+                            <thead>
+                                <tr></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div><!-- end card-body -->
+                </div><!-- end card -->
+            </div> <!-- end col -->
+        </div> <!-- end row-->
+
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card card-animate" id="nodesCard">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0"></h4>
+                    </div><!-- end card header -->
+
+                    <div class="card-body">
+                        <table class="table table-bordered dt-responsive nowrap table-striped align-middle"
+                            style="width:100%">
+                            <thead>
+                                <tr></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div><!-- end card-body -->
+                </div><!-- end card -->
+            </div> <!-- end col -->
+        </div> <!-- end row-->
+    </div>
+    <!-- container-fluid -->
+</div>
+<!-- End Page-content -->
+
+<!-- apexcharts -->
+<script src="/assets/libs/apexcharts/apexcharts.min.js"></script>
+
+<!-- areacharts init -->
+<script src="/assets/js/pages/apexcharts-radialbar.init.js"></script>
+
+<script src="/assets/js/common.js"></script>
+
+<script>
+    var intervalId = undefined;
+    var charts = {};
+    var statsData = [];
+    var networkSeries = [];
+
+    var networkInputSeries = {
+        originData: undefined,
+        data: []
+    };
+    var networkOutputSeries = {
+        originData: undefined,
+        data: []
+    };
+    var keysSeries = [{
+        data: []
+    }];
+
+    // 차트 영역 생성
+    function createChartCard(cardId, chartType, series) {
+        var parent = document.getElementById(cardId);
+        var chartElement = parent.querySelector(".card-body").children[0];
+        console.log("chartElement: ", chartElement);
+        var yaxis = {};
+        var options = {}
+
+        if (chartType === "radialBar") {
+            options = {
+                series,
+                chart: {
+                    type: "radialBar",
+                    height: 300,
+                    offsetY: -20,
+                    sparkline: {
+                        enabled: true
+                    }
+                },
+                plotOptions: {
+                    radialBar: {
+                        startAngle: -90,
+                        endAngle: 90,
+                        track: {
+                            background: "#e7e7e7",
+                            strokeWidth: "97%",
+                            margin: 5, // margin is in pixels
+                            dropShadow: {
+                                enabled: true,
+                                top: 2,
+                                left: 0,
+                                color: "#999",
+                                opacity: 1,
+                                blur: 2
+                            }
+                        },
+                        dataLabels: {
+                            name: {
+                                show: false
+                            },
+                            value: {
+                                offsetY: -2,
+                                fontSize: "22px"
+                            }
+                        }
+                    }
+                },
+                grid: {
+                    padding: {
+                        top: -10
+                    }
+                },
+                fill: {
+                    type: "gradient",
+                    gradient: {
+                        shade: "light",
+                        shadeIntensity: 0.4,
+                        inverseColors: false,
+                        opacityFrom: 1,
+                        opacityTo: 1,
+                        stops: [0, 50, 53, 91]
+                    },
+                },
+                labels: ["Average Results"],
+                colors: [
+                    function ({ value, seriesIndex, w }) {
+                        if (value >= 0 && value <= 70) {
+                            return "#00E396";
+                        } else if (value >= 71 && value <= 90) {
+                            return "#FEB019";
+                        } else if (value >= 91 && value <= 100) {
+                            return "#FF4560";
+                        }
+                        return "#999";
+                    }
+                ]
+            };
+        } else if (chartType === "datalabelsBar") {
+            options = {
+                series,
+                chart: {
+                    type: 'bar',
+                    height: 150,
+                    toolbar: {
+                        show: false,
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        barHeight: '100%',
+                        distributed: true,
+                        horizontal: true,
+                        dataLabels: {
+                            position: 'bottom'
+                        },
+                    }
+                },
+                colors: getChartColorsArray(cardId),
+                dataLabels: {
+                    enabled: true,
+                    textAnchor: 'start',
+                    style: {
+                        colors: ['#fff']
+                    },
+                    formatter: function (val, opt) {
+                        return opt.w.globals.labels[opt.dataPointIndex] + ":  " + val
+                    },
+                    offsetX: 0,
+                    dropShadow: {
+                        enabled: false
+                    }
+                },
+                stroke: {
+                    width: 1,
+                    colors: ['#fff']
+                },
+                xaxis: {
+                    categories: ['Expired', 'Evicted'],
+                },
+                yaxis: {
+                    labels: {
+                        show: false
+                    }
+                },
+                tooltip: {
+                    theme: 'dark',
+                    x: {
+                        show: false
+                    },
+                    y: {
+                        title: {
+                            formatter: function () {
+                                return ''
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        // Semi Circle
+        var chart = new ApexCharts(chartElement, options);
+        chart.render();
+        charts[cardId] = chart;
+        // var childElementCount = parent.querySelector(".card-body .row").childElementCount;
+        // if (childElementCount && childElementCount > 1) {
+        //     for (var i = 0; i < childElementCount; i++) {
+        //         cardId = parent.querySelector(".card-body .row").children[i].children[0].id;
+        //         charts[cardId] = chart;
+        //     }
+        // } else {
+        //     charts[cardId] = chart;
+        // }
+    }
+
+    // 차트 그리기
+    function addDataPoint(cardId, series) {
+        var parent = document.getElementById(cardId);
+        // var childElementCount = parent.querySelector(".card-body .row").childElementCount;fchildElementCount
+        // if (childElementCount && childElementCount > 1) {
+        //     cardId = parent.querySelector(".card-body .row").children[1].children[0].id;
+        // }
+
+        var seriesCount = series.length;
+        if (seriesCount > 0) {
+            var datas = [];
+            series.forEach(elem => {
+                datas.push({ data: [_.last(elem.data)] });
+            });
+
+            charts[cardId].appendData(datas);
+            charts[cardId].updateOptions({
+                xaxis: {
+                    min: series[0].data[0].x,
+                    max: series[0].data[series[0].data.length - 1].x
+                }
+            }, false, true);
+        }
+    }
+
+    // card box 설정
+    function initCard() {
+        var cards = [
+            { id: "opsCard", title: "Ops/sec" },
+            { id: "connectedClientsCard", title: "Connected Clients" },
+            { id: "networkCard", title: "Network" },
+            { id: "memoryCard", title: "Memory" },
+            { id: "uptimeCard", title: "Uptime" },
+            { id: "versionCard", title: "Version" },
+            { id: "numberOfKeysCard", title: "Number of Keys" },
+            { id: "keysCard", title: "Keys" },
+            { id: "keyspaceCard", title: "Keyspace" },
+            { id: "evictionPolicyCard", title: "Eviction Policy" },
+            { id: "clientConnectionsCard", title: "Client connections" },
+            { id: "commandStatisticsCard", title: "Command statistics" },
+            { id: "slowQueriesLogCard", title: "Slow queries log" },
+            { id: "nodesCard", title: "Nodes" }
+        ];
+
+        cards.forEach(elem => {
+            var parent = document.getElementById(elem.id);
+            var cardHeaderElement = parent.querySelector(".card-header .card-title");
+
+            // 차트 제목
+            cardHeaderElement.innerText = elem.title;
+        })
+    }
+
+    // 차트 초기설정
+    function initChart() {
+        createChartCard("keysCard", "datalabelsBar", keysSeries);
+    }
+
+    // Network 설정
+    function setNetworkData() {
+        var cardId = "networkCard";
+        var networkInputData = []
+        var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
+
+        networkInputSeries.originData = lastStatsSumStats.totalNetInputBytes;
+        networkOutputSeries.originData = lastStatsSumStats.totalNetOutputBytes;
+
+        addDataPoint(cardId, networkInputSeries.data);
+    }
+
+    // Keys 설정
+    function setKeys() {
+        var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
+
+        // keys
+        var expired = Number(lastStatsSumStats.expiredKeys?? 0);
+        var evicted = Number(lastStatsSumStats.evictedKeys ?? 0);
+
+        var total = Math.max(expired + evicted, 1);
+        var expiredPct = Math.round((expired / total) * 100);
+        var evictedPct = Math.round((evicted / total) * 100);
+        $("#ksExpired").css("width", Math.max(2, expired) + "%");
+        $("#ksEvicted").css("width", Math.max(2, evicted) + "%");
+        $("#ExpiredCount").text((expired / 1000000).toFixed(2) + "M");
+        $("#evictedCount").text((evicted / 1000).toFixed(0) + "k");
+    }
+
+    // Keyspace 설정
+    function setKeyspace() {
+        var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
+
+        // keyspace
+        var hits = Number(lastStatsSumStats.keyspaceHits ?? 0);
+        var misses = Number(lastStatsSumStats.keyspaceMisses ?? 0);
+
+        var total = Math.max(hits + misses, 1);
+        var hitsPct = Math.round((hits / total) * 100);
+        var missesPct = Math.round((misses / total) * 100);
+        $("#ksHits").css("width", Math.max(2, hitsPct) + "%");
+        $("#ksMiss").css("width", Math.max(2, missesPct) + "%");
+        $("#hitsCount").text((hits / 1000000).toFixed(2) + "M");
+        $("#missesCount").text((misses / 1000).toFixed(0) + "k");
+    }
+
+    // Redis 정보 조회
+    async function getStats() {
+        var response = await fetch("/v1/redis/stats");
+        if (!response.ok) throw new Error("HTTP " + res.status);
+
+        var data = await response.json();
+        statsData = data;
+
+        setNetworkData();
+        setKeys();
+        setKeyspace();
+    }
+
+    window.pageHooks = window.pageHooks || {};
+    window.pageHooks["pages-armedis-overview.html"] = {
+        onLoad: function () {
+            initCard();
+            intervalId = setInterval(getStats, 5000);
+        },
+        onUnload: function () {
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        }
+    };
+</script>
+<style>
+    :root {
+        --bg: #f4f7fb;
+        --card: #ffffff;
+        --muted: #9aa6b2;
+        --green: #2ecc71;
+        --red: #e74c3c;
+        --blue: #2b8cff;
+        --panel-border: rgba(0, 0, 0, 0.06);
+        --accent: #0d6efd;
+        font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, "Helvetica Neue", Arial;
+    }
+
+    body {
+        background: var(--bg);
+        color: #24313a;
+    }
+
+    .card {
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+        background: var(--card);
+        box-shadow: 0 6px 16px rgba(20, 30, 40, 0.04);
+    }
+
+    .top-stat {
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+    }
+
+    .stat-value {
+        font-weight: 800;
+        font-size: 28px;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 6px;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+    }
+
+    /* grid like screenshot */
+    .grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .gauge-large {
+        height: 150px;
+    }
+
+    .sparkbars {
+        height: 56px;
+    }
+
+    /* small badges style */
+    .badge-panel {
+        padding: 10px 12px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    .badge-value {
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .badge-sub {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 4px;
+    }
+
+    /* small tables */
+    .table-sm td,
+    .table-sm th {
+        padding: 6px 8px;
+        vertical-align: middle;
+    }
+
+    .small-muted {
+        font-size: 12px;
+        color: var(--muted);
+    }
+
+    /* keyspace bar */
+    .ks-bar {
+        height: 12px;
+        border-radius: 6px;
+        background: #f1f6f0;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+    }
+
+    .ks-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #1abc9c, #16a085);
+        display: block;
+    }
+
+    /* right side blue boxes */
+    .blue-box {
+        background: linear-gradient(180deg, #1d6fe0, #0d47a1);
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .blue-box .big {
+        font-weight: 800;
+        font-size: 20px;
+    }
+
+    /* responsive tweaks */
+    @media (max-width: 1000px) {
+        .grid-4 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 640px) {
+
+        .grid-4,
+        .grid-3,
+        .grid-2 {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
