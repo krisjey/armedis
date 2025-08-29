@@ -2,6 +2,7 @@
 package com.github.armedis.redis.command.management;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -49,8 +50,8 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
             return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(commands.configGet(key));
         }
         else {
-            String value = this.redisRequest.getValue();
-            return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(commands.configSet(key, value));
+            Optional<String> value = this.redisRequest.getValue();
+            return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(commands.configSet(key, value.get()));
         }
     }
 
@@ -60,7 +61,7 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
         logger.info(redisRequest.toString());
 
         String key = this.redisRequest.getKey();
-        String value = this.redisRequest.getValue();
+        Optional<String> value = this.redisRequest.getValue();
 
         Set<RedisNode> nodes = null;
 
@@ -95,7 +96,7 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
                     getResult = connection.sync().configGet(key);
                 }
                 else {
-                    setResult = connection.sync().configSet(key, value);
+                    setResult = connection.sync().configSet(key, value.get());
                 }
             }
             catch (Exception e) {
