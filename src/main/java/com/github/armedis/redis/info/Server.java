@@ -18,7 +18,7 @@ public class Server extends StatsBaseVo {
         keyList.put("multiplexingApi", DIFF);
         keyList.put("host", DIFF);
         keyList.put("tcpPort", DIFF);
-        keyList.put("uptimeInSeconds", MAX);
+        keyList.put("uptimeInSeconds", MIN);
         keyList.put("uptimeInDays", MAX);
         keyList.put("hz", DIFF);
         keyList.put("configuredHz", DIFF);

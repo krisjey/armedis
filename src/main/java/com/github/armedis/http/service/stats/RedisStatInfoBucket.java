@@ -139,11 +139,18 @@ public class RedisStatInfoBucket {
         // calculate sum.
         // Create dummy info object from last data. info object can not create
         // 기본값 생성.
-        RedisInfoVo sumRedisInfoVo = RedisInfoVo.from(info, armedisConfiguration.isAddContentSection());
-        sumRedisInfoVo.getServer().setHost(redisNodeIp);
+//        RedisInfoVo sumRedisInfoVo = RedisInfoVo.from(info, armedisConfiguration.isAddContentSection());
+//        sumRedisInfoVo.getServer().setHost(redisNodeIp);
 
+        RedisInfoVo sumRedisInfoVo = null;
+        int i = 0;
         for (Entry<String, RedisInfoVo> item : redisStatsInfo.getRedisInfoList().entrySet()) {
+            i++;
             RedisInfoVo redisInfoVo = item.getValue();
+            if (i == 1) { // first time
+                sumRedisInfoVo = redisInfoVo;
+                continue;
+            }
 
             accumulateStatValue(sumRedisInfoVo, redisInfoVo);
         }
