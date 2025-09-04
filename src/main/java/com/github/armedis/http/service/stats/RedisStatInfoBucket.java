@@ -87,7 +87,7 @@ public class RedisStatInfoBucket {
         return scheduler;
     }
 
-    @Scheduled(fixedRate = 1000) // 1000밀리초 = 1초
+    @Scheduled(fixedRate = 1000) // 1000ms
     public void redisStatPolling() throws Throwable {
         // TODO Cluster랑 None Cluster 분리.
         if (!armedisConfiguration.isStatEnabled()) {
@@ -138,6 +138,7 @@ public class RedisStatInfoBucket {
 
         // calculate sum.
         // Create dummy info object from last data. info object can not create
+        // 기본값 생성.
         RedisInfoVo sumRedisInfoVo = RedisInfoVo.from(info, armedisConfiguration.isAddContentSection());
         sumRedisInfoVo.getServer().setHost(redisNodeIp);
 

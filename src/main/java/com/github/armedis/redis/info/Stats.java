@@ -17,6 +17,8 @@ public final class Stats extends StatsBaseVo {
         keyList.put("totalConnectionsReceived", SUM);
         keyList.put("totalCommandsProcessed", SUM);
         keyList.put("instantaneousOpsPerSec", SUM);
+        keyList.put("totalNetInputBytes", SUM);
+        keyList.put("totalNetOutputBytes", SUM);
         keyList.put("instantaneousInputKbps", SUM);
         keyList.put("instantaneousOutputKbps", SUM);
         keyList.put("rejectedConnections", SUM);
