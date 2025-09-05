@@ -1,6 +1,5 @@
 <div class="page-content">
     <div class="container-fluid">
-
         <!-- start page title -->
         <div class="row">
             <div class="col-12">
@@ -24,7 +23,7 @@
                 <div class="d-flex flex-column h-100">
                     <div class="row">
                         <div class="col-md-12">
-                            <div class="card card-animate" id="opsCard">
+                            <div class="card card-animate" id="opsPerSecCard">
                                 <div class="card-header align-items-center d-flex">
                                     <h4 class="card-title mb-0 flex-grow-1"></h4>
                                 </div><!-- end card header -->
@@ -33,7 +32,7 @@
                                         <div>
                                             <!-- <p class="fw-medium text-muted mb-0">Ops/sec</p> -->
                                             <h2 class="mt-4 ff-secondary fw-semibold">
-                                                <span class="counter-value" data-target="0"></span>ops
+                                                <span class="data-value"></span> ops
                                             </h2>
                                         </div>
                                     </div>
@@ -53,7 +52,7 @@
                                         <div>
                                             <!-- <p class="fw-medium text-muted mb-0">Connected Clients</p> -->
                                             <h2 class="mt-4 ff-secondary fw-semibold">
-                                                <span class="counter-value" data-target="6"></span>
+                                                <span class="data-value"></span>
                                             </h2>
                                         </div>
                                     </div>
@@ -76,11 +75,13 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <div id="input_radialbar" data-colors='["--vz-primary"]' class="apex-charts"
+                                        <p class="fw-medium text-muted mb-0">Input</p>
+                                        <div id="inputRadialbar" data-colors='["--vz-primary", "--vz-warning", "--vz-danger"]' class="apex-charts"
                                             dir="ltr"></div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div id="output_radialbar" data-colors='["--vz-primary"]' class="apex-charts"
+                                        <p class="fw-medium text-muted mb-0">Output</p>
+                                        <div id="outputRadialbar" data-colors='["--vz-primary", "--vz-warning", "--vz-danger"]' class="apex-charts"
                                             dir="ltr"></div>
                                     </div>
                                 </div>
@@ -95,6 +96,13 @@
                                 <h4 class="card-title mb-0 flex-grow-1"></h4>
                             </div>
                             <div class="card-body p-0">
+                                <div class="alert alert-danger rounded-top alert-solid alert-label-icon border-0 rounded-0 m-0 d-flex align-items-center d-none"
+                                    role="alert">
+                                    <i class="ri-error-warning-line label-icon"></i>
+                                    <div class="flex-grow-1 text-truncate" id="alertMsg"></div>
+                                </div>
+                                <div id="memoryBar" data-colors='["--vz-primary"]' class="apex-charts"
+                                            dir="ltr"></div>
                             </div><!-- end card body -->
                         </div><!-- end card -->
                     </div> <!-- end col-->
@@ -114,7 +122,7 @@
                                         <div>
                                             <!-- <p class="fw-medium text-muted mb-0">Uptime</p> -->
                                             <h2 class="mt-4 ff-secondary fw-semibold">
-                                                <span class="counter-value" data-target="2"></span>day
+                                                <span class="data-value"></span>
                                             </h2>
                                         </div>
                                     </div>
@@ -134,7 +142,7 @@
                                         <div>
                                             <!-- <p class="fw-medium text-muted mb-0">Version</p> -->
                                             <h2 class="mt-4 ff-secondary fw-semibold">
-                                                <span class="counter-value">6.2.5</span>
+                                                <span class="data-value"></span>
                                             </h2>
                                         </div>
                                     </div>
@@ -151,7 +159,7 @@
                 <div class="d-flex flex-column h-100">
                     <div class="row">
                         <div class="col-md-12">
-                            <div class="card card-animate" id="numberOfKeysCard">
+                            <div class="card card-animate" id="totalKeysCard">
                                 <div class="card-header align-items-center d-flex">
                                     <h4 class="card-title mb-0 flex-grow-1"></h4>
                                 </div><!-- end card header -->
@@ -160,7 +168,7 @@
                                         <div>
                                             <!-- <p class="fw-medium text-muted mb-0">Number of Keys</p> -->
                                             <h2 class="mt-4 ff-secondary fw-semibold">
-                                                <span class="counter-value" data-target="0"></span>
+                                                <span class="data-value"></span>
                                             </h2>
                                         </div>
                                     </div>
@@ -174,31 +182,27 @@
             <div class="col-xxl-8">
                 <div class="row h-100">
                     <div class="col-xl-6">
-                        <div class="card card-animate card-height-100" id="keysCard">
+                        <div class="card card-animate card-height-100" id="keyspaceCard">
                             <div class="card-header align-items-center d-flex">
                                 <h4 class="card-title mb-0 flex-grow-1"></h4>
                             </div><!-- end card header -->
 
                             <!-- card body -->
                             <div class="card-body">
-                                <!-- <div id="bar_chart" data-colors='["--vz-primary", "--vz-success"]' class="apex-charts" dir="ltr"></div> -->
-
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <h6 class="mb-0"></h6>
-                                    <span class="small-muted">Expried / Evicted</span>
+                                    <span class="small-muted"></span>
                                 </div>
                                 <div class="mb-2">
-                                    <div class="ks-bar">
-                                        <div id="ksExpired" class="ks-fill" style="width:60%"></div>
-                                    </div>
                                     <div class="mt-2 ks-bar">
-                                        <div id="ksEvicted" class="ks-fill"
-                                            style="width:10%;background:linear-gradient(90deg,#f6c343,#ea7f28)"></div>
+                                        <div id="nonTtl" class="ks-fill"
+                                            style="width:0%; background:linear-gradient(90deg,#0ab39c)"
+                                            data-colors='["--vz-warning", "--vz-success"]'></div>
                                     </div>
                                 </div>
                                 <div class="d-flex justify-content-between small-muted">
-                                    <div>Expried: <strong id="expriedCount">0</strong></div>
-                                    <div>Evicted: <strong id="evictedCount">0</strong></div>
+                                    <div>TTL: <strong id="ttlCount"></strong></div>
+                                    <div>Non TTL: <strong id="nonTtlCount"></strong></div>
                                 </div>
                             </div>
                             <!-- end card body -->
@@ -206,29 +210,25 @@
                     </div><!-- end col -->
 
                     <div class="col-xl-6">
-                        <div class="card card-animate card-height-100" id="keyspaceCard">
+                        <div class="card card-animate card-height-100" id="hitRateCard">
                             <div class="card-header align-items-center d-flex">
                                 <h4 class="card-title mb-0 flex-grow-1"></h4>
                             </div>
                             <div class="card-body">
-                                <!-- <div id="bar_chart" data-colors='["--vz-success"]' class="apex-charts" dir="ltr"></div> -->
-
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <h6 class="mb-0"></h6>
-                                    <span class="small-muted">Hits / Misses</span>
+                                    <span class="small-muted"></span>
                                 </div>
                                 <div class="mb-2">
-                                    <div class="ks-bar">
-                                        <div id="ksHits" class="ks-fill" style="width:60%"></div>
-                                    </div>
                                     <div class="mt-2 ks-bar">
-                                        <div id="ksMiss" class="ks-fill"
-                                            style="width:10%;background:linear-gradient(90deg,#f6c343,#ea7f28)"></div>
+                                        <div id="ksHits" class="ks-fill"
+                                        style="width:0%; background:linear-gradient(90deg,#0ab39c)"
+                                            data-colors='["--vz-warning", "--vz-success"]'></div>
                                     </div>
                                 </div>
                                 <div class="d-flex justify-content-between small-muted">
-                                    <div>Hits: <strong id="hitsCount">0</strong></div>
-                                    <div>Misses: <strong id="missesCount">0</strong></div>
+                                    <div>Hits: <strong id="hitsCount"></strong></div>
+                                    <div>Misses: <strong id="missesCount"></strong></div>
                                 </div>
                             </div><!-- end card body -->
                         </div><!-- end card -->
@@ -250,7 +250,7 @@
                                         <div>
                                             <!-- <p class="fw-medium text-muted mb-0">Eviction Policy</p> -->
                                             <h2 class="mt-4 ff-secondary fw-semibold">
-                                                <span class="counter-value">noeviction</span>
+                                                <span class="data-value"></span>
                                             </h2>
                                         </div>
                                     </div>
@@ -342,6 +342,9 @@
 </div>
 <!-- End Page-content -->
 
+<!-- Date library -->
+<script src="/assets/libs/moment/moment.js"></script>
+
 <!-- apexcharts -->
 <script src="/assets/libs/apexcharts/apexcharts.min.js"></script>
 
@@ -354,37 +357,46 @@
     var intervalId = undefined;
     var charts = {};
     var statsData = [];
-    var networkSeries = [];
-
+    
     var networkInputSeries = {
-        originData: undefined,
-        data: []
+        data: [0]
     };
     var networkOutputSeries = {
-        originData: undefined,
-        data: []
+        data: [0]
     };
-    var keysSeries = [{
-        data: []
-    }];
+    var memorySeries = {
+        series: [{
+            data: [0, 0, 0, 0, 0]
+        }],
+        categories: ["Used Memory", "Used Memory, Peak", "Used Memory, LUA", "Memory Limit", "Total System Memory"]
+    };
+    var keysSeries = {
+        series: [{
+            data: [0]
+        }]
+    };
 
     // 차트 영역 생성
-    function createChartCard(cardId, chartType, series) {
+    function createChartCard(cardId, cardBodyTarget, chartType, series) {
         var parent = document.getElementById(cardId);
-        var chartElement = parent.querySelector(".card-body").children[0];
-        console.log("chartElement: ", chartElement);
-        var yaxis = {};
-        var options = {}
-
-        if (chartType === "radialBar") {
-            options = {
+        var chartElement = parent.querySelector("#" + cardBodyTarget);
+        
+        // 차트
+        var chartOptions = {}
+        if (chartType === "guage") {
+            chartOptions = {
                 series,
                 chart: {
                     type: "radialBar",
-                    height: 300,
-                    offsetY: -20,
+                    height: 250,
+                    offsetY: 10,
                     sparkline: {
                         enabled: true
+                    },
+                    animations: {
+                        enabled: true,
+                        easing: "linear",
+                        speed: 300
                     }
                 },
                 plotOptions: {
@@ -409,8 +421,13 @@
                                 show: false
                             },
                             value: {
+                                show: true,
                                 offsetY: -2,
-                                fontSize: "22px"
+                                fontSize: "22px",
+                                formatter: function (val, opts) {
+                                    var originValue = opts.config.custom ? opts.config.custom.origin : 0;
+                                    return getMemoryCapacityUnit(originValue) + "/s" ;
+                                }
                             }
                         }
                     }
@@ -419,147 +436,66 @@
                     padding: {
                         top: -10
                     }
-                },
-                fill: {
-                    type: "gradient",
-                    gradient: {
-                        shade: "light",
-                        shadeIntensity: 0.4,
-                        inverseColors: false,
-                        opacityFrom: 1,
-                        opacityTo: 1,
-                        stops: [0, 50, 53, 91]
-                    },
-                },
-                labels: ["Average Results"],
-                colors: [
-                    function ({ value, seriesIndex, w }) {
-                        if (value >= 0 && value <= 70) {
-                            return "#00E396";
-                        } else if (value >= 71 && value <= 90) {
-                            return "#FEB019";
-                        } else if (value >= 91 && value <= 100) {
-                            return "#FF4560";
-                        }
-                        return "#999";
-                    }
-                ]
+                }
             };
-        } else if (chartType === "datalabelsBar") {
-            options = {
-                series,
+        } else {
+            // bar chart
+            chartOptions = {
                 chart: {
-                    type: 'bar',
-                    height: 150,
+                    height: 250,
+                    type: "bar",
                     toolbar: {
                         show: false,
                     }
                 },
                 plotOptions: {
                     bar: {
-                        barHeight: '100%',
-                        distributed: true,
                         horizontal: true,
-                        dataLabels: {
-                            position: 'bottom'
-                        },
                     }
                 },
-                colors: getChartColorsArray(cardId),
                 dataLabels: {
                     enabled: true,
-                    textAnchor: 'start',
                     style: {
-                        colors: ['#fff']
+                        colors: ["#000000"]
                     },
-                    formatter: function (val, opt) {
-                        return opt.w.globals.labels[opt.dataPointIndex] + ":  " + val
-                    },
-                    offsetX: 0,
-                    dropShadow: {
-                        enabled: false
+                    formatter: function (val) {
+                        return getMemoryCapacityUnit(val);
                     }
                 },
-                stroke: {
-                    width: 1,
-                    colors: ['#fff']
+                series: series.series,
+                colors: getChartColorsArray(cardBodyTarget),
+                grid: {
+                    borderColor: "#f1f1f1",
                 },
                 xaxis: {
-                    categories: ['Expired', 'Evicted'],
-                },
-                yaxis: {
+                    categories: series.categories,
                     labels: {
-                        show: false
-                    }
-                },
-                tooltip: {
-                    theme: 'dark',
-                    x: {
-                        show: false
-                    },
-                    y: {
-                        title: {
-                            formatter: function () {
-                                return ''
-                            }
+                        formatter: function (val) {
+                            return getMemoryCapacityUnit(val);
                         }
-                    }
+                    },
+                    tickAmount: 3
                 }
-            };
+            }
         }
 
-        // Semi Circle
-        var chart = new ApexCharts(chartElement, options);
+        var chart = new ApexCharts(chartElement, chartOptions);
         chart.render();
-        charts[cardId] = chart;
-        // var childElementCount = parent.querySelector(".card-body .row").childElementCount;
-        // if (childElementCount && childElementCount > 1) {
-        //     for (var i = 0; i < childElementCount; i++) {
-        //         cardId = parent.querySelector(".card-body .row").children[i].children[0].id;
-        //         charts[cardId] = chart;
-        //     }
-        // } else {
-        //     charts[cardId] = chart;
-        // }
-    }
-
-    // 차트 그리기
-    function addDataPoint(cardId, series) {
-        var parent = document.getElementById(cardId);
-        // var childElementCount = parent.querySelector(".card-body .row").childElementCount;fchildElementCount
-        // if (childElementCount && childElementCount > 1) {
-        //     cardId = parent.querySelector(".card-body .row").children[1].children[0].id;
-        // }
-
-        var seriesCount = series.length;
-        if (seriesCount > 0) {
-            var datas = [];
-            series.forEach(elem => {
-                datas.push({ data: [_.last(elem.data)] });
-            });
-
-            charts[cardId].appendData(datas);
-            charts[cardId].updateOptions({
-                xaxis: {
-                    min: series[0].data[0].x,
-                    max: series[0].data[series[0].data.length - 1].x
-                }
-            }, false, true);
-        }
+        charts[cardBodyTarget] = chart;
     }
 
     // card box 설정
     function initCard() {
         var cards = [
-            { id: "opsCard", title: "Ops/sec" },
+            { id: "opsPerSecCard", title: "Ops/sec" },
             { id: "connectedClientsCard", title: "Connected Clients" },
             { id: "networkCard", title: "Network" },
             { id: "memoryCard", title: "Memory" },
             { id: "uptimeCard", title: "Uptime" },
             { id: "versionCard", title: "Version" },
-            { id: "numberOfKeysCard", title: "Number of Keys" },
-            { id: "keysCard", title: "Keys" },
+            { id: "totalKeysCard", title: "Total Keys" },
             { id: "keyspaceCard", title: "Keyspace" },
+            { id: "hitRateCard", title: "Average Hit Rate" },
             { id: "evictionPolicyCard", title: "Eviction Policy" },
             { id: "clientConnectionsCard", title: "Client connections" },
             { id: "commandStatisticsCard", title: "Command statistics" },
@@ -576,55 +512,179 @@
         })
     }
 
-    // 차트 초기설정
     function initChart() {
-        createChartCard("keysCard", "datalabelsBar", keysSeries);
+        createChartCard("networkCard", "inputRadialbar", "guage", networkInputSeries.data);
+        createChartCard("networkCard", "outputRadialbar", "guage", networkOutputSeries.data);
+        createChartCard("memoryCard", "memoryBar", "bar", memorySeries);
+    }
+
+    // Ops/Sec 설정
+    function setOpsPerSec() {
+        var cardId = "opsPerSecCard";
+        var parent = document.getElementById(cardId);
+
+        var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
+        parent.querySelector(".data-value").innerText = lastStatsSumStats.instantaneousOpsPerSec;
+    }
+
+    // Connected Clients 설정
+    function setConnectedClients() {
+        var cardId = "connectedClientsCard";
+        var parent = document.getElementById(cardId);
+
+        var lastStatsSumClients = _.last(statsData).redisInfoList.sum.clients;
+        parent.querySelector(".data-value").innerText = lastStatsSumClients.connectedClients.toLocaleString();
+    }
+
+    // Number of Keys 설정
+    function setTotalKeys() {
+        var cardId = "totalKeysCard";
+        var parent = document.getElementById(cardId);
+
+        var lastStatsSumKeyspace = _.last(statsData).redisInfoList.sum.keyspace;
+        parent.querySelector(".data-value").innerText = lastStatsSumKeyspace['0'].keys.toLocaleString();
     }
 
     // Network 설정
-    function setNetworkData() {
+    function setNetwork() {
         var cardId = "networkCard";
-        var networkInputData = []
         var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
+        
+        // total 10GB 기준
+        var total =  10 * (1024 * 1024 * 1024);
+        var inputPct = Math.round((lastStatsSumStats.totalNetInputBytes / total) * 100);
+        var outputPct = Math.round((lastStatsSumStats.totalNetOutputBytes / total) * 100);
+        
+        var limit = (num, max = 100) => Math.min(num, max);
+        networkInputSeries.data[0] = limit(inputPct);
+        networkOutputSeries.data[0] = limit(outputPct);
+        
+        var parent = document.getElementById(cardId);
+        var inputChartElement = parent.querySelector("#inputRadialbar");
+        var outputChartElement = parent.querySelector("#outputRadialbar");
 
-        networkInputSeries.originData = lastStatsSumStats.totalNetInputBytes;
-        networkOutputSeries.originData = lastStatsSumStats.totalNetOutputBytes;
-
-        addDataPoint(cardId, networkInputSeries.data);
+        charts["inputRadialbar"].updateOptions({
+            custom: {
+                origin: lastStatsSumStats.totalNetInputBytes
+            },
+            colors: [getChartColors("inputRadialbar", inputPct)]
+        }, true, true);
+        charts["outputRadialbar"].updateOptions({
+            custom: {
+                origin: lastStatsSumStats.totalNetOutputBytes
+            },
+            colors: [getChartColors("outputRadialbar", outputPct)]
+        }, true, true);
+        charts["inputRadialbar"].updateSeries(networkInputSeries.data, true);
+        charts["outputRadialbar"].updateSeries(networkOutputSeries.data, true);
     }
 
-    // Keys 설정
-    function setKeys() {
-        var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
+    // Memory 설정
+    function setMemory() {
+        var cardId = "memoryCard";
+        var parent = document.getElementById(cardId);
+        var memoryElement = parent.querySelector("#memoryBar");
 
-        // keys
-        var expired = Number(lastStatsSumStats.expiredKeys?? 0);
-        var evicted = Number(lastStatsSumStats.evictedKeys ?? 0);
+        var lastStatsSumMemory = _.last(statsData).redisInfoList.sum.memory;
 
-        var total = Math.max(expired + evicted, 1);
-        var expiredPct = Math.round((expired / total) * 100);
-        var evictedPct = Math.round((evicted / total) * 100);
-        $("#ksExpired").css("width", Math.max(2, expired) + "%");
-        $("#ksEvicted").css("width", Math.max(2, evicted) + "%");
-        $("#ExpiredCount").text((expired / 1000000).toFixed(2) + "M");
-        $("#evictedCount").text((evicted / 1000).toFixed(0) + "k");
+        // Max Memory가 없는 경우 Card에 Alert표시
+        if (lastStatsSumMemory.maxmemory > 0) {
+            document.getElementById("memoryCard").querySelector(".alert").classList.add("d-none");
+        } else {
+            document.getElementById("memoryCard").querySelector(".alert > #alertMsg").innerText = "Memory Limit 설정이 필요합니다.";
+            document.getElementById("memoryCard").querySelector(".alert").classList.remove("d-none");
+        }
+        
+        series: [{
+            data: [0, 0, 0, 0, 0]
+        }],
+
+        charts["memoryBar"].updateOptions({
+            xaxis: {
+                max: getMemoryCapacityUnit(lastStatsSumMemory.totalSystemMemory)
+            }
+        }, true);
+        charts["memoryBar"].updateSeries(
+            [{
+                data: [
+                    lastStatsSumMemory.usedMemory,
+                    lastStatsSumMemory.usedMemoryPeak,
+                    lastStatsSumMemory.usedMemoryLua,
+                    lastStatsSumMemory.maxmemory,
+                    lastStatsSumMemory.totalSystemMemory
+                ]
+            }]
+            , true);
+    }
+
+    function setUptime() {
+        var cardId = "uptimeCard";
+        var parent = document.getElementById(cardId);
+
+        var lastStatsSumServer = _.last(statsData).redisInfoList.sum.server;
+        var duration = moment.duration(lastStatsSumServer.uptimeInSeconds, "days");
+        parent.querySelector(".data-value").innerText = duration.humanize();
     }
 
     // Keyspace 설정
     function setKeyspace() {
         var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
+        var lastStatsSumKeyspace = _.last(statsData).redisInfoList.sum.keyspace;
+        var { keys, expires } = lastStatsSumKeyspace[0];
+        var nonTTL = keys - expires;
+        
+        // keyspace Bar 배경색 변경
+        var cardBodyTarget = "nonTtl";
+        var colors = getChartColorsArray(cardBodyTarget);
+        document.getElementById("keyspaceCard").querySelector(".ks-bar").style.backgroundColor = colors[0];
 
-        // keyspace
+        var total = Math.max(keys, 1);
+        var expiredPct = Math.round((expires / total) * 100);
+        $("#nonTtl").css("width", Math.max(2, expiredPct) + "%");
+        $("#ttlCount").text(expires.toLocaleString());
+        $("#nonTtlCount").text(nonTTL.toLocaleString());
+    }
+
+    // hitRate 설정
+    function setHitRate() {
+        var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
+
+        // Hit Rate
         var hits = Number(lastStatsSumStats.keyspaceHits ?? 0);
         var misses = Number(lastStatsSumStats.keyspaceMisses ?? 0);
 
+        // keyspace Bar 배경색 변경
+        // var cardBodyTarget = "ksHits";
+        // var colors = getChartColorsArray(cardBodyTarget);
+        // document.getElementById("hitRateCard").querySelector(".ks-bar").style.backgroundColor = colors[0];
+
         var total = Math.max(hits + misses, 1);
-        var hitsPct = Math.round((hits / total) * 100);
-        var missesPct = Math.round((misses / total) * 100);
-        $("#ksHits").css("width", Math.max(2, hitsPct) + "%");
-        $("#ksMiss").css("width", Math.max(2, missesPct) + "%");
-        $("#hitsCount").text((hits / 1000000).toFixed(2) + "M");
-        $("#missesCount").text((misses / 1000).toFixed(0) + "k");
+        var hitRate = Math.round((hits / total) * 100);
+        if (Number.isNaN(hitRate)) {
+            hitRate = 0;
+        }
+
+        $("#ksHits").css("width", Math.max(2, hitRate) + "%");
+        $("#hitsCount").text(getMemoryCapacityUnit(hits));
+        $("#missesCount").text(getMemoryCapacityUnit(misses));
+    }
+
+    // Version 설정
+    function setVersion() {
+        var cardId = "versionCard";
+        var parent = document.getElementById(cardId);
+
+        var lastStatsSumServer = _.last(statsData).redisInfoList.sum.server;
+        parent.querySelector(".data-value").innerText = lastStatsSumServer.redisVersion
+    }
+
+    // Eviction Policy 설정
+    function setEvictionPolicy() {
+        var cardId = "evictionPolicyCard";
+        var parent = document.getElementById(cardId);
+
+        var lastStatsSumMemory = _.last(statsData).redisInfoList.sum.memory;
+        parent.querySelector(".data-value").innerText = lastStatsSumMemory.maxmemoryPolicy
     }
 
     // Redis 정보 조회
@@ -635,15 +695,23 @@
         var data = await response.json();
         statsData = data;
 
-        setNetworkData();
-        setKeys();
+        setOpsPerSec();
+        setConnectedClients();
+        setTotalKeys();
+        setNetwork();
+        setMemory();
+        setUptime();
         setKeyspace();
+        setHitRate();
+        setVersion();
+        setEvictionPolicy()
     }
 
     window.pageHooks = window.pageHooks || {};
     window.pageHooks["pages-armedis-overview.html"] = {
         onLoad: function () {
             initCard();
+            initChart();
             intervalId = setInterval(getStats, 5000);
         },
         onUnload: function () {

@@ -433,7 +433,9 @@ function getMemoryCapacityUnit(value) {
         return (value / (1024 * 1024 * 1024)).toFixed(1) + " GB";
     } else if (value >= 1024 * 1024) {
         return (value / (1024 * 1024)).toFixed(1) + " MB";
-    } else {
+    } else if (value >= 1024) {
         return value / 1024 + " KB";
+    } else {
+        return value + " B";
     }
 }
