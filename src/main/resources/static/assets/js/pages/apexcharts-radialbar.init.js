@@ -8,8 +8,7 @@ File: Radialbar Chart init js
 
 // get colors array from the string
 function getChartColorsArray(chartId) {
-    var parent = document.getElementById(chartId);
-    var chartElement = parent.querySelector("#area_chart_stacked");
+    var chartElement = document.getElementById(chartId);
 
     if (chartElement !== null) {
         var colors = chartElement.getAttribute("data-colors");
@@ -32,4 +31,12 @@ function getChartColorsArray(chartId) {
             }
         });
     }
+}
+
+function getChartColors(chartId, value) {
+    var colors = getChartColorsArray(chartId);
+    
+    if (value >= 90) return colors[2];
+    else if (value >= 70) return colors[1];
+    return colors[0];
 }

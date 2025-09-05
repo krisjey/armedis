@@ -21,7 +21,7 @@
                     <div class="card-header">
                         <h4 class="card-title mb-0"></h4>
                     </div><!-- end card header -->
-                    
+
                     <div class="card-body">
                         <div id="area_chart_stacked" data-colors='["--vz-primary"]' class="apex-charts" dir="ltr"></div>
                     </div><!-- end card-body -->
@@ -39,13 +39,10 @@
                     <div class="card-header">
                         <h4 class="card-title mb-0"></h4>
                     </div><!-- end card header -->
-                    
+
                     <div class="card-body">
-                        <div 
-                            id="area_chart_stacked" 
-                            data-colors='["--vz-primary", "--vz-danger", "--vz-warning"]'
-                            class="apex-charts" 
-                            dir="ltr"></div>
+                        <div id="area_chart_stacked" data-colors='["--vz-primary", "--vz-danger", "--vz-warning"]'
+                            class="apex-charts" dir="ltr"></div>
                     </div><!-- end card-body -->
                 </div><!-- end card -->
                 <!-- Memory END -->
@@ -61,9 +58,10 @@
                     <div class="card-header">
                         <h5 class="card-title mb-0"></h5>
                     </div><!-- end card header -->
-                    
+
                     <div class="card-body">
-                        <table class="table table-bordered dt-responsive nowrap table-striped align-middle" style="width:100%">
+                        <table class="table table-bordered dt-responsive nowrap table-striped align-middle"
+                            style="width:100%">
                             <thead>
                                 <tr></tr>
                             </thead>
@@ -76,7 +74,7 @@
             <!-- end col -->
         </div>
         <!-- end row -->
-        
+
         <div class="row">
             <div class="col-xl-12">
                 <!-- Instance Information START -->
@@ -124,7 +122,7 @@
     var memorySeries = [
         { name: "Max Memory", data: [] },
         { name: "RSS", data: [] },
-        { name: "Used Memory", data: []}
+        { name: "Used Memory", data: [] }
     ];
     var tables = [
         { id: "redisAnalysis", headers: ['Time', 'CPU', 'Clients', 'bClients', 'Mem', 'RSS', 'keys', 'CPS', 'EXP', 'EVT', 'HitRate', 'HIT', 'IN', 'OUT'] }
@@ -135,7 +133,7 @@
         var parent = document.getElementById(cardId);
         var chartElement = parent.querySelector("#area_chart_stacked");
         var yaxis = {};
-        
+
         if (cardId === "memoryCard") {
             yaxis = {
                 labels: {
@@ -145,7 +143,7 @@
                     style: {
                         colors: "#666"
                     }
-                }                
+                }
             }
         } else if (cardId === "hitRateCard") {
             yaxis = {
@@ -171,7 +169,7 @@
                 }
             }
         }
-        
+
         // 차트
         var chartOptions = {
             chart: {
@@ -229,7 +227,7 @@
             },
             tooltip: {
                 enabled: true,
-                followCursor: true,                
+                followCursor: true,
                 x: {
                     format: "HH:mm:ss" // 툴팁 X축 포맷 (시간과 날짜 포함)
                 }
@@ -259,7 +257,7 @@
             series.forEach(elem => {
                 datas.push({ data: [_.last(elem.data)] });
             });
-            
+
             charts[cardId].appendData(datas);
             charts[cardId].updateOptions({
                 xaxis: {
@@ -277,9 +275,9 @@
             { id: "hitRateCard", title: "Hit Rate" },
             { id: "memoryCard", title: "Memory" },
             { id: "redisAnalysis", title: "Analysis" },
-            { id: "instanceInformation", title: "Instance Information"}
+            { id: "instanceInformation", title: "Instance Information" }
         ];
-        
+
         cards.forEach(elem => {
             var parent = document.getElementById(elem.id);
             var cardHeaderElement = parent.querySelector(".card-header .card-title");
@@ -295,30 +293,30 @@
         createChartCard("hitRateCard", hitRateSeries);
         createChartCard("memoryCard", memorySeries);
     }
-    
+
     // TPS 차트 데이터 설정
     function setTPSData() {
         var cardId = "tpsCard";
-        var tpsTotalPoints = 50;
-        
+        var tpsTotalPoints = 60;
+
         var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
         tpsSeries[0].data.push({
             x: moment().toDate().getTime(),
             y: lastStatsSumStats.instantaneousOpsPerSec
         });
-        
+
         if (tpsSeries[0].data.length > tpsTotalPoints) {
             tpsSeries[0].data.shift();
         }
 
         addDataPoint(cardId, tpsSeries);
     }
-    
+
     // Hit Rate 차트 데이터 설정
     function setHitRateData() {
         var cardId = "hitRateCard";
-        var hitRateTotalPoints = 50;
-        
+        var hitRateTotalPoints = 60;
+
         var beforeStats = _.nth(statsData, -2).redisInfoList.sum.stats;
         var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
 
@@ -348,7 +346,7 @@
         var maxmemory = _.last(statsData).redisInfoList.sum.memory.maxmemory ?? 0;
         var usedMemoryRss = _.last(statsData).redisInfoList.sum.memory.usedMemoryRss ?? 0;
         var usedMemory = _.last(statsData).redisInfoList.sum.memory.usedMemory ?? 0;
-        
+
         memorySeries[0].data.push({
             x: moment().toDate().getTime(),
             y: maxmemory
@@ -375,7 +373,7 @@
     function createTableHeader(cardId, headers) {
         var parent = document.getElementById(cardId);
         var tableTr = parent.querySelector("table thead tr");
-        
+
         tableTr.innerHTML = "";
         headers.forEach(elem => {
             var tableTh = document.createElement("th");
@@ -399,12 +397,12 @@
             elem.redisInfoList = _.pick(elem.redisInfoList, ["sum"]);
             return { ...elem }
         });
-        
+
         var redisStatDatas = [];
         var totalRows = 10;
         statsSum.forEach(elem => {
             var hitRate = 0
-            if (elem.redisInfoList.sum.stats.keyspaceHits+elem.redisInfoList.sum.stats.keyspaceMisses > 0) {
+            if (elem.redisInfoList.sum.stats.keyspaceHits + elem.redisInfoList.sum.stats.keyspaceMisses > 0) {
                 hitRate = elem.redisInfoList.sum.stats.keyspaceHits / (elem.redisInfoList.sum.stats.keyspaceHits + elem.redisInfoList.sum.stats.keyspaceMisses);
             }
             var newRow = {
@@ -427,10 +425,10 @@
             if (redisStatDatas.length > totalRows) {
                 redisStatDatas.shift();
             }
-            
+
             var cardId = "redisAnalysis";
             var parent = document.getElementById(cardId);
-            
+
             var parent = document.getElementById(cardId);
             var tableTbody = parent.querySelector("table tbody");
             tableTbody.innerHTML = "";
@@ -467,20 +465,24 @@
     function setInstanceInfo() {
         var instanceInfoData = [];
         var redisList = {};
-        var instanceInfoTableContent = ['version', 'mode', 'role', 'uptime', 'master_info', 'slave_info', 'aof_enable','hz', 'rdb_last_save_time', 'memory_policy', 'connected_clients', 'pid', 'maxclients', 'blocked_clients', 'mem_fragmentation_ratio'];
+        var instanceInfoTableContent = ['version', 'mode', 'role', 'uptime', 'master_info', 'slave_info', 'aof_enable', 'hz', 'rdb_last_save_time', 'memory_policy', 'connected_clients', 'pid', 'maxclients', 'blocked_clients', 'mem_fragmentation_ratio'];
         var redisInfoHeaders = [];
         var redisHost = '';
         var dataObj = Object.keys(statsData);
-        
+
         var lastStats = _.last(statsData).redisInfoList;
         var statsRedisServer = _.omit(lastStats, ["sum"]);
 
         // header 설정
-        redisInfoHeaders = _.orderBy(Object.getOwnPropertyNames(statsRedisServer).map((item) => statsRedisServer[item].server.tcpPort), [], ["asc"]);
+        redisInfoHeaders = _.sortBy(_.keys(statsRedisServer), str => {
+            var [ip, port] = str.split(":");
+            var ipParts = ip.split(".").map(Number);
+            return _.padStart(port, 5, "0") + ipParts.map(n => _.padStart(n, 3, "0")).join("");
+        })
         redisInfoHeaders.unshift("information");
-        
+
         // row datas 설정
-        for (var i=0; i<instanceInfoTableContent.length; i++) {
+        for (var i = 0; i < instanceInfoTableContent.length; i++) {
             var dataRow = {}
             redisInfoHeaders.forEach(elem => {
                 if (elem === "information") {
@@ -492,7 +494,7 @@
 
             instanceInfoData.push(dataRow);
         }
-        
+
         const keys = Object.getOwnPropertyNames(statsRedisServer);
         instanceInfoData.forEach(elem => {
             var ports = Object.keys(elem);
@@ -500,7 +502,7 @@
                 if (port !== "information") {
                     var key = _.filter(keys, value => _.includes(value, port))[0];
                     var redisInfo = lastStats[key];
-                    
+
                     instanceInfoTableContent.some(instance => {
                         if (elem["information"] == "version") {
                             elem[port] = redisInfo.server.redisVersion;
@@ -516,10 +518,10 @@
                             elem[port] = duration.humanize();
                             return true;
                         } else if (elem["information"] == "master_info") {
-                            elem[port] = redisInfo.server.host+":"+redisInfo.server.tcpPort;
+                            elem[port] = redisInfo.server.host + ":" + redisInfo.server.tcpPort;
                             return true;
                         } else if (elem["information"] == "slave_info") {
-                            var slaveInfo = redisInfo.replication.masterHost+":"+redisInfo.replication.masterPort;
+                            var slaveInfo = redisInfo.replication.masterHost + ":" + redisInfo.replication.masterPort;
                             if (redisInfo.replication.masterHost === null && redisInfo.replication.masterPort === 0) {
                                 slaveInfo = "연결 없음";
                             }
@@ -557,7 +559,7 @@
                     });
                 }
             })
-            
+
         });
 
         // 테이블 그리기
@@ -565,7 +567,7 @@
         var parent = document.getElementById(cardId);
         var cardBody = parent.querySelector(".card-body");
         cardBody.innerHTML = "";
-        cardBody.appendChild(createTable(redisInfoHeaders, instanceInfoData, "table table-bordered dt-responsive nowrap table-striped align-middle", { width: "100%" }));    
+        cardBody.appendChild(createTable(redisInfoHeaders, instanceInfoData, "table table-bordered dt-responsive nowrap table-striped align-middle", { width: "100%" }));
     }
 
     // Life Cycle START
