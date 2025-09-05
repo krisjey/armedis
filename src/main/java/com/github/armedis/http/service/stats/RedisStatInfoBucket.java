@@ -7,9 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,19 +142,14 @@ public class RedisStatInfoBucket {
         // calculate sum.
         // Create dummy info object from last data. info object can not create
         // 기본값 생성.
-//        RedisInfoVo sumRedisInfoVo = RedisInfoVo.from(info, armedisConfiguration.isAddContentSection());
+        RedisInfoVo sumRedisInfoVo = RedisInfoVo.from(info, armedisConfiguration.isAddContentSection());
+        sumRedisInfoVo.getServer().setHost(redisNodeIp);
+
+//        RedisInfoVo sumRedisInfoVo = RedisInfoVo.emptyObject();
 //        sumRedisInfoVo.getServer().setHost(redisNodeIp);
 
-        RedisInfoVo sumRedisInfoVo = null;
-        int i = 0;
         for (Entry<String, RedisInfoVo> item : redisStatsInfo.getRedisInfoList().entrySet()) {
-            i++;
             RedisInfoVo redisInfoVo = item.getValue();
-            if (i == 1) { // first time
-                sumRedisInfoVo = redisInfoVo;
-                continue;
-            }
-
             accumulateStatValue(sumRedisInfoVo, redisInfoVo);
         }
 
@@ -181,6 +179,7 @@ public class RedisStatInfoBucket {
         accumulateStatSubVo(sumRedisInfoVo.getModules(), redisInfoVo.getModules());
         accumulateStatSubVo(sumRedisInfoVo.getErrorstats(), redisInfoVo.getErrorstats());
         accumulateStatSubVo(sumRedisInfoVo.getCluster(), redisInfoVo.getCluster());
+//        accumulateStatSubVo(sumRedisInfoVo.getKeyspace(), redisInfoVo.getKeyspace());
 
 //        System.out.println(sumRedisInfoVo.getStats().getInstantaneousInputKbps() + "-" + redisInfoVo.getStats().getInstantaneousInputKbps());
         // cluster이면 0만 사용.
@@ -209,34 +208,38 @@ public class RedisStatInfoBucket {
 //            }
 
             // 필드명으로 두 클래스의 값 가져와서 비교 후 할당.
-            Object sumValue = ReflectionManipulator.getMethodInvokeResult(sumBaseVo, fieldName);
+            Object sourceValue = ReflectionManipulator.getMethodInvokeResult(sumBaseVo, fieldName);
             Object targetValue = ReflectionManipulator.getMethodInvokeResult(baseVo, fieldName);
 
-            if ((sumValue == null || targetValue == null) && !operation.equals(StatsBaseVo.EMPTY)) {
-                logger.info("[{}] [{}] [{}]", fieldName, sumValue, targetValue);
+            if ((targetValue == null) && !operation.equals(StatsBaseVo.EMPTY)) {
+                logger.info("[{}] [{}] [{}]", fieldName, sourceValue, targetValue);
             }
 
             switch (operation) {
                 case StatsBaseVo.SUM:
-                    String resultSumValue = calculateSumValue(sumValue, targetValue);
+                    String resultSumValue = calculateSumValue(sourceValue, targetValue);
                     ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, resultSumValue);
                     break;
+                case StatsBaseVo.AVG:
+                    String resultAvgValue = calculateAvgValue(sourceValue, targetValue);
+                    ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, resultAvgValue);
+                    break;
                 case StatsBaseVo.CONCAT:
-                    ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, sumValue + "," + targetValue);
+                    ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, sourceValue + "," + targetValue);
                     break;
                 case StatsBaseVo.DIFF:
-                    String compareValue = diffValue(sumValue, targetValue, fieldName);
+                    String compareValue = calculateDiffValue(sourceValue, targetValue, fieldName);
                     ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, compareValue);
                     break;
                 case StatsBaseVo.EMPTY:
                     ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, "-");
                     break;
                 case StatsBaseVo.MAX:
-                    String maxValue = maxValue(sumValue, targetValue);
+                    String maxValue = calculateMaxValue(sourceValue, targetValue);
                     ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, maxValue);
                     break;
                 case StatsBaseVo.MIN:
-                    String minValue = minValue(sumValue, targetValue);
+                    String minValue = calculateMinValue(sourceValue, targetValue);
                     ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, minValue);
                     break;
 
@@ -251,7 +254,7 @@ public class RedisStatInfoBucket {
      * @param targetValue
      * @return
      */
-    private String maxValue(Object sumValue, Object targetValue) {
+    private String calculateMaxValue(Object sumValue, Object targetValue) {
         String resultSumValue = null;
         try {
             if (sumValue instanceof Number && sumValue.getClass().getSimpleName().equals(targetValue.getClass().getSimpleName())) {
@@ -274,7 +277,7 @@ public class RedisStatInfoBucket {
      * @param targetValue
      * @return
      */
-    private String minValue(Object sumValue, Object targetValue) {
+    private String calculateMinValue(Object sumValue, Object targetValue) {
         String resultSumValue = null;
         try {
             if (sumValue instanceof Number && sumValue.getClass().getSimpleName().equals(targetValue.getClass().getSimpleName())) {
@@ -300,7 +303,7 @@ public class RedisStatInfoBucket {
      * @param fieldName 
      * @return
      */
-    private String diffValue(Object sumValue, Object targetValue, String fieldName) {
+    private String calculateDiffValue(Object sumValue, Object targetValue, String fieldName) {
         String resultSumValue = null;
         try {
             if (sumValue instanceof Number && sumValue.getClass().getSimpleName().equals(targetValue.getClass().getSimpleName())) {
@@ -334,7 +337,7 @@ public class RedisStatInfoBucket {
                 }
             }
             else {
-                if (sumValue.equals(targetValue)) {
+                if (sumValue == null || sumValue.equals(targetValue)) {
                     resultSumValue = String.valueOf(targetValue);
                 }
                 else {
@@ -351,8 +354,10 @@ public class RedisStatInfoBucket {
 
     private String calculateSumValue(Object sumValue, Object targetValue) {
         String resultSumValue = null;
+//        Objects.requireNonNullElse(sumValue, 0);
         try {
             if (sumValue instanceof Number && sumValue.getClass().getSimpleName().equals(targetValue.getClass().getSimpleName())) {
+//                NumberUtils.
                 Number sumValueNumber = (Number) sumValue;
                 Number targetValueNumber = (Number) targetValue;
 
@@ -375,7 +380,7 @@ public class RedisStatInfoBucket {
                 }
             }
             else {
-                logger.error("Can not sum {}, {}", sumValue, targetValue);
+                resultSumValue = String.format("%s, %s", StringUtils.trimToEmpty((String) sumValue), targetValue);
             }
         }
         catch (Exception e) {
@@ -385,6 +390,44 @@ public class RedisStatInfoBucket {
         return resultSumValue;
     }
 
+    private String calculateAvgValue(Object sumValue, Object targetValue) {
+        String resultSumValue = null;
+//        Objects.requireNonNullElse(sumValue, 0);
+        try {
+            if (sumValue instanceof Number && sumValue.getClass().getSimpleName().equals(targetValue.getClass().getSimpleName())) {
+//                NumberUtils.
+                Number sumValueNumber = (Number) sumValue;
+                Number targetValueNumber = (Number) targetValue;
+
+                // double, float, int, long, and short
+                switch (sumValue.getClass().getSimpleName()) {
+                    case "Short", "Integer" -> {
+                        resultSumValue = String.valueOf(sumValueNumber.intValue() + targetValueNumber.intValue());
+                    }
+                    case "Float" -> {
+                        resultSumValue = String.valueOf(sumValueNumber.floatValue() + targetValueNumber.floatValue());
+                    }
+                    case "Double" -> {
+                        resultSumValue = String.valueOf(sumValueNumber.doubleValue() + targetValueNumber.doubleValue());
+                    }
+                    case "Long" -> {
+                        resultSumValue = String.valueOf(sumValueNumber.longValue() + targetValueNumber.longValue());
+                    }
+                    // this is string.
+                    default -> resultSumValue = String.format("%d, %d", sumValueNumber, targetValueNumber);
+                }
+            }
+            else {
+                resultSumValue = String.format("%s, %s", StringUtils.trimToEmpty((String) sumValue), targetValue);
+            }
+        }
+        catch (Exception e) {
+            logger.error("Cannot create class {}", sumValue.getClass().getSimpleName(), e);
+        }
+
+        return resultSumValue;
+    }
+    
     /**
      * 
      * @param redisStatsInfo
