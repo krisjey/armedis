@@ -13,6 +13,26 @@ An HTTP2/gRPC interface for Redis, Support Redis stand-alone/cluster mode.
 <!--
 java -DSERVICE_PORT=8080 -Dservice.instanceCount=1 -Dlogging.config=./logback-spring.xml -jar armedis-1.0.0-SNAPSHOT.jar
 
+
+/ config
+config 명령어는 http 메서드로 분리(get/post)
+/v1/management/settings/config  -- config get key
+키 목록 조회 API get
+/v1/management/settings/configkeys
+
+Client connections
+
+Command statistics
+
+cluster nodes
+
+
+/v1/management/slowlog/get  -- slowlog get 10
+/v1/management/slowlog/len  -- slowlog len
+/v1/management/slowlog/reset  -- slowlog reset
+
+slow log id, time, duration, key, value, 
+
 add testcase for service.
 for description
 
