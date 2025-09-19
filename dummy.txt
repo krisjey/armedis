@@ -1,0 +1,40 @@
+/ config
+config 명령어는 http 메서드로 분리(get/post)
+/v1/management/settings/config  -- config get key
+키 목록 조회 API get
+/v1/management/settings/configs
+
+Client connections
+id=6 addr=192.168.56.105:55902 laddr=192.168.56.105:17001 fd=24 name= age=10204 idle=1 flags=S db=0 sub=0 psub=0 ssub=0 multi=-1 watch=0 qbuf=0 qbuf-free=20474 argv-mem=0 multi-mem=0 rbs=1024 rbp=0 obl=0 oll=1 omem=20504 tot-mem=42904 events=r cmd=replconf user=default redir=-1 resp=2 lib-name= lib-ver=
+id=337 addr=192.168.56.1:9159 laddr=192.168.56.105:17001 fd=25 name= age=8 idle=0 flags=N db=0 sub=0 psub=0 ssub=0 multi=-1 watch=0 qbuf=26 qbuf-free=20448 argv-mem=10 multi-mem=0 rbs=1024 rbp=1024 obl=0 oll=0 omem=0 tot-mem=22426 events=r cmd=client|list user=default redir=-1 resp=3 lib-name=Lettuce lib-ver=6.7.1.RELEASE/feb7f9c
+id=338 addr=192.168.56.1:9164 laddr=192.168.56.105:17001 fd=26 name= age=8 idle=1 flags=N db=0 sub=0 psub=0 ssub=0 multi=-1 watch=0 qbuf=0 qbuf-free=20474 argv-mem=0 multi-mem=0 rbs=4096 rbp=2048 obl=0 oll=0 omem=0 tot-mem=25472 events=r cmd=info user=default redir=-1 resp=3 lib-name=Lettuce lib-ver=6.7.1.RELEASE/feb7f9c
+
+id=6 addr=192.168.56.105:55902 laddr=192.168.56.105:17001 fd=24 name= age=10290 idle=0 flags=S db=0 sub=0 psub=0 ssub=0 multi=-1 watch=0 qbuf=0 qbuf-free=20474 argv-mem=0 multi-mem=0 rbs=1024 rbp=0 obl=0 oll=1 omem=20504 tot-mem=42904 events=r cmd=replconf user=default redir=-1 resp=2 lib-name= lib-ver=
+id=337 addr=192.168.56.1:9159 laddr=192.168.56.105:17001 fd=25 name= age=94 idle=0 flags=N db=0 sub=0 psub=0 ssub=0 multi=-1 watch=0 qbuf=26 qbuf-free=20448 argv-mem=10 multi-mem=0 rbs=1024 rbp=1024 obl=0 oll=0 omem=0 tot-mem=22426 events=r cmd=client|list user=default redir=-1 resp=3 lib-name=Lettuce lib-ver=6.7.1.RELEASE/feb7f9c
+id=338 addr=192.168.56.1:9164 laddr=192.168.56.105:17001 fd=26 name= age=94 idle=0 flags=N db=0 sub=0 psub=0 ssub=0 multi=-1 watch=0 qbuf=0 qbuf-free=20474 argv-mem=0 multi-mem=0 rbs=8192 rbp=4096 obl=0 oll=0 omem=0 tot-mem=29568 events=r cmd=info user=default redir=-1 resp=3 lib-name=Lettuce lib-ver=6.7.1.RELEASE/feb7f9c
+
+
+Command statistics
+192.168.56.105:17003> info commandstats
+# Commandstats
+cmdstat_psync:calls=1,usec=478,usec_per_call=478.00,rejected_calls=0,failed_calls=0
+cmdstat_config|get:calls=4,usec=41,usec_per_call=10.25,rejected_calls=0,failed_calls=0
+cmdstat_info:calls=2019,usec=160790,usec_per_call=79.64,rejected_calls=0,failed_calls=0
+cmdstat_replconf:calls=10242,usec=15959,usec_per_call=1.56,rejected_calls=0,failed_calls=0
+cmdstat_ping:calls=1,usec=2,usec_per_call=2.00,rejected_calls=1,failed_calls=0
+cmdstat_slowlog|get:calls=36,usec=324,usec_per_call=9.00,rejected_calls=0,failed_calls=0
+cmdstat_cluster|nodes:calls=764,usec=94834,usec_per_call=124.13,rejected_calls=0,failed_calls=0
+cmdstat_cluster|myid:calls=2,usec=4,usec_per_call=2.00,rejected_calls=0,failed_calls=0
+cmdstat_hello:calls=361,usec=4681,usec_per_call=12.97,rejected_calls=0,failed_calls=0
+cmdstat_get:calls=1,usec=3,usec_per_call=3.00,rejected_calls=0,failed_calls=0
+cmdstat_client:calls=0,usec=0,usec_per_call=0.00,rejected_calls=1,failed_calls=0
+cmdstat_client|list:calls=1,usec=41,usec_per_call=41.00,rejected_calls=0,failed_calls=0
+cmdstat_client|setinfo:calls=722,usec=977,usec_per_call=1.35,rejected_calls=0,failed_calls=0
+cmdstat_client|setname:calls=340,usec=1109,usec_per_call=3.26,rejected_calls=0,failed_calls=0
+
+
+cluster nodes
+
+/v1/management/slowlog/get  -- slowlog get 10
+/v1/management/slowlog/len  -- slowlog len
+/v1/management/slowlog/reset  -- slowlog reset
