@@ -15,7 +15,7 @@ public class RedisCommandExecuteResultFactory {
 
         return builder.build();
     }
-    
+
     public static RedisCommandExecuteResult buildRedisCommandExecuteResult(Boolean result) {
 
         RedisCommandExecuteResultBuilder builder = new RedisCommandExecuteResultBuilder(ResultType.BOOLEAN);
@@ -55,7 +55,7 @@ public class RedisCommandExecuteResultFactory {
 
         return builder.build();
     }
-    
+
     public static RedisCommandExecuteResult buildRedisCommandExecuteResult(Map<String, String> result) {
 
         RedisCommandExecuteResultBuilder builder = new RedisCommandExecuteResultBuilder(ResultType.MAP);
@@ -63,11 +63,18 @@ public class RedisCommandExecuteResultFactory {
 
         return builder.build();
     }
-    
-    public static RedisCommandExecuteResult buildRedisCommandExecuteResult(List<Long> result) {
+
+    /**
+     * TODO 다중 타입 처리 변경 필요.
+     * 현재는 아무러 처리 하지 않음.
+     * @param result
+     * @param clazz
+     * @return
+     */
+    public static RedisCommandExecuteResult buildRedisCommandExecuteResult(List<?> result, Class<?> clazz) {
 
         RedisCommandExecuteResultBuilder builder = new RedisCommandExecuteResultBuilder(ResultType.LIST);
-        builder = builder.setResult(result);
+        builder = builder.setResult(result, clazz);
 
         return builder.build();
     }

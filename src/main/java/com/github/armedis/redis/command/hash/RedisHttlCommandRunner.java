@@ -41,7 +41,7 @@ public class RedisHttlCommandRunner extends AbstractRedisCommandRunner {
         String field = this.redisRequest.getField();
         List<Long> result = commands.httl(key, field);
 
-        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
+        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result, Long.class);
     }
 
     @Override
@@ -52,6 +52,6 @@ public class RedisHttlCommandRunner extends AbstractRedisCommandRunner {
         String field = this.redisRequest.getField();
         List<Long> result = commands.httl(key, field);
 
-        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
+        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result, Long.class);
     }
 }

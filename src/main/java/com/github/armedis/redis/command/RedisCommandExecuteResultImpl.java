@@ -19,10 +19,11 @@ public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult 
     private long longResult;
     private double doubleResult;
     private Map<String, String> mapResult;
-    private List<Long> listResult;
+    private List<?> listResult;
     private ResultType resultType;
+    private Class clazz;
 
-    public RedisCommandExecuteResultImpl(ResultType resultType, boolean boolResult, int intResult, String stringResult, float floatResult, long longResult, double doubleResult, Map<String, String> mapResult, List<Long> listResult) {
+    public RedisCommandExecuteResultImpl(ResultType resultType, boolean boolResult, int intResult, String stringResult, float floatResult, long longResult, double doubleResult, Map<String, String> mapResult, List<?> listResult, Class clazz) {
         this.resultType = resultType;
         this.boolResult = boolResult;
         this.intResult = intResult;
@@ -32,6 +33,7 @@ public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult 
         this.doubleResult = doubleResult;
         this.mapResult = mapResult;
         this.listResult = listResult;
+        this.clazz = clazz;
     }
 
     @Override

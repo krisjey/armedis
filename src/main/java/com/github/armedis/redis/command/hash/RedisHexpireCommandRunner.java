@@ -42,7 +42,7 @@ public class RedisHexpireCommandRunner extends AbstractRedisCommandRunner {
         Long seconds = this.redisRequest.getSeconds();
         List<Long> result = commands.hexpire(key, seconds, field);
 
-        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
+        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result, Long.class);
     }
 
     @Override
@@ -54,6 +54,6 @@ public class RedisHexpireCommandRunner extends AbstractRedisCommandRunner {
         Long seconds = this.redisRequest.getSeconds();
         List<Long> result = commands.hexpire(key, seconds, field);
 
-        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
+        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result, Long.class);
     }
 }

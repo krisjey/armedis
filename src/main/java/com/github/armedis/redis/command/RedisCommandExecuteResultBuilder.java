@@ -23,8 +23,10 @@ public class RedisCommandExecuteResultBuilder {
     private long longResult;
     private double doubleResult;
     private Map<String, String> mapResult;
-    private List<Long> listResult;
+    private List<?> listResult;
     private ResultType resultType;
+
+    private Class clazz;
 
     public RedisCommandExecuteResultBuilder(ResultType resultType) {
         this.resultType = resultType;
@@ -65,7 +67,7 @@ public class RedisCommandExecuteResultBuilder {
         return this;
     }
 
-    public RedisCommandExecuteResultBuilder setResult(List<Long> listResult) {
+    public RedisCommandExecuteResultBuilder setResult(List<?> listResult, Class clazz) {
         this.listResult = listResult;
         return this;
     }
@@ -79,7 +81,9 @@ public class RedisCommandExecuteResultBuilder {
                 longResult,
                 doubleResult,
                 mapResult,
-                listResult);
+                listResult,
+                clazz
+                );
 
         return result;
     }

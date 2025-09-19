@@ -1,6 +1,8 @@
 
 package com.github.armedis.redis.command.management;
 
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,19 +13,20 @@ import com.linecorp.armeria.server.annotation.Param;
 public class RedisSlowlogRequest extends RedisRequest {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     
-    @Param("value")
-    protected String value;
+    @Param("size")
+    protected Optional<Integer> size;
 
     public RedisSlowlogRequest(AggregatedHttpRequest httpRequest) {
         super(httpRequest);
-        this.setCommand("Config");
+        this.setCommand("Slowlog");
+        this.setSubCommand("get");
     }
 
-    public String getValue() {
-        return this.value;
+    public Optional<Integer> getSize() {
+        return this.size;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setSize(Optional<Integer> size) {
+        this.size = size;
     }
 }

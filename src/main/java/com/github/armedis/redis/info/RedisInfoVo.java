@@ -1,6 +1,7 @@
 package com.github.armedis.redis.info;
 
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -11,6 +12,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class RedisInfoVo {
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     @JsonInclude
     private Server server;
 
@@ -43,8 +46,6 @@ public class RedisInfoVo {
 
     @JsonInclude
     private Map<Integer, Keyspace> keyspace;
-
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * @return the server
@@ -275,6 +276,7 @@ public class RedisInfoVo {
                         break;
 
                     case "Keyspace":
+//                        redisInfoVO.setKeyspace(Keyspace.fromString(Keyspace.class, contentSection, addContentSection));
                         redisInfoVO.setKeyspace(Keyspace.fromString(contentSection, addContentSection));
                         break;
 
@@ -285,5 +287,23 @@ public class RedisInfoVo {
         }
 
         return redisInfoVO;
+    }
+
+    public static RedisInfoVo emptyObject() {
+        RedisInfoVo result = new RedisInfoVo();
+        result.setServer(new Server());
+        result.setClients(new Clients());
+        result.setMemory(new Memory());
+        result.setPersistence(new Persistence());
+        result.setStats(new Stats());
+        result.setReplication(new Replication());
+        result.setCpu(new CPU());
+        result.setModules(new Modules());
+        result.setErrorstats(new Errorstats());
+        result.setCluster(new Cluster());
+        result.setKeyspace(Keyspace.fromString("db0:keys=0,expires=0,avg_ttl=0,subexpiry=0", false));
+
+        // set sub objec
+        return result;
     }
 }

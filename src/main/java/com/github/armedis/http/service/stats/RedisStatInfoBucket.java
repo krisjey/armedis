@@ -7,12 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +40,13 @@ import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 @Configuration
 @EnableScheduling
 public class RedisStatInfoBucket {
+    /*
+     * redis에 armedis:redis:stat:lock:unistimestamp(armedis-time) ttl 300초
+     * 해당 키가 존재한다면 데이터 조회만 수행
+     * 존재하지 않으면 수행 후 키 데이터 업데이트.
+     * 데이터 구조 httl?
+     * 
+     */
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private CircularFifoQueue<RedisStatsInfo> redisStatsInfoList = new CircularFifoQueue<>(10);

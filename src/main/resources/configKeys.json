@@ -1,0 +1,98 @@
+{
+	"key-description": "key, currentValue, category, description, dataType, options",
+	"dataType-description": "number, text, dropdown",
+	"configKeys": [
+		{
+			"key": "maxmemory",
+			"currentValue": "",
+			"category": "Memory",
+			"description": "최대 메모리 사용량 (바이트)",
+			"dataType": "number"
+		},
+		{
+			"key": "maxmemory-policy",
+			"currentValue": "",
+			"category": "Memory",
+			"description": "메모리 초과 시 키 삭제 정책",
+			"dataType": "dropdown",
+			"options": [
+				"noeviction",
+				"allkeys-lru",
+				"volatile-lru",
+				"volatile-random"
+			]
+		},
+		{
+			"key": "maxclients",
+			"currentValue": "",
+			"category": "Client",
+			"description": "동시 접속 가능한 최대 클라이언트 수",
+			"dataType": "number"
+		},
+		{
+			"key": "timeout",
+			"currentValue": "",
+			"category": "Client",
+			"description": "유휴 클라이언트 연결 종료 시간(초)",
+			"dataType": "number"
+		},
+		{
+			"key": "save",
+			"currentValue": "",
+			"category": "Persistence",
+			"description": "RDB 스냅샷 주기",
+			"dataType": "text"
+		},
+		{
+			"key": "appendonly",
+			"currentValue": "",
+			"category": "Persistence",
+			"description": "AOF 사용 여부",
+			"dataType": "dropdown",
+			"options": [
+				"yes",
+				"no"
+			]
+		},
+		{
+			"key": "appendfsync",
+			"currentValue": "",
+			"category": "Persistence",
+			"description": "AOF 동기화 정책",
+			"dataType": "dropdown",
+			"options": [
+				"always",
+				"everysec",
+				"no"
+			]
+		},
+		{
+			"key": "tcp-keepalive",
+			"currentValue": "",
+			"category": "Network",
+			"description": "TCP keepalive 시간(초)",
+			"dataType": "number"
+		},
+		{
+			"key": "loglevel",
+			"currentValue": "",
+			"category": "Logging",
+			"description": "로그 레벨",
+			"dataType": "dropdown",
+			"options": [
+				"debug",
+				"verbose",
+				"notice",
+				"warning",
+				"nothing"
+			]
+		},
+		{
+			"key": "cluster-node-timeout",
+			"currentValue": "",
+			"category": "Cluster",
+			"description": "클러스터 노드 타임아웃(밀리초)",
+			"dataType": "number"
+		}
+	]
+}

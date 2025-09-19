@@ -10,6 +10,7 @@ import com.github.armedis.http.service.BaseService;
 import com.github.armedis.http.service.ResponseCode;
 import com.github.armedis.http.service.request.RedisRequest;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
+import com.github.armedis.redis.command.management.RedisClientListRequest;
 import com.github.armedis.redis.command.management.RedisSlowlogRequest;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
@@ -27,19 +28,19 @@ import com.linecorp.armeria.server.annotation.Put;
  *
  */
 @Component
-public class RedisSlowlogService extends BaseService {
+public class RedisClientListService extends BaseService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static final String REDIS_COMMAND = "slowlog";
+    private static final String REDIS_COMMAND = "clientlist";
 
     private static final String COMMAND_URL = "/v1/management/" + REDIS_COMMAND;
 
-    private static final String COMMAND_URL_WITH_KEY = COMMAND_URL + "/:size";
+    private static final String COMMAND_URL_WITH_KEY = COMMAND_URL;
 
     @Get
     @Path(COMMAND_URL_WITH_KEY)
     @Consumes("application/x-www-form-urlencoded")
-    public HttpResponse getUrlencodedWithKey(RedisSlowlogRequest redisRequest) {
+    public HttpResponse getUrlencodedWithKey(RedisClientListRequest redisRequest) {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
         // execute redis command by http request params.
@@ -66,7 +67,7 @@ public class RedisSlowlogService extends BaseService {
     @Post
     @Path(COMMAND_URL_WITH_KEY)
     @Consumes("application/x-www-form-urlencoded")
-    public HttpResponse urlencodedWithKey(RedisSlowlogRequest redisRequest) {
+    public HttpResponse urlencodedWithKey(RedisClientListRequest redisRequest) {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
         // execute redis command by http request params.

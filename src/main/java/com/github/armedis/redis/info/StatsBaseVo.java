@@ -26,6 +26,11 @@ public abstract class StatsBaseVo {
     public static final String SUM = "sum";
 
     /**
+     * Only numeric value - long, int, float, double
+     */
+    public static final String AVG = "avg";
+
+    /**
      * replace Just dash
      */
     public static final String EMPTY = "empty";

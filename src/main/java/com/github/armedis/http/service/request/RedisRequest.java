@@ -29,6 +29,7 @@ import com.linecorp.armeria.common.AggregatedHttpRequest;
  */
 public class RedisRequest extends AbstractRedisParam implements ResponseDataTypes {
     private String command;
+    private String subCommand;
 
     public RedisRequest(AggregatedHttpRequest httpRequest) {
         setRequestMethod(httpRequest.method());
@@ -46,9 +47,17 @@ public class RedisRequest extends AbstractRedisParam implements ResponseDataType
         this.command = command;
     }
 
+    public String getSubCommand() {
+        return this.subCommand;
+    }
+
+    public void setSubCommand(String subCommand) {
+        this.subCommand = subCommand;
+    }
+
     @Override
     public String toString() {
-        return "RedisRequest [key=" + key.get() + ", command=" + this.command + "], method=" + this.requestMethod + "]";
+        return "RedisRequest [key=" + key.orElseGet(() -> "none") + ", command=" + this.command + "], subcommand= [" + this.subCommand + "] method=" + this.requestMethod + "]";
     }
 
     @Override

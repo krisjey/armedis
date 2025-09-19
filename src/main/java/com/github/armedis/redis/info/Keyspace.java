@@ -23,12 +23,15 @@ final class Keyspace extends StatsBaseVo {
     private int expires;
     private int avgTtl;
 
+    private Map<Integer, RedisDbInfo> redisDbInfo = new TreeMap<>();
+
     /**
      * TODO Generic으로 처리.
      * 
      * @param content
      * @return
      */
+    //public static Keyspace fromString(String content, boolean addContentSection) {
     public static Map<Integer, Keyspace> fromString(String content, boolean addContentSection) {
         Map<Integer, Keyspace> keyspaceMap = new TreeMap<>();
         if (content == null) {
