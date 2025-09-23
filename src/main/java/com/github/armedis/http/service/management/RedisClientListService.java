@@ -103,7 +103,6 @@ public class RedisClientListService extends BaseService {
     public HttpResponse jsonWithKey(AggregatedHttpRequest httpRequest, @Param("key") String key) {
         JsonNode jsonBody = getAsJsonBody(httpRequest);
 
-        // TODO redisRequest에 get/put 넣어주기.
         RedisRequest redisRequest = buildRedisRequest(REDIS_COMMAND, key, httpRequest, jsonBody);
 
         logger.info("Json request " + REDIS_COMMAND + " command with key at URL " + redisRequest.toString());

@@ -50,7 +50,6 @@ public class RedisSlowlogCommandRunner extends AbstractRedisCommandRunner {
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result, Object.class);
     }
 
-    // TODO sub command를 get인지 set인지 구분.
     @Override
     public RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands) {
         logger.info(redisRequest.toString());
@@ -62,60 +61,5 @@ public class RedisSlowlogCommandRunner extends AbstractRedisCommandRunner {
         System.out.println(commands.info("commandstats"));
 
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result, Object.class);
-
-//        Set<RedisNode> nodes = null;
-//
-//        RedisClusterWideCommand mode = getRedisClusterWideCommandMode(key);
-//        switch (mode) {
-//            case MASTER:
-//                nodes = RedisServerDetector.getMasterNodes();
-//
-//                break;
-//
-//            case SLAVE:
-//                nodes = RedisServerDetector.getReplicaNodes();
-//                break;
-//
-//            case ALL:
-//                nodes = RedisServerDetector.getAllNodes();
-//
-//                break;
-//
-//            default:
-//                logger.error("Can not execute command for cluster mode");
-//        }
-//
-//        Map<String, String> getResult = null;
-//        String setResult = null;
-//        // execute command to each nodes.
-//        for (RedisNode node : nodes) {
-//            // TODO FIXME do not create connection for every execute.
-//            RedisConnector connector = new RedisConnector(node);
-//            try (StatefulRedisConnection<String, String> connection = connector.connect();) {
-//                if (redisRequest.getRequestMethod().equals(HttpMethod.GET)) {
-//                    getResult = connection.sync().configGet(key);
-//                }
-//                else {
-//                    setResult = connection.sync().configSet(key, value.get());
-//                }
-//            }
-//            catch (Exception e) {
-//                logger.error("Error command " + this.redisRequest.toString(), e);
-//            }
-//            finally {
-//                try {
-//                    connector.close();
-//                }
-//                catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
-//        if (redisRequest.getRequestMethod().equals(HttpMethod.GET)) {
-//            return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(getResult);
-//        }
-//        else {
-//            return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(setResult);
-//        }
     }
 }

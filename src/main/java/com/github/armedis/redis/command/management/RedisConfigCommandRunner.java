@@ -55,7 +55,6 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
         }
     }
 
-    // TODO sub command를 get인지 set인지 구분.
     @Override
     public RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands) {
         logger.info(redisRequest.toString());

@@ -57,8 +57,6 @@ public class ArmedisServer implements ApplicationRunner {
 
         // TODO print connected redis config.
         
-        // TODO start redis info generator.
-
         System.out.println(loadedMessage);
     }
 }
