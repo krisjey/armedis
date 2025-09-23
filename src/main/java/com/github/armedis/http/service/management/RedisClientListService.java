@@ -5,18 +5,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.github.armedis.http.service.BaseService;
 import com.github.armedis.http.service.ResponseCode;
-import com.github.armedis.http.service.request.RedisRequest;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.github.armedis.redis.command.management.RedisClientListRequest;
-import com.github.armedis.redis.command.management.RedisSlowlogRequest;
-import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.server.annotation.Consumes;
 import com.linecorp.armeria.server.annotation.Get;
-import com.linecorp.armeria.server.annotation.Param;
 import com.linecorp.armeria.server.annotation.Path;
 import com.linecorp.armeria.server.annotation.Post;
 import com.linecorp.armeria.server.annotation.Put;
@@ -71,42 +66,6 @@ public class RedisClientListService extends BaseService {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
         // execute redis command by http request params.
-        RedisCommandExecuteResult result = null;
-        try {
-            result = executeCommand(redisRequest);
-        }
-        catch (Exception e) {
-            logger.error("Can not execute redis command ", e);
-            return buildResponse(ResponseCode.UNKNOWN_ERROR, redisRequest);
-        }
-
-        return buildResponse(redisRequest, result);
-    }
-
-    /**
-     * Process set command request by application json with redis key at URL.
-     * 
-     * When request body is absent then JacksonRequestConverterFunction not working.
-     * <br/>
-     * So, just use AggregatedHttpRequest.contentUtf8() method and convert to
-     * JsonNode.
-     * 
-     * @param httpRequest
-     * @param key
-     * @return HttpResponse
-     */
-    @Get
-    @Put
-    @Post
-    @Path(COMMAND_URL_WITH_KEY)
-    @Consumes("application/json")
-    public HttpResponse jsonWithKey(AggregatedHttpRequest httpRequest, @Param("key") String key) {
-        JsonNode jsonBody = getAsJsonBody(httpRequest);
-
-        RedisRequest redisRequest = buildRedisRequest(REDIS_COMMAND, key, httpRequest, jsonBody);
-
-        logger.info("Json request " + REDIS_COMMAND + " command with key at URL " + redisRequest.toString());
-
         RedisCommandExecuteResult result = null;
         try {
             result = executeCommand(redisRequest);

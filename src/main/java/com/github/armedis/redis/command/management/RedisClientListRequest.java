@@ -12,7 +12,7 @@ public class RedisClientListRequest extends RedisRequest {
 
     public RedisClientListRequest(AggregatedHttpRequest httpRequest) {
         super(httpRequest);
-        this.setCommand("Client");
+        this.setCommand("ClientList");
         this.setSubCommand("list");
     }
 }

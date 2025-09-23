@@ -56,6 +56,8 @@ public class RedisConfigsService extends BaseService {
             InputStream is = this.getClass().getResourceAsStream("/configKeys.json");
             result = new String(is.readAllBytes(), StandardCharsets.UTF_8);
             result = mapper.readTree(result).toString();
+            
+            // TODO config
         }
         catch (Exception e) {
             logger.error("Can not execute redis command ", e);
