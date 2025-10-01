@@ -17,7 +17,9 @@ import io.lettuce.core.cluster.api.sync.RedisClusterCommands;
 
 @Component
 @Scope("prototype")
-@RequestRedisCommandName(RedisCommandEnum.HEXPIRE)
+// TODO Sum 계산시 사용하는 VO 설정 필요. 현재 uptime 등 값이 0으로 내려감.
+// TODO Sum 계산시 사용하는 VO 설정 필요. 현재 uptime 등 값이 0으로 내려감.
+@RequestRedisCommandName(RedisCommandEnum.EXPIRE)
 public class RedisExpireCommandRunner extends AbstractRedisCommandRunner {
     private final Logger logger = LoggerFactory.getLogger(RedisExpireCommandRunner.class);
 
