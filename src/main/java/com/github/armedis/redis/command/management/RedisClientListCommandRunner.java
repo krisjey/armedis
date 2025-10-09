@@ -20,9 +20,10 @@ import io.lettuce.core.cluster.api.sync.RedisClusterCommands;
 
 @Component
 @Scope("prototype")
-@RequestRedisCommandName(RedisCommandEnum.CONFIG)
+@RequestRedisCommandName(RedisCommandEnum.CLIENT)
 public class RedisClientListCommandRunner extends AbstractRedisCommandRunner {
     private final Logger logger = LoggerFactory.getLogger(RedisClientListCommandRunner.class);
+    private static final Integer LIMIT = 10;
 
     @SuppressWarnings("unused")
     private static final boolean classLoaded = detectAnnotation(RedisClientListCommandRunner.class);
@@ -42,7 +43,7 @@ public class RedisClientListCommandRunner extends AbstractRedisCommandRunner {
 
         List<ConnectedClient> result = ConnectedClientParser.parseClientList(clientList);
 
-        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result, Object.class);
+        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result.subList(0, LIMIT), Object.class);
     }
 
     @Override

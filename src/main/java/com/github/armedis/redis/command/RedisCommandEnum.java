@@ -132,6 +132,7 @@ public enum RedisCommandEnum {
     // Management commands
     CONFIG("config"),
     MEMORY("memory"),
+    CLIENT("client"),  // Connection management
 
     // TODO add HyperLogLog command
 //    PFADD("pfadd"),
