@@ -30,7 +30,7 @@ public class RedisClientListService extends BaseService {
 
     private static final String COMMAND_URL = "/v1/management/" + REDIS_COMMAND;
 
-    private static final String COMMAND_URL_WITH_KEY = COMMAND_URL;
+    private static final String COMMAND_URL_WITH_KEY = COMMAND_URL + "/:size";
 
     @Get
     @Path(COMMAND_URL_WITH_KEY)
