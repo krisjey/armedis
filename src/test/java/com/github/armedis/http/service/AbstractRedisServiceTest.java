@@ -7,6 +7,9 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -14,28 +17,25 @@ import com.google.gson.JsonObject;
 import com.linecorp.armeria.client.WebClient;
 import com.linecorp.armeria.server.Server;
 
-import jakarta.inject.Inject;
-
-public class BaseServiceTest {
+public abstract class AbstractRedisServiceTest {
 	private static final String LOCAL_IP_ADDR = getLocalIpAddr();
 	protected static final String HTTP_PORT = "8081";
 
 	private static final Gson jsonParser = new Gson();
 
 	protected static final ObjectMapper mapper = new ObjectMapper();
-
-	protected static final String HTTP_200_STATUS_LINE = "HTTP/1.1 200 OK";
-	protected static final String HTTP_405_STATUS_LINE = "HTTP/1.1 405 Method Not Allowed";
-
-	@Inject
+	
+	@Autowired
 	protected Server server;
 
 	protected WebClient client;
 
+	@BeforeAll
 	public static void setUpBeforeClass() throws Exception {
 		System.setProperty("SERVICE_PORT", HTTP_PORT);
 	}
 
+	@BeforeEach
 	public void setup() {
 		client = WebClient.of("http://localhost:" + server.activePort().localAddress().getPort());
 	}
