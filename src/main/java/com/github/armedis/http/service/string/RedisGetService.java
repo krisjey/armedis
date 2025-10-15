@@ -44,6 +44,7 @@ public class RedisGetService extends BaseService {
     public HttpResponse urlencodedWithoutKey(RedisGetRequest redisRequest) {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
+        logger.warn("request body ");
         // execute redis command by http request params.
         RedisCommandExecuteResult result = null;
         try {

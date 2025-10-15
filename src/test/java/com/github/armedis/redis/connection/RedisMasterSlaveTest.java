@@ -15,6 +15,7 @@ import io.lettuce.core.codec.StringCodec;
 import io.lettuce.core.masterreplica.MasterReplica;
 import io.lettuce.core.masterreplica.StatefulRedisMasterReplicaConnection;
 
+@Disabled
 public class RedisMasterSlaveTest {
     private static final String TEST_STANDALONE_REDIS_HOST = "192.168.56.104";
     private static final int TEST_STANDALONE_REDIS_MASTER_PORT = 6379;
@@ -24,7 +25,6 @@ public class RedisMasterSlaveTest {
     public static void setUpBeforeClass() throws Exception {
     }
 
-    @Disabled
     @Test
     public void testMasterSetAndGet() {
         RedisClient client = RedisClient.create("redis://" + TEST_STANDALONE_REDIS_HOST + ":" + TEST_STANDALONE_REDIS_MASTER_PORT);

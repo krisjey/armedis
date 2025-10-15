@@ -4,7 +4,13 @@ package com.github.armedis;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.annotation.BeforeTestClass;
+
+import com.github.armedis.config.ArmedisConfiguration;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
@@ -12,7 +18,11 @@ import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 
+@ActiveProfiles("testbed")
+@SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
 public class RedisServerModeTest {
+    @Autowired
+    private ArmedisConfiguration armedisConfiguration;
 
     @BeforeTestClass
     public static void setUpBeforeClass() throws Exception {
@@ -21,14 +31,9 @@ public class RedisServerModeTest {
 //    @Disabled
     @Test
     public void test() throws InterruptedException, ExecutionException {
-        // Create connection pool factory
-
-        // is valid seed info?
-//        String seedHost = "192.168.56.104";
-//        int seedPort = 6479;
-
-        String seedHost = "192.168.56.104";
-        int seedPort = 7001;
+        String seedHostConfig = armedisConfiguration.getRedisSeedAddress();
+        String seedHost = seedHostConfig.split(":")[0];
+        int seedPort = Integer.parseInt(seedHostConfig.split(":")[1]);
 
         RedisURI uri = RedisURI.create(seedHost, seedPort);
         RedisClient redisClient = RedisClient.create(uri);

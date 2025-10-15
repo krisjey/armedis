@@ -3,7 +3,6 @@ package com.github.armedis.redis.connection;
 
 import org.junit.jupiter.api.Test;
 
-//@SpringBootTest
 public class RedisConnectionPoolImplTest {
 
     @Test

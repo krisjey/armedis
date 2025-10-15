@@ -41,7 +41,7 @@ public class RedisRequestBuilderTest {
 
     @Test
     public void testGet() throws IOException {
-        String command = "get";
+        String command = "Get";
 
         RedisRequestBuilder builder = RedisRequestBuilderFactory.createRedisRequestBuilder(command);
         assertThat(builder).isExactlyInstanceOf(RedisGetRequestBuilder.class);
@@ -51,7 +51,7 @@ public class RedisRequestBuilderTest {
         final AggregatedHttpRequest aReq = AggregatedHttpRequest.of(
                 HttpMethod.POST, "/foo", PLAIN_TEXT_UTF_8, "bar");
         
-        RedisRequest redisRequest = builder.build(null, jsonNode);
+        RedisRequest redisRequest = builder.build(aReq, jsonNode);
         assertThat(redisRequest).isNotNull();
         assertThat(redisRequest).isExactlyInstanceOf(RedisGetRequest.class);
 
@@ -63,14 +63,15 @@ public class RedisRequestBuilderTest {
 
     @Test
     public void testSet() throws IOException {
-        String command = "set";
+        String command = "Set";
         String value = "hello value";
 
         RedisRequestBuilder builder = RedisRequestBuilderFactory.createRedisRequestBuilder(command);
         assertThat(builder).isExactlyInstanceOf(RedisSetRequestBuilder.class);
-
+        final AggregatedHttpRequest aReq = AggregatedHttpRequest.of(
+                HttpMethod.POST, "/foo", PLAIN_TEXT_UTF_8, "bar");
         JsonNode jsonNode = new ObjectMapper().readTree("{\"key\":\"" + key + "\", \"value\":\"" + value + "\"}");
-        RedisRequest redisRequest = builder.build(null, jsonNode);
+        RedisRequest redisRequest = builder.build(aReq, jsonNode);
         assertThat(redisRequest).isNotNull();
         assertThat(redisRequest).isExactlyInstanceOf(RedisSetRequest.class);
 

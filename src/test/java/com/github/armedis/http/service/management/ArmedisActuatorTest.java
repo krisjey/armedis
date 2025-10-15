@@ -14,13 +14,13 @@ import org.springframework.test.context.ActiveProfiles;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.armedis.ArmedisServer;
-import com.github.armedis.http.service.AbstractRedisServiceTest;
+import com.github.armedis.http.service.AbstractRedisServerTest;
 import com.linecorp.armeria.common.AggregatedHttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 
 @ActiveProfiles("testbed")
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
-public class ArmedisActuatorTest extends AbstractRedisServiceTest {
+public class ArmedisActuatorTest extends AbstractRedisServerTest {
     @Test
     void testActuator() throws JsonParseException, JsonMappingException, IOException {
         AggregatedHttpResponse res = null;

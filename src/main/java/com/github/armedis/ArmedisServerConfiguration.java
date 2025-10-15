@@ -105,7 +105,6 @@ public class ArmedisServerConfiguration {
 
             // Add an Armeria annotated HTTP service.
             for (ArmeriaAnnotatedHttpService service : services) {
-
                 builder.annotatedService(service);
             }
 

@@ -9,24 +9,21 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.test.context.ActiveProfiles;
 
 import com.github.armedis.config.ArmedisConfiguration;
+import com.github.armedis.http.service.AbstractRedisServerTest;
 
-@SpringBootTest
-public class ArmedisServerConfigurationTest {
+@ActiveProfiles("testbed")
+@SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
+public class ArmedisServerConfigurationTest extends AbstractRedisServerTest {
 
-	@Autowired
-	private ArmedisConfiguration armedisConfiguration;
+    @Autowired
+    private ArmedisConfiguration armedisConfiguration;
 
-	@BeforeAll
-	public static void setUpBeforeClass() throws Exception {
-		Random rnd = new Random();
-		Integer portNumber = rnd.nextInt(1000) + 8001;
-		System.setProperty("SERVICE_PORT", String.valueOf(portNumber));
-	}
-
-	@Test
-	public void test() {
-		assertThat(armedisConfiguration.getRedisSeedAddress()).isNotNull();
-	}
+    @Test
+    public void test() {
+        assertThat(armedisConfiguration.getRedisSeedAddress()).isNotNull();
+    }
 }

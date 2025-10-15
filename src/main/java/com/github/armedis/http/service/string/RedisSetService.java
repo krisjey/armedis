@@ -14,7 +14,6 @@ import com.github.armedis.redis.command.string.RedisSetRequest;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.server.annotation.Consumes;
-import com.linecorp.armeria.server.annotation.Get;
 import com.linecorp.armeria.server.annotation.Param;
 import com.linecorp.armeria.server.annotation.Path;
 import com.linecorp.armeria.server.annotation.Post;
@@ -153,6 +152,4 @@ public class RedisSetService extends BaseService {
 
 		return buildResponse(redisRequest, result);
 	}
-	
-	
 }

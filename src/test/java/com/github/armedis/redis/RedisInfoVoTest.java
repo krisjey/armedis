@@ -10,15 +10,19 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.test.context.ActiveProfiles;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.armedis.ArmedisServer;
 import com.github.armedis.http.service.stats.RedisStatInfoBucket;
 import com.github.armedis.redis.info.RedisInfoVo;
 
 /**
  * 
  */
-@SpringBootTest
+@ActiveProfiles("testbed")
+@SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
 class RedisInfoVoTest {
 	@BeforeAll
 	public static void setUpBeforeClass() throws Exception {
