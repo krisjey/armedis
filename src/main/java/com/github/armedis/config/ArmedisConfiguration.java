@@ -32,28 +32,22 @@ public class ArmedisConfiguration {
     @Value("${server.config.stat.logging.enableed}")
     private boolean loggingEnabled;
 
+    @Value("${server.management.loginId}")
+    private String loginId;
+
+    @Value("${server.management.loginPassword}")
+    private String loginPassword;
+
     public String getRedisSeedAddress() {
         return redisSeedAddress;
-    }
-
-    public void setRedisSeedAddress(String redisAddressSeed) {
-        this.redisSeedAddress = redisAddressSeed;
     }
 
     public int getServicePort() {
         return servicePort;
     }
 
-    public void setServicePort(int servicePort) {
-        this.servicePort = servicePort;
-    }
-
     public int getInstanceCount() {
         return instanceCount;
-    }
-
-    public void setInstanceCount(int instanceCount) {
-        this.instanceCount = instanceCount;
     }
 
     /**
@@ -64,25 +58,10 @@ public class ArmedisConfiguration {
     }
 
     /**
-     * @param addContentSection the addContentSection to set
-     */
-    public void setAddContentSection(boolean addContentSection) {
-        this.addContentSection = addContentSection;
-    }
-
-
-    /**
      * @return the statEnabled
      */
     public boolean isStatEnabled() {
         return statEnabled;
-    }
-
-    /**
-     * @param statEnabled the statEnabled to set
-     */
-    public void setStatEnabled(boolean statEnabled) {
-        this.statEnabled = statEnabled;
     }
 
     /**
@@ -93,9 +72,16 @@ public class ArmedisConfiguration {
     }
 
     /**
-     * @param loggingEnabled the loggingEnabled to set
+     * @return the loginId
      */
-    public void setLoggingEnabled(boolean loggingEnabled) {
-        this.loggingEnabled = loggingEnabled;
+    public String getLoginId() {
+        return loginId;
+    }
+
+    /**
+     * @return the loginPassword
+     */
+    public String getLoginPassword() {
+        return loginPassword;
     }
 }
