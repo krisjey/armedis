@@ -375,6 +375,47 @@
             data: [0]
         }]
     };
+    var tables = [
+        { 
+            id: "clientConnectionsCard", 
+            headers: [
+                { name: "client", title: "Client", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
+                { name: "totalDuration", title: "Total Duration", style: { headerTextAlign: "center", cellTextAlign: "right", width: "20%" } },
+                { name: "idleTime", title: "Idle time", style: { headerTextAlign: "center", cellTextAlign: "right", width: "20%" } },
+                { name: "lastCommand", title: "Last command", style: { headerTextAlign: "center", cellTextAlign: "left", width: "*" } }
+            ] 
+        },
+        { 
+                id: "commandStatisticsCard", 
+                headers: [
+                    { name: "command", title: "Command", style: { headerTextAlign: "center", cellTextAlign: "center", width: "*" } },
+                    { name: "numberOfCalls", title: "Number of calls", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
+                    { name: "totalDuration", title: "Total Duration", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
+                    { name: "durationPerCall", title: "Duration per call", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } }
+                ] 
+        },
+        { 
+                id: "slowQueriesLogCard", 
+                headers: [
+                    { name: "timestamp", title: "Timestamp", style: { headerTextAlign: "center", cellTextAlign: "left", width: "25%" } },
+                    { name: "duration", title: "Duration", style: { headerTextAlign: "center", cellTextAlign: "right", width: "25%" } },
+                    { name: "command", title: "Command", style: { headerTextAlign: "center", cellTextAlign: "left", width: "*" } }
+                ] 
+        },
+        { 
+                id: "nodesCard", 
+                headers: [
+                    { name: "id", title: "Id", style: { headerTextAlign: "center", cellTextAlign: "", width: "20%" } },
+                    { name: "address", title: "Address", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
+                    { name: "flags", title: "Flags", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
+                    { name: "replicaMaster", title: "Replica's Master", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
+                    { name: "pingWasSent", title: "Ping was sent", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
+                    { name: "pongWasReceived", title: "Pong was received", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
+                    { name: "state", title: "State", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
+                    { name: "hashSlotNumberOrRange", title: "Hash slot number or range", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } }
+                ] 
+        }
+    ];
 
     // 차트 영역 생성
     function createChartCard(cardId, cardBodyTarget, chartType, series) {
@@ -518,31 +559,32 @@
         createChartCard("memoryCard", "memoryBar", "bar", memorySeries);
     }
 
+    function setDataValue(cardId, value) {
+        var parent = document.getElementById(cardId);
+        if (parent) {
+            parent.querySelector(".data-value").innerText = value;
+        }
+    }
+
     // Ops/Sec 설정
     function setOpsPerSec() {
         var cardId = "opsPerSecCard";
-        var parent = document.getElementById(cardId);
-
         var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
-        parent.querySelector(".data-value").innerText = lastStatsSumStats.instantaneousOpsPerSec;
+        setDataValue(cardId, lastStatsSumStats.instantaneousOpsPerSec);
     }
 
     // Connected Clients 설정
     function setConnectedClients() {
         var cardId = "connectedClientsCard";
-        var parent = document.getElementById(cardId);
-
         var lastStatsSumClients = _.last(statsData).redisInfoList.sum.clients;
-        parent.querySelector(".data-value").innerText = lastStatsSumClients.connectedClients.toLocaleString();
+        setDataValue(cardId, lastStatsSumClients.connectedClients.toLocaleString());
     }
 
     // Number of Keys 설정
     function setTotalKeys() {
         var cardId = "totalKeysCard";
-        var parent = document.getElementById(cardId);
-
         var lastStatsSumKeyspace = _.last(statsData).redisInfoList.sum.keyspace;
-        parent.querySelector(".data-value").innerText = lastStatsSumKeyspace['0'].keys.toLocaleString();
+        setDataValue(cardId, lastStatsSumKeyspace['0'].keys.toLocaleString());
     }
 
     // Network 설정
@@ -560,70 +602,71 @@
         networkOutputSeries.data[0] = limit(outputPct);
         
         var parent = document.getElementById(cardId);
-        var inputChartElement = parent.querySelector("#inputRadialbar");
-        var outputChartElement = parent.querySelector("#outputRadialbar");
-
-        charts["inputRadialbar"].updateOptions({
-            custom: {
-                origin: lastStatsSumStats.totalNetInputBytes
-            },
-            colors: [getChartColors("inputRadialbar", inputPct)]
-        }, true, true);
-        charts["outputRadialbar"].updateOptions({
-            custom: {
-                origin: lastStatsSumStats.totalNetOutputBytes
-            },
-            colors: [getChartColors("outputRadialbar", outputPct)]
-        }, true, true);
-        charts["inputRadialbar"].updateSeries(networkInputSeries.data, true);
-        charts["outputRadialbar"].updateSeries(networkOutputSeries.data, true);
+        if (parent) {
+            var inputChartElement = parent.querySelector("#inputRadialbar");
+            var outputChartElement = parent.querySelector("#outputRadialbar");
+    
+            charts["inputRadialbar"].updateOptions({
+                custom: {
+                    origin: lastStatsSumStats.totalNetInputBytes
+                },
+                colors: [getChartColors("inputRadialbar", inputPct)]
+            }, true, true);
+            charts["outputRadialbar"].updateOptions({
+                custom: {
+                    origin: lastStatsSumStats.totalNetOutputBytes
+                },
+                colors: [getChartColors("outputRadialbar", outputPct)]
+            }, true, true);
+            charts["inputRadialbar"].updateSeries(networkInputSeries.data, true);
+            charts["outputRadialbar"].updateSeries(networkOutputSeries.data, true);
+        }
     }
 
     // Memory 설정
     function setMemory() {
         var cardId = "memoryCard";
         var parent = document.getElementById(cardId);
-        var memoryElement = parent.querySelector("#memoryBar");
-
-        var lastStatsSumMemory = _.last(statsData).redisInfoList.sum.memory;
-
-        // Max Memory가 없는 경우 Card에 Alert표시
-        if (lastStatsSumMemory.maxmemory > 0) {
-            document.getElementById("memoryCard").querySelector(".alert").classList.add("d-none");
-        } else {
-            document.getElementById("memoryCard").querySelector(".alert > #alertMsg").innerText = "Memory Limit 설정이 필요합니다.";
-            document.getElementById("memoryCard").querySelector(".alert").classList.remove("d-none");
-        }
-        
-        series: [{
-            data: [0, 0, 0, 0, 0]
-        }],
-
-        charts["memoryBar"].updateOptions({
-            xaxis: {
-                max: getMemoryCapacityUnit(lastStatsSumMemory.totalSystemMemory)
+        if (parent) {
+            var memoryElement = parent.querySelector("#memoryBar");
+            var lastStatsSumMemory = _.last(statsData).redisInfoList.sum.memory;
+    
+            // Max Memory가 없는 경우 Card에 Alert표시
+            if (lastStatsSumMemory.maxmemory > 0) {
+                parent.querySelector(".alert").classList.add("d-none");
+            } else {
+                parent.querySelector(".alert > #alertMsg").innerText = "Memory Limit 설정이 필요합니다.";
+                parent.querySelector(".alert").classList.remove("d-none");
             }
-        }, true);
-        charts["memoryBar"].updateSeries(
-            [{
-                data: [
-                    lastStatsSumMemory.usedMemory,
-                    lastStatsSumMemory.usedMemoryPeak,
-                    lastStatsSumMemory.usedMemoryLua,
-                    lastStatsSumMemory.maxmemory,
-                    lastStatsSumMemory.totalSystemMemory
-                ]
-            }]
-            , true);
+            
+            series: [{
+                data: [0, 0, 0, 0, 0]
+            }],
+    
+            charts["memoryBar"].updateOptions({
+                xaxis: {
+                    max: getMemoryCapacityUnit(lastStatsSumMemory.totalSystemMemory)
+                }
+            }, true);
+            charts["memoryBar"].updateSeries(
+                [{
+                    data: [
+                        lastStatsSumMemory.usedMemory,
+                        lastStatsSumMemory.usedMemoryPeak,
+                        lastStatsSumMemory.usedMemoryLua,
+                        lastStatsSumMemory.maxmemory,
+                        lastStatsSumMemory.totalSystemMemory
+                    ]
+                }]
+                , true);
+        }
     }
 
     function setUptime() {
         var cardId = "uptimeCard";
-        var parent = document.getElementById(cardId);
-
         var lastStatsSumServer = _.last(statsData).redisInfoList.sum.server;
-        var duration = moment.duration(lastStatsSumServer.uptimeInSeconds, "days");
-        parent.querySelector(".data-value").innerText = duration.humanize();
+        var duration = moment.duration(lastStatsSumServer.uptimeInSeconds, "seconds");
+        setDataValue(cardId, duration.humanize());
     }
 
     // Keyspace 설정
@@ -672,19 +715,15 @@
     // Version 설정
     function setVersion() {
         var cardId = "versionCard";
-        var parent = document.getElementById(cardId);
-
         var lastStatsSumServer = _.last(statsData).redisInfoList.sum.server;
-        parent.querySelector(".data-value").innerText = lastStatsSumServer.redisVersion
+        setDataValue(cardId, lastStatsSumServer.redisVersion);
     }
 
     // Eviction Policy 설정
     function setEvictionPolicy() {
         var cardId = "evictionPolicyCard";
-        var parent = document.getElementById(cardId);
-
         var lastStatsSumMemory = _.last(statsData).redisInfoList.sum.memory;
-        parent.querySelector(".data-value").innerText = lastStatsSumMemory.maxmemoryPolicy
+        setDataValue(cardId, lastStatsSumMemory.maxmemoryPolicy);
     }
 
     // Redis 정보 조회
@@ -707,12 +746,152 @@
         setEvictionPolicy()
     }
 
+    async function getClientConnections() {
+        var rowCnt = 20;
+        var response = await fetch(`/v1/management/clientlist/${rowCnt}`);
+        if (!response.ok) throw new Error("HTTP " + res.status);
+
+        var data = await response.json();
+        if (data.result.length > 0) {
+            var last20Datas = _.takeRight(data.result, rowCnt);
+            last20Datas = _.map(last20Datas, item => {
+                var picked = _.pick(item, ['addr', 'age', 'idle', 'cmd']);
+                picked.age = `${picked.age} s`;
+                picked.idle = `${picked.idle} s`;
+                return {
+                    client: picked.addr,
+                    totalDuration: picked.age,
+                    idleTime: picked.idle,
+                    lastCommand: picked.cmd
+                };
+            });
+            
+            setTableRows(tables[0], last20Datas, rowCnt);
+        }
+    }
+
+    // Slow queries log 조회
+    async function getSlowlog() {
+        var rowCnt = 20;
+        var response = await fetch(`/v1/management/slowlog/${rowCnt}`);
+        if (!response.ok) throw new Error("HTTP " + res.status);
+
+        var data = await response.json();
+        if (data.result.length > 0) {
+            var slowlogs = _.map(data.result, item => {
+                var cloned = _.clone(item);
+                var [timestamp, duration, commands] = _.pullAt(cloned, [1, 2, 3]);
+                return {
+                    timestamp: moment.unix(timestamp).fromNow(),
+                    duration: `${duration} μs`,
+                    command: _.head(commands)
+                }
+            });
+            
+            setTableRows(tables[2], slowlogs, rowCnt);
+        }
+    }
+
+    // Table 설정
+    function createInitTable(cardId, headers) {
+        var parent = document.getElementById(cardId);
+        var tableTheadTr = parent.querySelector("table thead tr");
+        var tableTbody = parent.querySelector("table tbody");
+        
+        // Table thead 설정
+        tableTheadTr.innerHTML = "";
+        headers.forEach(elem => {
+            var tableTh = document.createElement("th");
+            tableTh.style.textAlign = elem.style.headerTextAlign;
+            tableTh.innerText = elem.title;
+            tableTheadTr.appendChild(tableTh);
+        });
+        
+        // Table tbody 설정
+        var tableTbodyTr = document.createElement("tr");
+        var tableTd = document.createElement("td");
+        tableTd.textContent = "데이터가 없습니다.";
+        tableTd.style.textAlign = "center";
+        tableTd.colSpan = headers.length;
+        tableTbodyTr.appendChild(tableTd);
+
+        tableTbody.innerHTML = "";
+        tableTbody.appendChild(tableTbodyTr);
+    }
+
+    function setTableRows(tableInfo, datas, rowsCnt = 10) {
+        var cloneStatsData = _.cloneDeep(datas);
+        var cardId = tableInfo.id ?? undefined;
+        var parent = document.getElementById(cardId);
+        if (parent) {
+            var tableTbody = parent.querySelector("table tbody");
+            
+            var tableRows = [];
+            if (cloneStatsData.length > 0) {
+                cloneStatsData.forEach(elem => {
+                    tableRows.push(elem)
+                    if (tableRows.length > rowsCnt) {
+                        tableRows.shift();
+                    }
+        
+                    tableTbody.innerHTML = "";
+                    var keys = Object.keys(tableRows[0]);
+                    var headerData = tables.find(item => item.id === cardId);
+                    tableRows.forEach(elem => {
+                        var tableTr = document.createElement("tr");
+                        keys.forEach(key => {
+                            var headersObj = headerData.headers.find(item => item.name === key);
+                            var tableTd = document.createElement("td");
+                            tableTd.style.overflowWrap = "anywhere";
+                            
+                            if (headersObj && key === headersObj.name) {
+                                tableTd.style.textAlign = headersObj.style.cellTextAlign;
+                                tableTd.style.width = headersObj.style.width;
+                            }
+                            
+                            tableTd.innerText = elem[key] === "NULL" ? "" : elem[key];
+                            tableTr.appendChild(tableTd);
+                        })
+                        tableTbody.appendChild(tableTr);
+                    });
+                });
+            } else {
+                var tableTr = document.createElement("tr");
+                var tableTd = document.createElement("td");
+                tableTd.textContent = "데이터가 없습니다.";
+                tableTd.style.textAlign = "center";
+                tableTd.colSpan = tableInfo.headers.length;
+                tableTr.appendChild(tableTd);
+    
+                tableTbody.innerHTML = "";
+                tableTbody.appendChild(tableTr);
+            }
+        }
+    }
+
+    // Table 초기설정
+    function initTable() {
+        tables.forEach(elem => {
+            createInitTable(elem.id, elem.headers);
+        });
+    }
+
+    function intervalInit() {
+        getStats();
+        getClientConnections();
+        getSlowlog();
+    }
+
     window.pageHooks = window.pageHooks || {};
     window.pageHooks["pages-armedis-overview.html"] = {
         onLoad: function () {
             initCard();
             initChart();
-            intervalId = setInterval(getStats, 5000);
+            initTable();
+            intervalInit();
+            intervalId = setInterval(() => {
+                intervalInit();
+            }, 5000);
         },
         onUnload: function () {
             if (intervalId) {

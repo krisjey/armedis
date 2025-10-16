@@ -5,333 +5,441 @@
       <div class="col-12">
           <div class="page-title-box d-sm-flex align-items-center justify-content-between">
               <h4 class="mb-sm-0">Redis Config 관리자</h4>
-  
+
               <div class="page-title-right">
                   <ol class="breadcrumb m-0">
                       <li class="breadcrumb-item"><a href="javascript: void(0);">Armedis</a></li>
                       <li class="breadcrumb-item active">Management</li>
                   </ol>
               </div>
-  
           </div>
       </div>
     </div>
     <!-- end page title -->
-  
+
     <div class="row">
-      <ul class="nav nav-tabs mb-3" id="categoryTabs">
-        <li class="nav-item"><a class="nav-link active" data-cat="All" href="#">전체</a></li>
-        <li class="nav-item"><a class="nav-link" data-cat="Memory" href="#">Memory</a></li>
-        <li class="nav-item"><a class="nav-link" data-cat="Clients" href="#">Clients</a></li>
-        <li class="nav-item"><a class="nav-link" data-cat="Persistence" href="#">Persistence</a></li>
-        <li class="nav-item"><a class="nav-link" data-cat="Network" href="#">Network</a></li>
-        <li class="nav-item"><a class="nav-link" data-cat="Security" href="#">Security</a></li>
-        <li class="nav-item"><a class="nav-link" data-cat="Logging" href="#">Logging</a></li>
-        <li class="nav-item"><a class="nav-link" data-cat="Cluster" href="#">Cluster</a></li>
-      </ul>
-      
-      <!-- 검색창 -->
-      <div class="input-group mb-3">
-        <span class="input-group-text">🔍</span>
-        <input type="text" id="searchInput" class="form-control" placeholder="키워드 검색">
-        <button id="resetBtn" class="btn btn-outline-secondary">초기화</button>
-      </div>
-      
-      <!-- 설정 테이블 -->
-      <table class="table table-striped" id="configTable">
-        <thead>
-          <tr>
-            <th>설정 키</th>
-            <th>현재값</th>
-            <th>설명</th>
-            <th>편집</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <!-- 편집 모달 -->
-      <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true" style="position: fixed;">
-  <!--      <div class="modal-dialog">-->
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="modalTitle"></h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-              <p>현재값: <span id="modalCurrent">-</span></p>
-              <div id="modalInputContainer"></div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-              <button type="button" id="saveBtn" class="btn btn-primary">저장</button>
-            </div>
-          </div>
+        <ul class="nav nav-tabs mb-3" id="categoryTabs"></ul>
+	
+        <!-- 검색창 -->
+        <div class="input-group mb-3">
+            <span class="input-group-text">🔍</span>
+            <input type="text" id="searchInput" class="form-control" placeholder="키워드 검색">
+            <button id="resetBtn" class="btn btn-outline-secondary">초기화</button>
         </div>
-      </div> 
+	
+        <!-- 설정 테이블 -->
+        <table class="table table-striped" id="configTable">
+            <thead>
+                <tr>
+                    <th>설정 키</th>
+                    <th>현재값</th>
+                    <th>설명</th>
+                    <th>편집</th>
+	            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <!-- 편집 모달 -->
+        <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true" style="position: fixed;">
+        <!--      <div class="modal-dialog">-->
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalTitle"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>현재값: <span id="modalCurrent">-</span></p>
+                        <div id="modalInputContainer"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" id="saveBtn" class="btn btn-primary">저장</button>
+	                </div>
+                </div>
+            </div>
+        </div> 
+        <!-- 로그인 모달 -->
+        <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true" style="position: fixed;">
+        <!--      <div class="modal-dialog">-->
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="loginModalTitle">Login</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div id="modalInputContainer">
+                            <input id="loginModalInputId" type="text" class="form-control" value="admin" placeholder="ID">
+                            <input id="loginModalInputPassword" type="password" class="form-control" value="ezwel1234" placeholder="PASSWORD">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="saveLoginBtn" class="btn btn-primary w-100">로그인</button>
+	                </div>
+                </div>
+            </div>
+        </div> 
     </div>
     <!-- container-fluid -->
-  </div>
-  <!-- End Page-content -->  
-  
-  <script src="/assets/js/common.js"></script>
-  
-  <style>
-      .current-value { font-weight: bold; }
-  </style>
-  <!-- 로컬 JS 참조 -->
-  <!-- <script src="/assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script> -->
-  
-  <script>
-      // 설정 메타데이터
-      var configKeys = [
-      //{ key:'maxmemory',            cat:'Memory',      desc:'최대 메모리 사용량 (바이트)',               type:'number' },
-      //{ key:'maxmemory-policy',     cat:'Memory',      desc:'메모리 초과 시 키 삭제 정책',               type:'dropdown', options:['noeviction','allkeys-lru','volatile-lru','volatile-random'] },
-      //{ key:'maxclients',           cat:'Client',      desc:'동시 접속 가능한 최대 클라이언트 수',         type:'number' },
-      //{ key:'timeout',              cat:'Client',      desc:'유휴 클라이언트 연결 종료 시간(초)',         type:'number' },
-      //{ key:'save',                 cat:'Persistence', desc:'RDB 스냅샷 주기',                          type:'text' },
-      //{ key:'appendonly',           cat:'Persistence', desc:'AOF 사용 여부',                            type:'toggle' },
-      //{ key:'appendfsync',          cat:'Persistence', desc:'AOF 동기화 정책',                          type:'dropdown', options:['always','everysec','no'] },
-      //{ key:'tcp-keepalive',        cat:'Network',     desc:'TCP keepalive 시간(초)',                    type:'number' },
-      //{ key:'bind',                 cat:'Network',     desc:'바인드할 IP 리스트',                          type:'text' },
-      //{ key:'requirepass',          cat:'Security',    desc:'클라이언트 인증 비밀번호',                    type:'password' },
-      //{ key:'rename-command',       cat:'Security',    desc:'명령어 이름 변경',                          type:'keyvalue' },
-      //{ key:'loglevel',             cat:'Logging',     desc:'로그 레벨',                                 type:'dropdown', options:['debug','verbose','notice','warning'] },
-      //{ key:'logfile',              cat:'Logging',     desc:'로그 파일 경로',                             type:'text' },
-      //{ key:'cluster-enabled',      cat:'Cluster',     desc:'클러스터 모드 사용 여부',                    type:'toggle' },
-      //{ key:'cluster-node-timeout', cat:'Cluster',     desc:'클러스터 노드 타임아웃(밀리초)',              type:'number' }
-      ];
-  
-      var tableBody = document.querySelector("#configTable tbody");
-      var editModal  = new bootstrap.Modal(document.getElementById("editModal"));
-      var currentEdit = null;
-      var kvMap = {};
-      var allItems = [];
-  
-      // 테이블 렌더링
-      function renderTable(cat="All", filter="") {
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
+        <div id="liveToast" class="toast hide toast-center" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">알림</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body"></div>
+        </div>
+    </div>
+</div>
+<!-- End Page-content -->  
+
+<script src="/assets/js/common.js"></script>
+
+<style>
+	.current-value { font-weight: bold; }
+</style>
+<!-- 로컬 JS 참조 -->
+<!-- <script src="/assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script> -->
+
+<script>
+	// 설정 메타데이터
+	var configKeys = [
+	//{ key:'maxmemory',            category:'Memory',      description:'최대 메모리 사용량 (바이트)',           dataType:'number' },
+	//{ key:'maxmemory-policy',     category:'Memory',      description:'메모리 초과 시 키 삭제 정책',           dataType:'dropdown', options:['noeviction','allkeys-lru','volatile-lru','volatile-random'] },
+	//{ key:'maxclients',           category:'Client',      description:'동시 접속 가능한 최대 클라이언트 수',    dataType:'number' },
+	//{ key:'timeout',              category:'Client',      description:'유휴 클라이언트 연결 종료 시간(초)',     dataType:'number' },
+	//{ key:'save',                 category:'Persistence', description:'RDB 스냅샷 주기',                      dataType:'text' },
+	//{ key:'appendonly',           category:'Persistence', description:'AOF 사용 여부',                        dataType:'toggle' },
+	//{ key:'appendfsync',          category:'Persistence', description:'AOF 동기화 정책',                      dataType:'dropdown', options:['always','everysec','no'] },
+	//{ key:'tcp-keepalive',        category:'Network',     description:'TCP keepalive 시간(초)',               dataType:'number' },
+	//{ key:'bind',                 category:'Network',     description:'바인드할 IP 리스트',                    dataType:'text' },
+	//{ key:'requirepass',          category:'Security',    description:'클라이언트 인증 비밀번호',              dataType:'password' },
+	//{ key:'rename-command',       category:'Security',    description:'명령어 이름 변경',                      dataType:'keyvalue' },
+	//{ key:'loglevel',             category:'Logging',     description:'로그 레벨',                            dataType:'dropdown', options:['debug','verbose','notice','warning'] },
+	//{ key:'logfile',              category:'Logging',     description:'로그 파일 경로',                       dataType:'text' },
+	//{ key:'cluster-enabled',      category:'Cluster',     description:'클러스터 모드 사용 여부',               dataType:'toggle' },
+	//{ key:'cluster-node-timeout', category:'Cluster',     description:'클러스터 노드 타임아웃(밀리초)',         dataType:'number' }
+	];
+
+	var tableBody = document.querySelector("#configTable tbody");
+	var editModal  = new bootstrap.Modal(document.getElementById("editModal"));
+    var loginModal = new bootstrap.Modal(document.getElementById("loginModal"), {
+        backdrop: 'static' // 바깥 클릭해도 닫히지 않음
+    });
+    var currentEdit = null;
+	var kvMap = {};
+	var editEventObject = null; //클릭 이벤트 객체
+
+	// 테이블 렌더링
+	function renderTable(category="All", filter="") {
         tableBody.innerHTML = "";
-        configKeys.filter(i => (cat==="All" || i.cat===cat) && (i.key.includes(filter) || i.desc.includes(filter)))
-                  .forEach(i => {
-                    var tr = document.createElement("tr");
-                    tr.innerHTML = `
-                      <td>${i.key}</td>
-                      <td><span class="current-value" data-key="${i.key}">${i.val ?? "-"}</span></td>
-                      <td>${i.desc}</td>
-                      <td><button class="btn btn-sm btn-outline-primary edit-btn" data-key="${i.key}" data-cat="${i.cat}">✏️</button></td>
-                      `;
-                    tableBody.appendChild(tr);
-                  });
-        document.querySelectorAll(".edit-btn").forEach(btn => btn.addEventListener("click", openModal));
-      }
-  
-      // 모달 열기
-      function openModal(e) {
-          var itemsList = []; 
-          var key = e.currentTarget.dataset.key;
-          var cat = e.currentTarget.dataset.cat;
-          currentEdit = configKeys.find(i => i.key === key);
-          document.getElementById("modalTitle").textContent = `${key} 설정 변경`;
-          document.getElementById("modalCurrent").textContent = "불러오는 중...";
-          kvMap = {};
-          renderModalInput(currentEdit, "");
-          editModal.show();
-          
-          itemsList = configKeys.filter(item => item.key === key && item.cat === cat)[0];
-          var currentVal = itemsList.val ?? "";
-  
-          document.getElementById("modalCurrent").textContent = currentVal;
-          if (currentEdit.type==="keyvalue") 
-          try { 
-              kvMap = JSON.parse(currentVal);
-          } catch {
-              document.getElementById("modalCurrent").textContent = "-";
-          };
-          renderModalInput(currentEdit, currentVal);
-  
-        //fetch(`/api/config/current?key=${key}`)
-      //	.then(res => res.json())
-      //	.then(data => {
-      //	  document.getElementById('modalCurrent').textContent = data.value;
-      //	  if (currentEdit.type==='keyvalue') try { kvMap = JSON.parse(data.value); } catch {};
-      //	    renderModalInput(currentEdit, data.value);
-      //	})
-      //	.catch(() => document.getElementById('modalCurrent').textContent = '-');
-      }
-  
-      // 입력 컴포넌트 생성
-      function renderModalInput(cfg, curr) {
+        configKeys.filter(i => (category==="All" || i.category===category) && (i.key.includes(filter) || i.description.includes(filter)))
+	               .forEach(i => {
+                  var tr = document.createElement("tr");
+                  tr.innerHTML = `
+                    <td>${i.key}</td>
+                    <td><span class="current-value" data-key="${i.key}">${i.currentValue ?? "-"}</span></td>
+                    <td>${i.description}</td>
+                    <td><button class="btn btn-sm btn-outline-primary edit-btn" data-key="${i.key}" data-cat="${i.category}">✏️</button></td>
+                    `;
+                  tableBody.appendChild(tr);
+                });
+       document.querySelectorAll(".edit-btn").forEach(btn => btn.addEventListener("click", openModal));
+    }
+
+
+    // 모달 열기
+    function openModal(e) {
+        // 로그인 모달 열기
+        editEventObject = e.currentTarget.dataset;
+        loginModal.show();
+	}
+
+    // 모달 열기
+    function openEditModal(e) {
+        var itemsList = []; 
+        var key = e.key;
+        var cat = e.cat;
+        currentEdit = configKeys.find(i => i.key === key);
+        document.getElementById("modalTitle").textContent = `${key} 설정 변경`;
+        document.getElementById("modalCurrent").textContent = "불러오는 중...";
+        kvMap = {};
+        renderModalInput(currentEdit, "");
+        editModal.show();
+//       // 조회
+        fetch("/v1/management/settings/config/" + key)
+            .then(res=> {
+                if (!res.ok) {
+                    editModal.hide();
+                    throw new Error('조회 실패 : ' + res.statusText);
+                }
+                return res.json();
+            })
+            .then(data=> {
+                var currentKey = Object.keys(data.result)[0];
+                var currentVal = data.result[currentKey];
+                var viewCurrentVal = data.result[currentKey];
+                if (!isNaN(viewCurrentVal)) {
+                    viewCurrentVal = numberWithCommas(currentVal);
+                }
+                document.getElementById("modalCurrent").textContent = viewCurrentVal;
+                if (currentEdit.dataType === "keyvalue") 
+                try { 
+                    kvMap = JSON.parse(currentVal);
+                } catch {
+                    document.getElementById("modalCurrent").textContent = "-";
+                };
+                renderModalInput(currentEdit, currentVal);
+            })
+            .catch(err=> {
+                alert('조회 실패' + err);
+            	document.getElementById("modalCurrent").textContent = "-";
+                editModal.hide();
+            });
+	}
+// 입력 컴포넌트 생성
+	function renderModalInput(cfg, curr) {
         var cont = document.getElementById("modalInputContainer");
-        cont.innerHTML = "";
+	    cont.innerHTML = "";
         var html = "";
-        switch(cfg.type) {
-           case "number":
-           html = `<input id="modalInput" type="number" class="form-control" value="${curr}">`;
-           break;
-           case "dropdown":
-           html = `<select id="modalInput" class="form-select">${cfg.options.map(o=>`<option value="${o}"${o===curr?' selected':''}>${o}</option>`).join('')}</select>`;
-           break;
-           case "toggle":
-           html = `<div class="form-check form-switch"><input id="modalInput" class="form-check-input" type="checkbox"${curr==='yes'?' checked':''}><label class="form-check-label">${cfg.desc}</label></div>`;
-           break;
-           case "password":
-           html = `<input id="modalInput" type="password" class="form-control" placeholder="새 비밀번호">`;
-           break;
-           case "text":
-           html = `<textarea id="modalInput" class="form-control" rows="3">${curr}</textarea>`;
-           break;
-           case "keyvalue":
-           html = `<div id="kvContainer" class="mb-2"></div><button id="addKvBtn" class="btn btn-sm btn-outline-secondary mb-3">+ 추가</button>`;
-           break;
+        switch(cfg.dataType) {
+            case "number":
+                html = `<input id="modalInput" type="number" class="form-control" value="${curr}">`;
+                break;
+            case "dropdown":
+                html = `<select id="modalInput" class="form-select">${cfg.options.map(o=>`<option value="${o}"${o===curr?' selected':''}>${o}</option>`).join('')}</select>`;
+                break;
+            case "toggle":
+                html = `<div class="form-check form-switch"><input id="modalInput" class="form-check-input" type="checkbox"${curr==='yes'?' checked':''}><label class="form-check-label">${cfg.description}</label></div>`;
+                break;
+            case "password":
+                html = `<input id="modalInput" type="password" class="form-control" placeholder="새 비밀번호">`;
+                break;
+            case "text":
+                html = `<textarea id="modalInput" class="form-control" rows="3">${curr}</textarea>`;
+                break;
+            case "keyvalue":
+                html = `<div id="kvContainer" class="mb-2"></div><button id="addKvBtn" class="btn btn-sm btn-outline-secondary mb-3">+ 추가</button>`;
+                break;
         }
         cont.innerHTML = html;
-        if (cfg.type === "keyvalue") initKeyValue();
-      }
-  
-      // keyvalue 초기화 및 렌더
-      function initKeyValue() {
-          var kvCont = document.getElementById("kvContainer"), addBtn = document.getElementById("addKvBtn");
-          addBtn.onclick = () => { 
-              kvMap[""] = ""; renderKV();
-          };
-  
-          function renderKV() {
-              kvCont.innerHTML = "";
-              Object.entries(kvMap).forEach(([k,v]) => {
-                  var row = document.createElement("div");
-                  row.className = "d-flex mb-2";
-                  row.innerHTML = `<input class="form-control me-2" data-key="key" value="${k}" placeholder="명령어">` +
-                                  `<input class="form-control me-2" data-key="value" value="${v}" placeholder="새 이름">` +
-                                  `<button class="btn btn-sm btn-danger">-</button>`;
-                  row.querySelector("button").onclick=()=>{
-                      delete kvMap[k];
-                      renderKV();
-                  };
-                  row.querySelectorAll("input").forEach(inp=>{
-                      inp.oninput=()=>{
-                          const newKey=row.querySelector("[data-key=key]").value;
-                          const newVal=row.querySelector("[data-key=value]").value;
-                          delete kvMap[k]; if(newKey) kvMap[newKey]=newVal; renderKV();
-                      };
-                  });
-                  kvCont.appendChild(row);
-              });
-          }
-          renderKV();
-      }
-  
-      // 저장 처리
-      document.getElementById("saveBtn").onclick=()=>{
-            var val;
-            if (currentEdit.type === "toggle") val = document.getElementById("modalInput").checked ? "yes":"no";
-            else if (currentEdit.type === "keyvalue") val = JSON.stringify(kvMap);
-            else val = document.getElementById("modalInput").value;
-              
-          fetch("/v1/management/config/" + currentEdit.key,{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({value:val})})
-              .then(res=> {
-                  res.json()
-              })
-              .then(data => { 
-                  document.querySelector(`.current-value[data-key="${currentEdit.key}"]`).textContent=data.value;
-                  editModal.hide();
-              })
-              .catch(err=>alert('저장 실패: '+err));
-  
-       // fetch('/api/config/set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:currentEdit.key,value:val})})
-      //	.then(res=>res.json())
-      //	.then(data=>{ document.querySelector(`.current-value[data-key="${currentEdit.key}"]`).textContent=data.value; editModal.hide(); })
-      //	.catch(err=>alert('저장 실패: '+err));
-      };
-  
-      // 탭 & 검색 이벤트
-      document.querySelectorAll("#categoryTabs .nav-link")
-            .forEach(tab=>tab.onclick=e=>{
-              e.preventDefault();
-              document.querySelectorAll("#categoryTabs .nav-link").forEach(t=>t.classList.remove("active")); 
-              tab.classList.add("active"); 
-              renderTable(tab.dataset.cat,document.getElementById("searchInput").value);
-        });
-  
-      document.getElementById("searchInput").oninput=()=>{
-          var cat=document.querySelector("#categoryTabs .nav-link.active").dataset.cat;
-          renderTable(cat,document.getElementById("searchInput").value);
-      };
-  
-      document.getElementById("resetBtn").onclick=()=>{
-          document.getElementById("searchInput").value="";
-          renderTable();
-      };
-  
-      // 조회
-      function getList(){
-          fetch("/v1/redis/stats")
-              .then(res=> { 
-                  return res.json();
-              })
-              .then(data=> {
-                  allItems = convertToConfigKeys(data[0].redisInfoList["sum"]);
-                  allItems = allItems.filter(i => (i.cat === 'Memory' && i.key === "maxmemory") 
-                      || (i.cat === 'Memory' && i.key === "maxmemoryPolicy")
-                      || (i.cat === 'Clients' && i.key === "maxclients")
-                      || (i.cat === 'Persistence' && i.key === "aofEnabled")
-                  )
-                  configKeys = allItems; 
-                  renderTable('All');
-              })
-              .catch(err=>alert("저장 실패: " + err));
-      }
-  
-      function convertToConfigKeys(data){
-          var result = [];
-          var sections = data;
-  
-          for (var [cat, values] of Object.entries(sections)){
-              for (var [key, val] of Object.entries(values)) {
-                    result.push({
-                      key: key,
-                      cat: capitaliz(cat),
-                      desc: "-",
-                      type: inputType(key),
-                      options: inputOption(key),
-                      val: values[key]
-                    });
-              }
+        if (cfg.dataType === "keyvalue") initKeyValue();
+    }
+
+	// keyvalue 초기화 및 렌더
+    function initKeyValue() {
+        var kvCont = document.getElementById("kvContainer")
+        var addBtn = document.getElementById("addKvBtn");
+        addBtn.onclick = () => { 
+            kvMap[""] = ""; renderKV();
+        };
+
+        function renderKV() {
+            kvCont.innerHTML = "";
+            Object.entries(kvMap).forEach(([k,v]) => {
+                var row = document.createElement("div");
+                row.className = "d-flex mb-2";
+                row.innerHTML = `<input class="form-control me-2" data-key="key" value="${k}" placeholder="명령어">` +
+                                `<input class="form-control me-2" data-key="value" value="${v}" placeholder="새 이름">` +
+                                `<button class="btn btn-sm btn-danger">-</button>`;
+                row.querySelector("button").onclick=()=>{
+                    delete kvMap[k];
+                    renderKV();
+                };
+                row.querySelectorAll("input").forEach(inp=>{
+                    inp.oninput=()=>{
+                        const newKey=row.querySelector("[data-key=key]").value;
+                        const newVal=row.querySelector("[data-key=value]").value;
+                        delete kvMap[k]; if(newKey) kvMap[newKey]=newVal; renderKV();
+                    };
+                });
+                kvCont.appendChild(row);
+            });
+        }
+        renderKV();
+    }
+
+    // 저장 처리
+    document.getElementById("saveBtn").onclick=()=>{
+        var val;
+        if (currentEdit.dataType === "toggle") val = document.getElementById("modalInput").checked ? "yes":"no";
+        else if (currentEdit.dataType === "keyvalue") val = JSON.stringify(kvMap);
+        else val = document.getElementById("modalInput").value;
+        
+        if (value === "" || value === null || value === undefined) {
+            alert("값을 입력해주세요");
+            return;
+        }
+        
+        if (currentEdit.dataType === "number") {
+            if (isNaN(val)) {
+                alert("숫자형이 아닙니다. 다시 입력해주세요");
+                return;
             }
-            return result;
-      }
-      
-      function capitaliz(str) {
-            return str.charAt(0).toUpperCase() + str.slice(1);
-      }
-  
-      function inputType(str){
-          var optionType = "";
-          switch(str) {
-              case 'maxmemoryPolicy':
-                  optionType = "dropdown";
-                   break;
-              default:
-                  optionType = 'text';
-          }
-          return optionType;
-      }
-  
-      function inputOption(str){
-          var optionValue = "";
-          switch(str) {
-              case "maxmemoryPolicy":
-                  optionValue = ["noeviction","allkeys-lru","volatile-lru","volatile-random"];
-                   break;
-              default:
-                  optionValue = "";
-          }
-          return optionValue;
-      }
-  
-      // 초기 렌더링
-      getList();
-      //renderTable();
-  </script>
-  
-          
-          
+        }
+
+        //TODO: login api 나오면 변경
+        $.ajax({
+            url: '../assets/json/login-verify.json',
+            method: "GET",
+            beforeSend: function(xhr) {
+                var token = sessionStorage.getItem("auth-token");
+                if (token) xhr.setRequestHeader("auth-token", token);
+            },
+            success: function(data) {
+                if (data.result) {
+                    //저장
+                    var formData = new URLSearchParams();
+                    formData.append("value", val);
+                    fetch("/v1/management/settings/config/" + currentEdit.key, {
+                        method:"PUT",
+                        headers:{"Content-Type":"application/x-www-form-urlencoded"},
+                        body: formData.toString()
+                        })
+                        .then(res=> {
+                        })
+                        .then(data => { 
+                            document.querySelector(`.current-value[data-key="${currentEdit.key}"]`).textContent = val;
+                            editModal.hide();
+                        })
+                        .catch(err=> {
+                            alert("저장 실패: " + err)
+                        });
+                } else {
+                    alert("로그인 검증 실패");
+                }
+            },
+            error: function(xhr, status, error) {
+                alert(error);
+            }
+        })
+
+
+        //var formData = new URLSearchParams();
+        //formData.append("value", val);
+        //
+        //// 저장
+        //fetch("/v1/management/settings/config/" + currentEdit.key, {
+        //    method:"PUT",
+        //    headers:{"Content-Type":"application/x-www-form-urlencoded"},
+        //    body: formData.toString()
+        //    })
+        //    .then(res=> {
+        //    })
+        //    .then(data => { 
+        //        document.querySelector(`.current-value[data-key="${currentEdit.key}"]`).textContent = val;
+        //        editModal.hide();
+        //    })
+        //    .catch(err=> {
+        //    	alert("저장 실패: " + err)
+        //    });
+	};//
+
+    // 로그인 처리
+    document.getElementById("saveLoginBtn").onclick=()=>{
+        var id = document.getElementById("loginModalInputId").value;
+        var pwd = document.getElementById("loginModalInputPassword").value;
+        
+        if (id != 'admin' || pwd != 'ezwel1234') {
+            alert("값이 올바르지 않습니다");
+            return;
+        }
+
+        // TODO: 로그인 api 나오면 변경
+        $.ajax({
+            url: '../assets/json/login.json',
+            method: "GET",
+            dataType: "json",
+            success: function(data) {
+                if (data.result) {
+                    sessionStorage.setItem("auth-token", data.token);
+                    loginModal.hide();
+                    openEditModal(editEventObject);
+                    editEventObject = null; // 재사용 방지
+                } else {
+                    alert("로그인 인증이 실패하였습니다");
+                    return;
+                }
+            },
+            error: function(xhr, status, error) {
+                alert(error);
+            }
+        })
+
+
+        // 저장
+        //var formData = new URLSearchParams();
+        //formData.append("value", val);
+        //fetch("/v1/management/settings/config/" + currentEdit.key, {
+        //    method:"PUT",
+        //    headers:{"Content-Type":"application/x-www-form-urlencoded"},
+        //    body: formData.toString()
+        //    })
+        //    .then(res=> {
+        //    })
+        //    .then(data => { 
+        //        document.querySelector(`.current-value[data-key="${currentEdit.key}"]`).textContent = val;
+        //        editModal.hide();
+        //    })
+        //    .catch(err=> {
+        //    	alert("저장 실패: " + err)
+        //    });
+	};
+
+
+    // 검색이벤트	
+    document.getElementById("searchInput").oninput=()=>{
+        var cat = document.querySelector("#categoryTabs .nav-link.active").dataset.cat;
+        renderTable(cat,document.getElementById("searchInput").value);
+    };
+
+    // 초기화
+    document.getElementById("resetBtn").onclick=()=>{
+        document.getElementById("searchInput").value = "";
+        renderTable();
+    };
+
+	// 상단 Category
+    function setCategory(data){
+        var categories = data.map(item => item.category);
+        var uniqueCategory = [...new Set(categories)];
+        var ul = document.getElementById("categoryTabs");
+        var html = `<li class="nav-item"><a class="nav-link active" data-cat="All" href="#">전체</a></li>`;
+        uniqueCategory.forEach(category => {
+            html += `<li class="nav-item"><a class="nav-link" data-cat="${category}" href="#">${category}</a></li>`;
+        })
+        ul.innerHTML = html;
+
+		// 탭 & 검색 이벤트
+        ul.addEventListener("click", e=> {
+            if(e.target && e.target.matches(".nav-link")) {
+                document.querySelectorAll("#categoryTabs .nav-link").forEach(t=>t.classList.remove("active")); 
+                e.target.classList.add("active"); 
+                renderTable(e.target.dataset.cat, document.getElementById("searchInput").value);
+            }
+        })
+    }
+
+    function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+	
+	// 조회
+    function getList(){
+        fetch("/v1/management/settings/configs")
+            .then(res=> { 
+                return res.json();
+            })
+            .then(data=> {
+                setCategory(data.configKeys);
+                configKeys = data.configKeys;
+                renderTable("All");
+            })
+            .catch(err=>alert("조회 실패: " + err));
+    }
+
+	// 처음 로드되었을 떄 
+	getList();
+	
+</script>
+		
