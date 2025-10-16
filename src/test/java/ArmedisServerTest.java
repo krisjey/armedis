@@ -14,11 +14,6 @@ import com.github.armedis.http.service.AbstractRedisServerTest;
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
 public class ArmedisServerTest extends AbstractRedisServerTest {
 
-    @BeforeAll
-    static void setUp() {
-//        System.out.println("Hello world");
-    }
-
     @Test
     public void test() {
         LocalIpAddress localIpAddress = new LocalIpAddress();
@@ -28,11 +23,6 @@ public class ArmedisServerTest extends AbstractRedisServerTest {
         // local IP address, This address connectable at out of the system.
 //        assertThat(ipAddress).isEqualTo("175.123.88.73");
         assertThat(ipAddress).isNotNull();
-    }
-
-    @AfterAll
-    static void tearDown() {
-
     }
 
 }
