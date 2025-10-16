@@ -114,7 +114,8 @@
 <script src="/assets/js/common.js"></script>
 
 <script>
-    var intervalId = undefined;
+    window.globalIntervalIds = window.globalIntervalIds || [];
+    
     var charts = {};
     var statsData = [];
     var tpsSeries = [{ name: "TPS", data: [] }];
@@ -648,6 +649,13 @@
         getStats();
     }
 
+    function clearIntervalIds() {
+        if (window.globalIntervalIds.length > 0) {
+            window.globalIntervalIds.forEach(id => clearInterval(id));
+            window.globalIntervalIds = [];
+        }
+    }
+
     // Life Cycle START
     var hiddenAt = null; // 최소화 시작 시간 기록
     window.pageHooks = window.pageHooks || {};
@@ -658,13 +666,15 @@
             initChart();
             initTableHeader();
             intervalInit();
-            intervalId = setInterval(intervalInit, 1000);
+            
+            // 기존 interval 모두 제거
+            clearIntervalIds();
+            var intervalId = setInterval(intervalInit, 1000);
+            window.globalIntervalIds.push(intervalId);
         },
         // 페이지를 떠날 때
         onUnload: function () {
-            if (intervalId) {
-                clearInterval(intervalId);
-            }
+            clearIntervalIds();
         }
     };
 

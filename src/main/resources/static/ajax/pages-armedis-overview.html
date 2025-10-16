@@ -354,7 +354,8 @@
 <script src="/assets/js/common.js"></script>
 
 <script>
-    var intervalId = undefined;
+    window.globalIntervalIds = window.globalIntervalIds || [];
+
     var charts = {};
     var statsData = [];
     
@@ -679,13 +680,17 @@
         // keyspace Bar 배경색 변경
         var cardBodyTarget = "nonTtl";
         var colors = getChartColorsArray(cardBodyTarget);
-        document.getElementById("keyspaceCard").querySelector(".ks-bar").style.backgroundColor = colors[0];
 
-        var total = Math.max(keys, 1);
-        var expiredPct = Math.round((expires / total) * 100);
-        $("#nonTtl").css("width", Math.max(2, expiredPct) + "%");
-        $("#ttlCount").text(expires.toLocaleString());
-        $("#nonTtlCount").text(nonTTL.toLocaleString());
+        var parent = document.getElementById("keyspaceCard");
+        if (parent) {
+            parent.querySelector(".ks-bar").style.backgroundColor = colors[0];
+    
+            var total = Math.max(keys, 1);
+            var expiredPct = Math.round((expires / total) * 100);
+            $("#nonTtl").css("width", Math.max(2, expiredPct) + "%");
+            $("#ttlCount").text(expires.toLocaleString());
+            $("#nonTtlCount").text(nonTTL.toLocaleString());
+        }
     }
 
     // hitRate 설정
@@ -882,6 +887,13 @@
         getSlowlog();
     }
 
+    function clearIntervalIds() {
+        if (window.globalIntervalIds.length > 0) {
+            window.globalIntervalIds.forEach(id => clearInterval(id));
+            window.globalIntervalIds = [];
+        }
+    }
+
     window.pageHooks = window.pageHooks || {};
     window.pageHooks["pages-armedis-overview.html"] = {
         onLoad: function () {
@@ -889,14 +901,16 @@
             initChart();
             initTable();
             intervalInit();
-            intervalId = setInterval(() => {
+            
+            // 기존 interval 모두 제거
+            clearIntervalIds();
+            var intervalId = setInterval(() => {
                 intervalInit();
             }, 5000);
+            window.globalIntervalIds.push(intervalId);
         },
         onUnload: function () {
-            if (intervalId) {
-                clearInterval(intervalId);
-            }
+            clearIntervalIds();
         }
     };
 </script>
