@@ -1,4 +1,4 @@
-<div class="page-content">
+﻿<div class="page-content">
     <div class="container-fluid">
         <div class="row">
             <div class="col-xl-6">
@@ -326,17 +326,16 @@
         var cardIds = ["tpsCard", "hitRateCard", "memoryCard"];
 
         cardIds.forEach((elem, idx) => {
-            charts[elem].destroy();
-            delete charts[elem];
+            if (charts[elem]) {
+                charts[elem].destroy();
+                delete charts[elem];
+            }
 
             switch (idx) {
                 case 1: hitRateSeries[0].data = []; break;
                 case 2: memorySeries[0].data = []; break;
                 default: tpsSeries[0].data = [];
             }
-
-            var parent = document.getElementById(elem);
-            var chartElement = parent.querySelector("#area_chart_stacked");
         });
 
         initChart();

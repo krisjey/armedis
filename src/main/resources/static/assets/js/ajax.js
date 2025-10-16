@@ -7,7 +7,15 @@ Contact: Themesbrand@gmail.com
 File: Ajax Js File
 */
 
+var layoutSetupInitialized = false; // 플래그: 이벤트 리스너가 이미 등록되었는지 확인
+
 function setupLayout() {
+	// 이미 이벤트 리스너가 등록되었으면 다시 등록하지 않음
+	if (layoutSetupInitialized) {
+		return;
+	}
+	layoutSetupInitialized = true;
+
 	var menuLinks = document.querySelectorAll("#navbar-nav li a");
 
 	menuLinks.forEach(function (ele, i) {
@@ -124,6 +132,9 @@ function call_ajax_page(page) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+	// DOM이 준비된 후 setupLayout() 호출
+	setupLayout();
+
 	var currentPage = document.location.hash;
 	if (currentPage) {
 		currentPage = currentPage.replace("#", "");
@@ -146,9 +157,3 @@ document.body.addEventListener("click", function (e) {
 	}
 });
 
-function windowResizeHover() {
-	setupLayout();
-}
-
-window.addEventListener("resize", windowResizeHover);
-windowResizeHover();
