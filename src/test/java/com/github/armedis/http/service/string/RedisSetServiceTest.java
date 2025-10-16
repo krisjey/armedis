@@ -27,43 +27,34 @@ import com.linecorp.armeria.common.RequestHeaders;
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
 public class RedisSetServiceTest extends AbstractRedisServerTest {
     @Test
-    void testSetAndGetCommand() throws JsonParseException, JsonMappingException, IOException {
+    void testSetCommand() throws JsonParseException, JsonMappingException, IOException {
         // TODO data 응답 크기 제한 필요.
 
-        String response = null;
-        
-        // application/x-www-form-urlencoded Content-Type 지정
+        String responseString = null;
+
         RequestHeaders headers = RequestHeaders.builder()
                 .method(HttpMethod.POST)
-                .path("/v1/set/keyname:nokey")
+                .path("/v1/set/" + StringServiceTestSuite.TEST_KEY)
                 .contentType(MediaType.FORM_DATA) // = "application/x-www-form-urlencoded"
                 .build();
 
-     // form-urlencoded body 생성
-        String formBody = "value=1759994898 hello world23";
+        String formBody = "value=" + StringServiceTestSuite.TEST_VALUE;
 
-        HttpRequest req = HttpRequest.of(headers, HttpData.ofUtf8(formBody));
+        HttpRequest request = HttpRequest.of(headers, HttpData.ofUtf8(formBody));
 
-        AggregatedHttpResponse res = client.execute(req)
-                                           .aggregate()
-                                           .join();
-        
-        /**
-             * HttpResponse response = client.prepare()
-             *                               .post("/foo")
-             *                               .header(HttpHeaderNames.AUTHORIZATION, ...)
-             *                               .content(MediaType.JSON, ...)
-             *                               .execute();
-         */
-        assertThat(res.status()).isEqualTo(HttpStatus.OK);
+        AggregatedHttpResponse response = client.execute(request).aggregate().join();
 
-        response = res.content().toStringUtf8();
+        assertThat(response.status()).isEqualTo(HttpStatus.OK);
 
-        assertThat(response).isNotNull();
+        responseString = response.content().toStringUtf8();
 
-        assertThatJson(response)
+        assertThat(responseString).isNotNull();
+
+        assertThatJson(responseString)
                 .as("Check result field in result json")
                 .node("result").isPresent()
                 .node("result").isEqualTo("OK");
+
+
     }
 }
