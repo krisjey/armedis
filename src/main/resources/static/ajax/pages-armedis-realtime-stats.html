@@ -125,128 +125,152 @@
         { name: "Used Memory", data: [] }
     ];
     var tables = [
-        { id: "redisAnalysis", headers: ['Time', 'CPU', 'Clients', 'bClients', 'Mem', 'RSS', 'keys', 'CPS', 'EXP', 'EVT', 'HitRate', 'HIT', 'IN', 'OUT'] }
+        { 
+            id: "redisAnalysis", 
+            headers: [
+                    { name: "time", title: "Time", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
+                    { name: "cpu", title: "CPU", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
+                    { name: "clients", title: "Clients", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
+                    { name: "bclients", title: "bClients", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
+                    { name: "mem", title: "Mem", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
+                    { name: "rss", title: "RSS", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
+                    { name: "keys", title: "keys", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
+                    { name: "cps", title: "CPS", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
+                    { name: "exp", title: "EXP", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
+                    { name: "evt", title: "EVT", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
+                    { name: "hitrate", title: "HitRate", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
+                    { name: "hit", title: "HIT", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
+                    { name: "in", title: "IN", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
+                    { name: "out", title: "OUT", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } }
+            ] 
+        }
     ];
 
     // 차트 영역 생성
     function createChartCard(cardId, series) {
         var parent = document.getElementById(cardId);
-        var chartElement = parent.querySelector("#area_chart_stacked");
-        var yaxis = {};
-
-        if (cardId === "memoryCard") {
-            yaxis = {
-                labels: {
-                    formatter: function (value) {
-                        return getMemoryCapacityUnit(value);
-                    },
-                    style: {
-                        colors: "#666"
+        if (parent) {
+            var chartElement = parent.querySelector("#area_chart_stacked");
+            var yaxis = {};
+    
+            if (cardId === "memoryCard") {
+                yaxis = {
+                    min: 0,
+                    labels: {
+                        formatter: function (value) {
+                            return getMemoryCapacityUnit(value);
+                        },
+                        style: {
+                            colors: "#666"
+                        }
+                    }
+                }
+            } else if (cardId === "hitRateCard") {
+                yaxis = {
+                    min: 0,
+                    max: 100,
+                    labels: {
+                        formatter: function (value) {
+                            return value.toFixed(0)
+                        },
+                        style: {
+                            colors: "#666"
+                        }
+                    }
+                }
+            } else {
+                yaxis = {
+                    min: 0,
+                    labels: {
+                        formatter: function (value) {
+                            return value.toFixed(0) // Y축 레이블 포맷 (정수)
+                        },
+                        style: {
+                            colors: "#666"
+                        }
                     }
                 }
             }
-        } else if (cardId === "hitRateCard") {
-            yaxis = {
-                max: 100,
-                labels: {
-                    formatter: function (value) {
-                        return value.toFixed(0)
+    
+            // 차트
+            var chartOptions = {
+                chart: {
+                    id: cardId,
+                    type: "area",
+                    height: 350,
+                    toolbar: {
+                        show: true,
+                        tools: {
+                            download: true,
+                            selection: false,
+                            zoom: false,
+                            zoomin: false,
+                            zoomout: false,
+                            pan: true,
+                            reset: false
+                        }
                     },
-                    style: {
-                        colors: "#666"
-                    }
-                }
-            }
-        } else {
-            yaxis = {
-                labels: {
-                    formatter: function (value) {
-                        return value.toFixed(0) // Y축 레이블 포맷 (정수)
-                    },
-                    style: {
-                        colors: "#666"
-                    }
-                }
-            }
-        }
-
-        // 차트
-        var chartOptions = {
-            chart: {
-                id: "area-chart",
-                type: "area",
-                height: 350,
-                toolbar: {
-                    show: true,
-                    tools: {
-                        download: true,
-                        selection: false,
-                        zoom: false,
-                        zoomin: false,
-                        zoomout: false,
-                        pan: true,
-                        reset: false
+                    animations: {
+                        enabled: true, // 데이터 업데이트 시 부드러운 애니메이션 효과
+                        easing: "linear",
+                        animateGradually: {
+                            enabled: true,
+                        },
+                        dynamicAnimation: {
+                            enabled: true,
+                            speed: 1000
+                        }
                     }
                 },
-                animations: {
-                    enabled: true, // 데이터 업데이트 시 부드러운 애니메이션 효과
-                    easing: "linear",
-                    animateGradually: {
-                        enabled: true,
-                    },
-                    dynamicAnimation: {
-                        enabled: true,
-                        speed: 1000
+                xaxis: {
+                    type: "datetime", // X축 타입을 datetime으로 설정\
+                    labels: {
+                        formatter: function (val) {
+                            return moment(val).format("HH:mm");
+                        },
+                        style: {
+                            colors: "#666"
+                        }
                     }
-                }
-            },
-            xaxis: {
-                type: "datetime", // X축 타입을 datetime으로 설정\
-                labels: {
-                    formatter: function (val) {
-                        return moment(val).format("HH:mm");
-                    },
-                    style: {
-                        colors: "#666"
+                },
+                yaxis,
+                series,
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    curve: "smooth",
+                    width: 2
+                },
+                fill: {
+                    opacity: 0.06,
+                    colors: getChartColorsArray(cardId),
+                    type: "solid"
+                },
+                tooltip: {
+                    enabled: true,
+                    followCursor: true,
+                    x: {
+                        format: "HH:mm:ss" // 툴팁 X축 포맷 (시간과 날짜 포함)
                     }
-                }
-            },
-            yaxis,
-            series,
-            dataLabels: {
-                enabled: false
-            },
-            stroke: {
-                curve: "smooth",
-                width: 2
-            },
-            fill: {
-                opacity: 0.06,
+                },
                 colors: getChartColorsArray(cardId),
-                type: "solid"
-            },
-            tooltip: {
-                enabled: true,
-                followCursor: true,
-                x: {
-                    format: "HH:mm:ss" // 툴팁 X축 포맷 (시간과 날짜 포함)
-                }
-            },
-            colors: getChartColorsArray(cardId),
-            legend: {
-                position: "bottom"
-            },
-            grid: {
-                row: {
-                    colors: ["#f3f3f3", "transparent"], // 교차 행 색상
-                    opacity: 0.5
+                legend: {
+                    position: "bottom"
+                },
+                grid: {
+                    row: {
+                        colors: ["#f3f3f3", "transparent"], // 교차 행 색상
+                        opacity: 0.5
+                    }
                 }
             }
+    
+            // var chart = new ApexCharts(chartElement, chartOptions);
+            // chart.render();
+            charts[cardId] = new ApexCharts(chartElement, chartOptions);
+            charts[cardId].render();
         }
-
-        var chart = new ApexCharts(chartElement, chartOptions);
-        chart.render();
-        charts[cardId] = chart;
     }
 
     // 차트 그리기
@@ -258,13 +282,15 @@
                 datas.push({ data: [_.last(elem.data)] });
             });
 
-            charts[cardId].appendData(datas);
-            charts[cardId].updateOptions({
-                xaxis: {
-                    min: series[0].data[0].x,
-                    max: series[0].data[series[0].data.length - 1].x
-                }
-            }, false, true);
+            if (charts[cardId] && datas && datas.length > 0) {
+                charts[cardId].appendData(datas);
+                charts[cardId].updateOptions({
+                    xaxis: {
+                        min: series[0].data[0].x,
+                        max: series[0].data[series[0].data.length - 1].x
+                    }
+                }, false, true);
+            }
         }
     }
 
@@ -292,6 +318,27 @@
         createChartCard("tpsCard", tpsSeries);
         createChartCard("hitRateCard", hitRateSeries);
         createChartCard("memoryCard", memorySeries);
+    }
+
+    // 차트 제거 후 재생성
+    function destroyChart() {
+        var cardIds = ["tpsCard", "hitRateCard", "memoryCard"];
+
+        cardIds.forEach((elem, idx) => {
+            charts[elem].destroy();
+            delete charts[elem];
+
+            switch (idx) {
+                case 1: hitRateSeries[0].data = []; break;
+                case 2: memorySeries[0].data = []; break;
+                default: tpsSeries[0].data = [];
+            }
+
+            var parent = document.getElementById(elem);
+            var chartElement = parent.querySelector("#area_chart_stacked");
+        });
+
+        initChart();
     }
 
     // TPS 차트 데이터 설정
@@ -369,24 +416,37 @@
         addDataPoint(cardId, memorySeries);
     }
 
-    // Table Header 설정
-    function createTableHeader(cardId, headers) {
+    // Table 설정
+    function createInitTable(cardId, headers) {
         var parent = document.getElementById(cardId);
-        var tableTr = parent.querySelector("table thead tr");
-
-        tableTr.innerHTML = "";
+        var tableTheadTr = parent.querySelector("table thead tr");
+        var tableTbody = parent.querySelector("table tbody");
+        
+        // Table thead 설정
+        tableTheadTr.innerHTML = "";
         headers.forEach(elem => {
             var tableTh = document.createElement("th");
-            tableTh.style.textAlign = "center";
-            tableTh.innerText = elem;
-            tableTr.appendChild(tableTh);
+            tableTh.style.textAlign = elem.style.headerTextAlign;
+            tableTh.innerText = elem.title;
+            tableTheadTr.appendChild(tableTh);
         });
+        
+        // Table tbody 설정
+        var tableTbodyTr = document.createElement("tr");
+        var tableTd = document.createElement("td");
+        tableTd.textContent = "데이터가 없습니다.";
+        tableTd.style.textAlign = "center";
+        tableTd.colSpan = headers.length;
+        tableTbodyTr.appendChild(tableTd);
+
+        tableTbody.innerHTML = "";
+        tableTbody.appendChild(tableTbodyTr);
     }
 
     // Table Header 초기설정
     function initTableHeader() {
         tables.forEach(elem => {
-            createTableHeader(elem.id, elem.headers);
+            createInitTable(elem.id, elem.headers);
         });
     }
 
@@ -412,12 +472,12 @@
                 bClients: elem.redisInfoList.sum.clients.blockedClients.toFixed(2) ?? "-",
                 Mem: getMemoryCapacityUnit(elem.redisInfoList.sum.memory.usedMemory) ?? "-",
                 RSS: getMemoryCapacityUnit(elem.redisInfoList.sum.memory.usedMemoryRss) ?? "-",
-                keys: elem.redisInfoList.sum.keyspace["0"].keys ?? "-",
-                CPS: elem.redisInfoList.sum.stats.instantaneousOpsPerSec ?? "-",
-                EXP: elem.redisInfoList.sum.stats.expiredKeys ?? "-",
-                EVT: elem.redisInfoList.sum.stats.evictedKeys ?? "-",
+                keys: elem.redisInfoList.sum.keyspace["0"].keys.toLocaleString() ?? "-",
+                CPS: elem.redisInfoList.sum.stats.instantaneousOpsPerSec.toLocaleString() ?? "-",
+                EXP: elem.redisInfoList.sum.stats.expiredKeys.toLocaleString() ?? "-",
+                EVT: elem.redisInfoList.sum.stats.evictedKeys.toLocaleString() ?? "-",
                 HitRate: (hitRate * 100).toFixed(3) ?? "-",
-                HIT: elem.redisInfoList.sum.stats.keyspaceHits ?? "-",
+                HIT: elem.redisInfoList.sum.stats.keyspaceHits.toLocaleString() ?? "-",
                 IN: elem.redisInfoList.sum.stats.instantaneousInputKbps.toFixed(2) ?? "-",
                 OUT: elem.redisInfoList.sum.stats.instantaneousOutputKbps.toFixed(2) ?? "-"
             }
@@ -428,21 +488,34 @@
 
             var cardId = "redisAnalysis";
             var parent = document.getElementById(cardId);
-
-            var parent = document.getElementById(cardId);
-            var tableTbody = parent.querySelector("table tbody");
-            tableTbody.innerHTML = "";
-            redisStatDatas.forEach(elem => {
-                var tableTr = document.createElement("tr");
-                var keys = Object.keys(elem);
-                keys.forEach(key => {
+            if (parent) {
+                var tableTbody = parent.querySelector("table tbody");
+                
+                tableTbody.innerHTML = "";
+                if (cloneStatsData.length > 0) {
+                    redisStatDatas.forEach(elem => {
+                        var tableTr = document.createElement("tr");
+                        var keys = Object.keys(elem);
+                        keys.forEach(key => {
+                            var tableTd = document.createElement("td");
+                            tableTd.style.textAlign = "center";
+                            tableTd.innerText = elem[key];
+                            tableTr.appendChild(tableTd);
+                        })
+                        tableTbody.appendChild(tableTr);
+                    });
+                } else {
+                    var tableTr = document.createElement("tr");
                     var tableTd = document.createElement("td");
+                    tableTd.textContent = "데이터가 없습니다.";
                     tableTd.style.textAlign = "center";
-                    tableTd.innerText = elem[key];
+                    tableTd.colSpan = tableInfo.headers.length;
                     tableTr.appendChild(tableTd);
-                })
-                tableTbody.appendChild(tableTr);
-            });
+    
+                    tableTbody.innerHTML = "";
+                    tableTbody.appendChild(tableTr);
+                }
+            }
         });
     }
 
@@ -540,13 +613,13 @@
                             elem[port] = redisInfo.memory.maxmemoryPolicy;
                             return true;
                         } else if (elem["information"] == "connected_clients") {
-                            elem[port] = redisInfo.clients.connectedClients;
+                            elem[port] = redisInfo.clients.connectedClients.toLocaleString();
                             return true;
                         } else if (elem["information"] == "pid") {
-                            elem[port] = redisInfo.server.processId;
+                            elem[port] = redisInfo.server.processId.toLocaleString();
                             return true;
                         } else if (elem["information"] == "maxclients") {
-                            elem[port] = redisInfo.clients.maxclients;
+                            elem[port] = redisInfo.clients.maxclients.toLocaleString();
                             return true;
                         } else if (elem["information"] == "blocked_clients") {
                             elem[port] = redisInfo.clients.blockedClients;
@@ -559,18 +632,24 @@
                     });
                 }
             })
-
         });
 
         // 테이블 그리기
         var cardId = "instanceInformation";
         var parent = document.getElementById(cardId);
-        var cardBody = parent.querySelector(".card-body");
-        cardBody.innerHTML = "";
-        cardBody.appendChild(createTable(redisInfoHeaders, instanceInfoData, "table table-bordered dt-responsive nowrap table-striped align-middle", { width: "100%" }));
+        if (parent) {
+            var cardBody = parent.querySelector(".card-body");
+            cardBody.innerHTML = "";
+            cardBody.appendChild(createTable(redisInfoHeaders, instanceInfoData, "table table-bordered dt-responsive nowrap table-striped align-middle", { width: "100%" }));
+        }
+    }
+
+    function intervalInit() {
+        getStats();
     }
 
     // Life Cycle START
+    var hiddenAt = null; // 최소화 시작 시간 기록
     window.pageHooks = window.pageHooks || {};
     window.pageHooks["pages-armedis-realtime-stats.html"] = {
         // 페이지가 로드 됐을 때
@@ -578,7 +657,8 @@
             initCard();
             initChart();
             initTableHeader();
-            intervalId = setInterval(getStats, 1000);
+            intervalInit();
+            intervalId = setInterval(intervalInit, 1000);
         },
         // 페이지를 떠날 때
         onUnload: function () {
@@ -587,5 +667,22 @@
             }
         }
     };
+
+    document.addEventListener("visibilitychange", function() {
+        if (document.hidden) {
+            hiddenAt = Date.now();
+        } else {
+            var hiddenDuration = (Date.now() - hiddenAt) / 1000;
+            console.log(`브라우저가 ${hiddenDuration}초 동안 비활성화됨`);
+
+            // 특정 시간 이상일 때만 실행
+            if (hiddenDuration > 10) {
+                console.log("차트 재랜더링!");
+                
+                // 차트 제거 후 재랜더링
+                destroyChart();
+            }
+        }
+    });
     // Life Cycle END
 </script>
