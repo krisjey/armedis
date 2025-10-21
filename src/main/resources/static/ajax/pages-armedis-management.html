@@ -32,7 +32,7 @@
             <thead>
                 <tr>
                     <th>설정 키</th>
-                    <th>현재값</th>
+                    <!-- <th>현재값</th> -->
                     <th>설명</th>
                     <th>편집</th>
 	            </tr>
@@ -61,24 +61,38 @@
         </div> 
         <!-- 로그인 모달 -->
         <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true" style="position: fixed;">
-        <!--      <div class="modal-dialog">-->
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="loginModalTitle">Login</h5>
+                        <h5 class="modal-title" id="loginModalTitle">Lock Screen</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <div id="modalInputContainer">
-                            <input id="loginModalInputId" type="text" class="form-control" value="admin" placeholder="ID">
-                            <input id="loginModalInputPassword" type="password" class="form-control" value="ezwel1234" placeholder="PASSWORD">
+                        <div class="user-thumb text-center">
+                            <img src="/assets/images/users/avatar-3.jpg" class="rounded-circle img-thumbnail avatar-lg" alt="thumbnail">
+                            <h5 class="font-size-15 mt-3">krisjey</h5>
+                        </div>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" placeholder="Enter username" value="admin">
+                        </div>
+
+                        <form>
+                            <div class="mb-3 position-relative">
+                                <label class="form-label" for="password-input">Password</label>
+                                <div class="position-relative auth-pass-inputgroup mb-3">
+                                    <input type="password" class="form-control pe-5 password-input" placeholder="Enter password" id="password-input" value="armedis1234!">
+                                    <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon" type="button" id="password-addon"><i class="ri-eye-fill align-middle"></i></button>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="mt-4">
+                            <button type="button" class="btn btn-primary w-100" id="saveLoginBtn">Unlock</button>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" id="saveLoginBtn" class="btn btn-primary w-100">로그인</button>
-	                </div>
                 </div>
-            </div>
-        </div> 
+            </div> 
+        </div>
     </div>
     <!-- container-fluid -->
     <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
@@ -93,15 +107,12 @@
 </div>
 <!-- End Page-content -->  
 
-<script src="/assets/js/common.js"></script>
-
-<style>
-	.current-value { font-weight: bold; }
-</style>
-<!-- 로컬 JS 참조 -->
-<!-- <script src="/assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script> -->
+<!-- <script src="/assets/js/common.js"></script> -->
+<!-- password-addon init -->
+<script src="/assets/js/pages/password-addon.init.js"></script>
 
 <script>
+
 	// 설정 메타데이터
 	var configKeys = [
 	//{ key:'maxmemory',            category:'Memory',      description:'최대 메모리 사용량 (바이트)',           dataType:'number' },
@@ -129,49 +140,47 @@
     var currentEdit = null;
 	var kvMap = {};
 	var editEventObject = null; //클릭 이벤트 객체
-
+    
 	// 테이블 렌더링
 	function renderTable(category="All", filter="") {
         tableBody.innerHTML = "";
-        configKeys.filter(i => (category==="All" || i.category===category) && (i.key.includes(filter) || i.description.includes(filter)))
-	               .forEach(i => {
-                  var tr = document.createElement("tr");
-                  tr.innerHTML = `
-                    <td>${i.key}</td>
-                    <td><span class="current-value" data-key="${i.key}">${i.currentValue ?? "-"}</span></td>
-                    <td>${i.description}</td>
-                    <td><button class="btn btn-sm btn-outline-primary edit-btn" data-key="${i.key}" data-cat="${i.category}">✏️</button></td>
-                    `;
-                  tableBody.appendChild(tr);
-                });
-       document.querySelectorAll(".edit-btn").forEach(btn => btn.addEventListener("click", openModal));
-    }
 
+        if (!configKeys || configKeys.length === 0) {
+            initTable();
+        } else {
+            configKeys.filter(i => (category==="All" || i.category===category) && (i.key.includes(filter) || i.description.includes(filter)))
+                    .forEach(i => {
+                    var tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${i.key}</td>
+                        <td>${i.description}</td>
+                        <td><button class="btn btn-sm btn-outline-primary edit-btn" data-key="${i.key}" data-cat="${i.category}">✏️</button></td>
+                        `;
+                    tableBody.appendChild(tr);
+                    });
+            document.querySelectorAll(".edit-btn").forEach(btn => btn.addEventListener("click", openModal));
+        }
+    }
 
     // 모달 열기
     function openModal(e) {
-        // 로그인 모달 열기
-        editEventObject = e.currentTarget.dataset;
-        loginModal.show();
-	}
-
-    // 모달 열기
-    function openEditModal(e) {
+        var event = e.currentTarget.dataset;
         var itemsList = []; 
-        var key = e.key;
-        var cat = e.cat;
+        var key = event.key;
+        var cat = event.cat;
         currentEdit = configKeys.find(i => i.key === key);
         document.getElementById("modalTitle").textContent = `${key} 설정 변경`;
         document.getElementById("modalCurrent").textContent = "불러오는 중...";
         kvMap = {};
         renderModalInput(currentEdit, "");
         editModal.show();
-//       // 조회
+        //       // 조회
         fetch("/v1/management/settings/config/" + key)
             .then(res=> {
                 if (!res.ok) {
                     editModal.hide();
-                    throw new Error('조회 실패 : ' + res.statusText);
+                    console.error(res.statusText);
+                    alert("관리자에게 문의하세요");
                 }
                 return res.json();
             })
@@ -192,7 +201,8 @@
                 renderModalInput(currentEdit, currentVal);
             })
             .catch(err=> {
-                alert('조회 실패' + err);
+                console.error(err);
+                alert("관리자에게 문의하세요:" + err);
             	document.getElementById("modalCurrent").textContent = "-";
                 editModal.hide();
             });
@@ -266,7 +276,7 @@
         else if (currentEdit.dataType === "keyvalue") val = JSON.stringify(kvMap);
         else val = document.getElementById("modalInput").value;
         
-        if (value === "" || value === null || value === undefined) {
+        if (val === "" || val === null || val === undefined) {
             alert("값을 입력해주세요");
             return;
         }
@@ -277,115 +287,77 @@
                 return;
             }
         }
-
-        //TODO: login api 나오면 변경
-        $.ajax({
-            url: '../assets/json/login-verify.json',
-            method: "GET",
-            beforeSend: function(xhr) {
-                var token = sessionStorage.getItem("auth-token");
-                if (token) xhr.setRequestHeader("auth-token", token);
-            },
-            success: function(data) {
-                if (data.result) {
-                    //저장
-                    var formData = new URLSearchParams();
-                    formData.append("value", val);
-                    fetch("/v1/management/settings/config/" + currentEdit.key, {
-                        method:"PUT",
-                        headers:{"Content-Type":"application/x-www-form-urlencoded"},
-                        body: formData.toString()
-                        })
-                        .then(res=> {
-                        })
-                        .then(data => { 
-                            document.querySelector(`.current-value[data-key="${currentEdit.key}"]`).textContent = val;
-                            editModal.hide();
-                        })
-                        .catch(err=> {
-                            alert("저장 실패: " + err)
-                        });
-                } else {
-                    alert("로그인 검증 실패");
-                }
-            },
-            error: function(xhr, status, error) {
-                alert(error);
-            }
-        })
-
-
-        //var formData = new URLSearchParams();
-        //formData.append("value", val);
-        //
-        //// 저장
-        //fetch("/v1/management/settings/config/" + currentEdit.key, {
-        //    method:"PUT",
-        //    headers:{"Content-Type":"application/x-www-form-urlencoded"},
-        //    body: formData.toString()
-        //    })
-        //    .then(res=> {
-        //    })
-        //    .then(data => { 
-        //        document.querySelector(`.current-value[data-key="${currentEdit.key}"]`).textContent = val;
-        //        editModal.hide();
-        //    })
-        //    .catch(err=> {
-        //    	alert("저장 실패: " + err)
-        //    });
-	};//
+        loginModal.show();
+	};
 
     // 로그인 처리
     document.getElementById("saveLoginBtn").onclick=()=>{
-        var id = document.getElementById("loginModalInputId").value;
-        var pwd = document.getElementById("loginModalInputPassword").value;
-        
-        if (id != 'admin' || pwd != 'ezwel1234') {
-            alert("값이 올바르지 않습니다");
+        var val;
+        if (currentEdit.dataType === "toggle") val = document.getElementById("modalInput").checked ? "yes":"no";
+        else if (currentEdit.dataType === "keyvalue") val = JSON.stringify(kvMap);
+        else val = document.getElementById("modalInput").value;
+
+        var id = document.getElementById("username").value;
+        var pwd = document.getElementById("password-input").value;
+
+        if (id === "" || id === null || id === undefined) {
+            alert("아이디를 입력해주세요");
+            return;
+        }
+        if (pwd === "" || pwd === null || pwd === undefined) {
+            alert("비밀번호를 입력해주세요");
             return;
         }
 
-        // TODO: 로그인 api 나오면 변경
-        $.ajax({
-            url: '../assets/json/login.json',
-            method: "GET",
-            dataType: "json",
-            success: function(data) {
-                if (data.result) {
-                    sessionStorage.setItem("auth-token", data.token);
-                    loginModal.hide();
-                    openEditModal(editEventObject);
-                    editEventObject = null; // 재사용 방지
+        var loginData = new URLSearchParams();
+        loginData.append("loginId", id);
+        loginData.append("loginPassword", pwd);
+
+        //로그인 검증
+        fetch("/v1/management/login", {
+            method:"POST",
+            headers:{"Content-Type":"application/x-www-form-urlencoded"},
+            body: loginData.toString()
+            })
+            .then(res => {
+                if (res.status >= 200 && res.status < 300){
+                    return res.json();
                 } else {
                     alert("로그인 인증이 실패하였습니다");
                     return;
                 }
-            },
-            error: function(xhr, status, error) {
-                alert(error);
-            }
-        })
-
-
-        // 저장
-        //var formData = new URLSearchParams();
-        //formData.append("value", val);
-        //fetch("/v1/management/settings/config/" + currentEdit.key, {
-        //    method:"PUT",
-        //    headers:{"Content-Type":"application/x-www-form-urlencoded"},
-        //    body: formData.toString()
-        //    })
-        //    .then(res=> {
-        //    })
-        //    .then(data => { 
-        //        document.querySelector(`.current-value[data-key="${currentEdit.key}"]`).textContent = val;
-        //        editModal.hide();
-        //    })
-        //    .catch(err=> {
-        //    	alert("저장 실패: " + err)
-        //    });
+            })
+            .then(data => {
+                if (data.hasOwnProperty("result") && data.result == "OK") {
+                    //저장
+                    var saveData = new URLSearchParams();
+                    saveData.append("value", val);
+                    fetch("/v1/management/settings/config/" + currentEdit.key, {
+                        method:"PUT",
+                        headers:{"Content-Type":"application/x-www-form-urlencoded"},
+                        body: saveData.toString()
+                        })
+                        .then(res=> {
+                        })
+                        .then(data => {
+                            loginModal.hide();
+                            //document.querySelector(`.current-value[data-key="${currentEdit.key}"]`).textContent = val;
+                            editModal.hide();
+                            alert("저장 성공하였습니다");
+                        })
+                        .catch(err=> {
+                            alert("저장 실패실패하였습니다: " + err)
+                        });
+                } else {
+                    alert("저장 실패하였습니다");
+                    return;
+                }
+            })
+            .catch(err=> {
+                alert("로그인 인증이 실패하였습니다");
+            	console.error("로그인 인증이 실패하였습니다: ", err)
+            });
 	};
-
 
     // 검색이벤트	
     document.getElementById("searchInput").oninput=()=>{
@@ -419,13 +391,14 @@
             }
         })
     }
-
+    
+    // 천단위 표시
     function numberWithCommas(x) {
         return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 	
 	// 조회
-    function getList(){
+    function getList() {
         fetch("/v1/management/settings/configs")
             .then(res=> { 
                 return res.json();
@@ -435,11 +408,26 @@
                 configKeys = data.configKeys;
                 renderTable("All");
             })
-            .catch(err=>alert("조회 실패: " + err));
+            .catch(err=>alert("조회 실패 되었습니다: " + err));
+    }
+
+    function initTable() {
+        // Table thead 설정
+        var tr = document.createElement("tr");
+        var td = document.createElement("td");
+        td.textContent = "데이터가 없습니다.";
+        td.style.textAlign = "center";
+        td.colSpan = 3;
+        tr.appendChild(td);
+        tableBody.appendChild(tr);
     }
 
 	// 처음 로드되었을 떄 
+    initTable();
 	getList();
 	
 </script>
-		
+
+<style>
+    .current-value { font-weight: bold; }
+</style>
