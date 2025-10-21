@@ -215,16 +215,17 @@
                         enabled: true, // 데이터 업데이트 시 부드러운 애니메이션 효과
                         easing: "linear",
                         animateGradually: {
-                            enabled: true,
+                            enabled: false,
                         },
                         dynamicAnimation: {
                             enabled: true,
-                            speed: 1000
+                            speed: 1100
                         }
                     }
                 },
                 xaxis: {
                     type: "datetime", // X축 타입을 datetime으로 설정\
+                    range: 60000,
                     labels: {
                         formatter: function (val) {
                             return moment(val).format("HH:mm");
@@ -276,22 +277,71 @@
 
     // 차트 그리기
     function addDataPoint(cardId, series) {
-        var seriesCount = series.length;
-        if (seriesCount > 0) {
-            var datas = [];
-            series.forEach(elem => {
-                datas.push({ data: [_.last(elem.data)] });
-            });
+        if (!series || series.length === 0) return;
 
-            if (charts[cardId] && datas && datas.length > 0) {
-                charts[cardId].appendData(datas);
-                charts[cardId].updateOptions({
-                    xaxis: {
-                        min: series[0].data[0].x,
-                        max: series[0].data[series[0].data.length - 1].x
+        // charts에 데이터 추가
+        var datas = series.map(elem => ({ data: [_.last(elem.data)] }));
+        if (charts[cardId] && datas.length > 0) {
+            charts[cardId].appendData(datas);
+            var lastX = series[0].data[series[0].data.length - 1].x;
+
+            var optionsUpdate = {
+                xaxis: { min: lastX - 60000, max: lastX }
+            };
+
+            // ============================
+            // TPS Card
+            // ============================
+            if (cardId === "tpsCard") {
+                var allY = series[0].data.map(d => d.y);
+                var maxY = Math.max(...allY);
+                var adjustedMaxY = maxY * 1.1; // 10% 여유
+
+                // TPS 단위: max값에 따라 100 또는 500단위로 조정
+                var step = adjustedMaxY > 500 ? 500 : 100;
+                var roundedMaxY = Math.ceil(adjustedMaxY / step) * step;
+
+                optionsUpdate.yaxis = {
+                    min: 0,
+                    max: roundedMaxY,
+                    tickAmount: 5,
+                    labels: {
+                        formatter: val => val.toFixed(0)
                     }
-                }, false, true);
+                };
+
+            // ============================
+            // Memory Card
+            // ============================
+            } else if (cardId === "memoryCard") {
+                var allY = series.flatMap(s => s.data.map(d => d.y));
+                var maxY = Math.max(...allY);
+                var adjustedMaxY = maxY * 1.1;
+
+                // Memory 단위: MB 또는 GB 자동 변환
+                optionsUpdate.yaxis = {
+                    min: 0,
+                    max: adjustedMaxY,
+                    labels: {
+                        formatter: val => {
+                            return getMemoryCapacityUnit(val);
+                        }
+                    }
+                };
+
+            // ============================
+            // HitRate Card
+            // ============================
+            } else if (cardId === "hitRateCard") {
+                optionsUpdate.yaxis = {
+                    min: 0,
+                    max: 100,
+                    tickAmount: 5,
+                    labels: { formatter: val => val.toFixed(0) + "%" }
+                };
             }
+
+            charts[cardId].updateOptions(optionsUpdate, true, true);
         }
     }
 
@@ -353,7 +403,9 @@
         });
 
         if (tpsSeries[0].data.length > tpsTotalPoints) {
-            tpsSeries[0].data.shift();
+            // tpsSeries[0].data.shift();
+            // tpsSeries[0].data.splice(0, tpsSeries[0].data.length - tpsTotalPoints);
+            tpsSeries[0].data.slice(-tpsTotalPoints);
         }
 
         addDataPoint(cardId, tpsSeries);
@@ -379,7 +431,8 @@
             y: newHitRate
         })
         if (hitRateSeries[0].data.length > hitRateTotalPoints) {
-            hitRateSeries[0].data.shift();
+            // hitRateSeries[0].data.shift();
+            hitRateSeries[0].data.slice(-hitRateTotalPoints);
         }
 
         addDataPoint(cardId, hitRateSeries);
@@ -409,7 +462,8 @@
 
         memorySeries.forEach(elem => {
             if (elem.data.length > memoryTotalPoints) {
-                elem.data.shift();
+                // elem.data.shift();
+                elem.data.slice(-memoryTotalPoints);
             }
         })
 
@@ -468,8 +522,8 @@
             var newRow = {
                 Time: moment(elem.formatedEpochTime).format("HH:mm:ss"),
                 CPU: (Number(elem.redisInfoList.sum.cpu.usedCpuSys) + Number(elem.redisInfoList.sum.cpu.usedCpuUser)).toFixed(2) ?? "-",
-                Clients: elem.redisInfoList.sum.clients.connectedClients.toFixed(2) ?? "-",
-                bClients: elem.redisInfoList.sum.clients.blockedClients.toFixed(2) ?? "-",
+                Clients: getMemoryCapacityUnit(elem.redisInfoList.sum.clients.connectedClients) ?? "-",
+                bClients: elem.redisInfoList.sum.clients.blockedClients.toLocaleString() ?? "-",
                 Mem: getMemoryCapacityUnit(elem.redisInfoList.sum.memory.usedMemory) ?? "-",
                 RSS: getMemoryCapacityUnit(elem.redisInfoList.sum.memory.usedMemoryRss) ?? "-",
                 keys: elem.redisInfoList.sum.keyspace["0"].keys.toLocaleString() ?? "-",
@@ -483,7 +537,8 @@
             }
             redisStatDatas.push(newRow)
             if (redisStatDatas.length > totalRows) {
-                redisStatDatas.shift();
+                // redisStatDatas.shift();
+                redisStatDatas.slice(-totalRows);
             }
 
             var cardId = "redisAnalysis";
