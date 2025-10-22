@@ -58,6 +58,9 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
     @Override
     public RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands) {
         logger.info(redisRequest.toString());
+        
+//        commands.debugHtstats(0);
+//        commands.cluster
 
         String key = this.redisRequest.getKey();
         Optional<String> value = this.redisRequest.getValue();
