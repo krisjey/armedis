@@ -46,6 +46,10 @@ public class ArmedisConfiguration {
         return servicePort;
     }
 
+    public void setServicePort(int servicePort) {
+        this.servicePort = servicePort;
+    }
+
     public int getInstanceCount() {
         return instanceCount;
     }
