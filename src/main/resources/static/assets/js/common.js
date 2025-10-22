@@ -428,14 +428,17 @@ function createTable(headers, rows, className, styleObj) {
  * @param {1} value Byte값
  * @returns 
  */
-function getMemoryCapacityUnit(value) {
-    if (value >= 1024 * 1024 * 1024) {
-        return (value / (1024 * 1024 * 1024)).toFixed(1) + " GB";
-    } else if (value >= 1024 * 1024) {
-        return (value / (1024 * 1024)).toFixed(1) + " MB";
-    } else if (value >= 1024) {
-        return (value / 1024).toFixed(1) + " KB";
-    } else {
-        return value.toFixed(1) + " B";
-    }
+function getMemoryCapacityUnit(value, decimal = 1) {
+    if (value) {
+        if (value >= 1024 * 1024 * 1024) {
+            return (value / (1024 * 1024 * 1024)).toFixed(decimal) + " GB";
+        } else if (value >= 1024 * 1024) {
+            return (value / (1024 * 1024)).toFixed(decimal) + " MB";
+        } else if (value >= 1024) {
+            return (value / 1024).toFixed(decimal) + " KB";
+        } else {
+            return value.toFixed(decimal) + " B";
+        }
+    } 
+    return "";
 }
