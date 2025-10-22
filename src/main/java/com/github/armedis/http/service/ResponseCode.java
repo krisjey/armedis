@@ -20,22 +20,27 @@ public enum ResponseCode {
     /**
      * Unauthorized error
      */
-    UNAUTHORIZED_ERROR(200, -1000, "Unauthorized error!"),
+    UNAUTHORIZED_ERROR(200, 1000, "Unauthorized error!"),
 
     /**
      * Request field validation error.
      */
-    REQUEST_FIELD_ERROR(200, -5000, "Request field validation error!"),
+    REQUEST_FIELD_ERROR(200, 5000, "Request field validation error!"),
 
     /**
      * Unsupported operation.
      */
-    UNSUPPORTED_OPERATION(200, -501, "Unsupported operation!"),
+    UNSUPPORTED_OPERATION(200, 501, "Unsupported operation(Not Implemented)!"),
+
+    /**
+     * Not supported operation.
+     */
+    NOTSUPPORTED_OPERATION(200, 405, "Not supported operation(Not Allowed)!"),
 
     /**
      * Unknown Server error.
      */
-    NOT_EXIST(500, -999, "Error Code Not exist!"),
+    NOT_EXIST(500, 9999, "Error Code Not exist!"),
     ;
 
     private final HttpStatus statusCode;
