@@ -1,6 +1,8 @@
 
 package com.github.armedis.http.service.management;
 
+import java.util.Optional;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,12 +45,12 @@ public class ArmedisManagementLoginService extends BaseService {
      */
     @Post
     @Path(COMMAND_URL)
-    public HttpResponse urlencodedWithKey(@Param("loginId") String loginId, @Param("loginPassword") String loginPassword) {
+    public HttpResponse urlencodedWithKey(@Param("loginId") String loginId, @Param("loginPassword") Optional<String> loginPassword) {
         logger.info("Text request for management login", loginId);
 
         ObjectNode result = mapper.createObjectNode();
 
-        if (armedisConfiguration.getLoginId().equals(StringUtils.trim(loginId)) && armedisConfiguration.getLoginPassword().equals(StringUtils.trim(loginPassword))) {
+        if (armedisConfiguration.getLoginId().equals(StringUtils.trim(loginId)) && armedisConfiguration.getLoginPassword().equals(StringUtils.trim(loginPassword.orElse(null)))) {
             result.put("result", "OK");
             return HttpResponse.of(HttpStatus.OK, MediaType.PLAIN_TEXT_UTF_8, result.toString());
         }
