@@ -32,7 +32,7 @@
             <thead>
                 <tr>
                     <th>설정 키</th>
-                    <!-- <th>현재값</th> -->
+                    <th>현재값</th>
                     <th>설명</th>
                     <th>편집</th>
 	            </tr>
@@ -74,14 +74,14 @@
                         </div>
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" placeholder="Enter username" value="admin">
+                            <input type="text" class="form-control" id="username" placeholder="Enter username" value="">
                         </div>
 
                         <form>
                             <div class="mb-3 position-relative">
                                 <label class="form-label" for="password-input">Password</label>
                                 <div class="position-relative auth-pass-inputgroup mb-3">
-                                    <input type="password" class="form-control pe-5 password-input" placeholder="Enter password" id="password-input" value="armedis1234!">
+                                    <input type="password" class="form-control pe-5 password-input" placeholder="Enter password" id="password-input" value="">
                                     <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon" type="button" id="password-addon"><i class="ri-eye-fill align-middle"></i></button>
                                 </div>
                             </div>
@@ -107,7 +107,7 @@
 </div>
 <!-- End Page-content -->  
 
-<!-- <script src="/assets/js/common.js"></script> -->
+<script src="/assets/js/common.js"></script>
 <!-- password-addon init -->
 <script src="/assets/js/pages/password-addon.init.js"></script>
 
@@ -153,6 +153,7 @@
                     var tr = document.createElement("tr");
                     tr.innerHTML = `
                         <td>${i.key}</td>
+                        <td><span class="current-value" data-key="${i.key}">${i.currentValue ?? "-"}</span></td>
                         <td>${i.description}</td>
                         <td><button class="btn btn-sm btn-outline-primary edit-btn" data-key="${i.key}" data-cat="${i.category}">✏️</button></td>
                         `;
@@ -172,7 +173,6 @@
         document.getElementById("modalTitle").textContent = `${key} 설정 변경`;
         document.getElementById("modalCurrent").textContent = "불러오는 중...";
         kvMap = {};
-        renderModalInput(currentEdit, "");
         editModal.show();
         //       // 조회
         fetch("/v1/management/settings/config/" + key)
@@ -199,6 +199,7 @@
                     document.getElementById("modalCurrent").textContent = "-";
                 };
                 renderModalInput(currentEdit, currentVal);
+                
             })
             .catch(err=> {
                 console.error(err);
@@ -230,6 +231,10 @@
                 break;
             case "keyvalue":
                 html = `<div id="kvContainer" class="mb-2"></div><button id="addKvBtn" class="btn btn-sm btn-outline-secondary mb-3">+ 추가</button>`;
+                break;
+            case "memoryUnit":
+                console.log("curr: ", curr);
+                html = `<input id="modalInput" type="text" class="form-control" value="${getMemoryCapacityUnit(curr, 0)}">`;
                 break;
         }
         cont.innerHTML = html;
@@ -283,10 +288,22 @@
         
         if (currentEdit.dataType === "number") {
             if (isNaN(val)) {
-                alert("숫자형이 아닙니다. 다시 입력해주세요");
+                alert("숫자(0~9)만 입력 가능합니다.");
                 return;
             }
         }
+
+        if (currentEdit.key === 'maxmemory') {
+            var memoryPattern = /^[0-9]?(\s*)?(b|k|kb|m|mb|g|gb)?$/i;
+            //var memoryPattern = /^[0-9]+(\s*)?(k|kb|m|mb|g|gb)?$/i;
+            if (!memoryPattern.test(val)){
+                alert("memory 단위의 값이 아닙니다. 다시 입력해주세요.");
+                return;
+            }
+        }
+        //모달 창에 id, password 가 남아있어 지움
+        document.getElementById("username").value = "";
+        document.getElementById("password-input").value = "";
         loginModal.show();
 	};
 
@@ -340,8 +357,8 @@
                         .then(res=> {
                         })
                         .then(data => {
+                            document.querySelector(`.current-value[data-key="${currentEdit.key}"]`).textContent = val;
                             loginModal.hide();
-                            //document.querySelector(`.current-value[data-key="${currentEdit.key}"]`).textContent = val;
                             editModal.hide();
                             alert("저장 성공하였습니다");
                         })
@@ -417,7 +434,7 @@
         var td = document.createElement("td");
         td.textContent = "데이터가 없습니다.";
         td.style.textAlign = "center";
-        td.colSpan = 3;
+        td.colSpan = 4;
         tr.appendChild(td);
         tableBody.appendChild(tr);
     }

@@ -52,7 +52,7 @@ var customLoader = function() {
             elem.preventDefault();
             var $portlet = customLoader1.closest(".card");
             insertEl =
-                '<div class="card-preloader"><div class="card-status"><img src="/assets/images/logo-sm.png" alt="" class="img-fluid custom-loader"></div></div>';
+                '<div class="card-preloader"><div class="card-status"><img src="/assets/images/logo-SK-Inc.-AX_RGB_EN.png" alt="" class="img-fluid custom-loader"></div></div>';
             $portlet.children[1].insertAdjacentHTML("beforeend", insertEl);
             var $pd = $portlet.getElementsByClassName("card-preloader")[0];
             setTimeout(function() {
