@@ -14,7 +14,6 @@ import org.springframework.test.context.ActiveProfiles;
 import com.github.armedis.ArmedisServer;
 import com.github.armedis.http.service.AbstractRedisServerTest;
 import com.linecorp.armeria.common.AggregatedHttpResponse;
-import com.linecorp.armeria.common.HttpData;
 import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.HttpStatus;
@@ -24,7 +23,6 @@ import com.linecorp.armeria.common.RequestHeaders;
 @ActiveProfiles("testbed")
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
 class RedisConfigsServiceTest extends AbstractRedisServerTest {
-
 
     @Test
     void testConfigsGet() {
