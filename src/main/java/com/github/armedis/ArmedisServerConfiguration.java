@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.github.armedis.config.ArmedisConfiguration;
-import com.github.armedis.config.ConstantNames;
 import com.github.armedis.config.DefaultInstanceInfo;
 import com.github.armedis.grpc.service.string.RedisStringGrpcService;
 import com.github.armedis.http.service.ArmeriaAnnotatedHttpService;
