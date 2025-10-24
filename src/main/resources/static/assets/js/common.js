@@ -425,17 +425,59 @@ function createTable(headers, rows, className, styleObj) {
 /**
  * 메모리 용량 단위
  * 
- * @param {1} value Byte값
+ * @param {*} size 값
+ * @param {*} unit 계산단위
  * @returns 
  */
-function getMemoryCapacityUnit(value) {
-    if (value >= 1024 * 1024 * 1024) {
-        return (value / (1024 * 1024 * 1024)).toFixed(1) + " GB";
-    } else if (value >= 1024 * 1024) {
-        return (value / (1024 * 1024)).toFixed(1) + " MB";
-    } else if (value >= 1024) {
-        return (value / 1024).toFixed(1) + " KB";
-    } else {
-        return value.toFixed(1) + " B";
+function getMemoryCapacityUnit(size, unit = 'byte') {
+    // if (typeof size !== 'number' || size < 0) {
+    //   throw new Error('size는 0 이상의 숫자여야 합니다.');
+    // }
+  
+    if (unit !== 'byte' && unit !== 'kbyte') {
+      throw new Error("unit은 'byte' 또는 'kbyte' 중 하나여야 합니다.");
     }
-}
+  
+    const binary = { KB: 1024, MB: 1024 ** 2, GB: 1024 ** 3, TB: 1024 ** 4 };
+    const decimal = { KB: 1000, MB: 1000 ** 2, GB: 1000 ** 3, TB: 1000 ** 4 };
+  
+    let value, suffix;
+  
+    if (unit === 'byte') {
+      if (size >= binary.TB) {
+        value = size / binary.TB;
+        suffix = 'TB';
+      } else if (size >= binary.GB) {
+        value = size / binary.GB;
+        suffix = 'GB';
+      } else if (size >= binary.MB) {
+        value = size / binary.MB;
+        suffix = 'MB';
+      } else if (size >= binary.KB) {
+        value = size / binary.KB;
+        suffix = 'KB';
+      } else {
+        value = size;
+        suffix = 'B';
+      }
+      return `${value.toFixed(1)} ${suffix}`;
+    } else {
+      if (size >= decimal.TB) {
+        value = size / decimal.TB;
+        suffix = 'T';
+      } else if (size >= decimal.GB) {
+        value = size / decimal.GB;
+        suffix = 'G';
+      } else if (size >= decimal.MB) {
+        value = size / decimal.MB;
+        suffix = 'M';
+      } else if (size >= decimal.KB) {
+        value = size / decimal.KB;
+        suffix = 'K';
+      } else {
+        value = size;
+        suffix = 'K';
+      }
+      return `${Math.round(value)} ${suffix}`;
+    }
+  }
