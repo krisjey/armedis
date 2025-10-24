@@ -73,9 +73,6 @@ public class RedisCommandExecutor {
         }
     }
 
-    // TODO Add executeMasterReplicaCommand
-//    StatefulRedisMasterSlaveConnection
-
     private RedisCommandExecuteResult executeNonClusterCommand(RedisCommandRunner commandRunner) throws Exception {
         StatefulRedisConnection<String, String> connection = this.redisConnectionPool.getNonClusterConnection();
         RedisCommands<String, String> commands = connection.sync();

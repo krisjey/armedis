@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import com.github.armedis.redis.RedisNode;
 import com.github.armedis.redis.command.AbstractRedisCommandRunner;
-import com.github.armedis.redis.command.RedisClusterWideCommand;
 import com.github.armedis.redis.command.RedisCommandEnum;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.github.armedis.redis.command.RedisCommandExecuteResultFactory;
@@ -62,27 +61,7 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
         String key = this.redisRequest.getKey();
         Optional<String> value = this.redisRequest.getValue();
 
-        Set<RedisNode> nodes = null;
-
-        RedisClusterWideCommand mode = getRedisClusterWideCommandMode(key);
-        switch (mode) {
-            case MASTER:
-                nodes = RedisServerDetector.getMasterNodes();
-
-                break;
-
-            case SLAVE:
-                nodes = RedisServerDetector.getReplicaNodes();
-                break;
-
-            case ALL:
-                nodes = RedisServerDetector.getAllNodes();
-
-                break;
-
-            default:
-                logger.error("Can not execute command for cluster mode");
-        }
+        Set<RedisNode> nodes = RedisServerDetector.getAllNodes();
 
         Map<String, String> getResult = null;
         String setResult = null;
@@ -117,9 +96,4 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
             return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(setResult);
         }
     }
-
-    private RedisClusterWideCommand getRedisClusterWideCommandMode(String subCommand) {
-        return RedisClusterWideCommands.get(subCommand);
-    }
-
 }

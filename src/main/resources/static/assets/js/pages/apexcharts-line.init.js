@@ -820,7 +820,7 @@ if (linechartannotationsColors) {
                     size: 0
                 },
                 image: {
-                    path: './assets/images/logo-sm.png',
+                    path: './assets/images/logo-SK-Inc.-AX_RGB_EN.png',
                     width: 40,
                     height: 40
                 }

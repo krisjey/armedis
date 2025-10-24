@@ -32,7 +32,7 @@
             <thead>
                 <tr>
                     <th>설정 키</th>
-                    <!-- <th>현재값</th> -->
+                    <th>현재값</th>
                     <th>설명</th>
                     <th>편집</th>
 	            </tr>
@@ -79,14 +79,14 @@
                         </div>
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" placeholder="Enter username" value="admin">
+                            <input type="text" class="form-control" id="username" placeholder="Enter username" value="">
                         </div>
 
                         <form>
                             <div class="mb-3 position-relative">
                                 <label class="form-label" for="password-input">Password</label>
                                 <div class="position-relative auth-pass-inputgroup mb-3">
-                                    <input type="password" class="form-control pe-5 password-input" placeholder="Enter password" id="password-input" value="armedis1234!">
+                                    <input type="password" class="form-control pe-5 password-input" placeholder="Enter password" id="password-input" value="">
                                     <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon" type="button" id="password-addon"><i class="ri-eye-fill align-middle"></i></button>
                                 </div>
                             </div>
@@ -112,7 +112,7 @@
 </div>
 <!-- End Page-content -->  
 
-<!-- <script src="/assets/js/common.js"></script> -->
+<script src="/assets/js/common.js"></script>
 <!-- password-addon init -->
 <script src="/assets/js/pages/password-addon.init.js"></script>
 
@@ -158,6 +158,7 @@
                     var tr = document.createElement("tr");
                     tr.innerHTML = `
                         <td>${i.key}</td>
+                        <td><span class="current-value" data-key="${i.key}">${i.currentValue ?? "-"}</span></td>
                         <td>${i.description}</td>
                         <td><button class="btn btn-sm btn-outline-primary edit-btn" data-key="${i.key}" data-cat="${i.category}">✏️</button></td>
                         `;
@@ -227,6 +228,7 @@
                     $("#modalCurrent").text("-");
                 };
                 renderModalInput(currentEdit, currentVal);
+                
             })
             .catch(err=> {
                 console.error(err);
@@ -326,6 +328,9 @@
                 return;
             }
         }
+        //모달 창에 id, password 가 남아있어 지움
+        document.getElementById("username").value = "";
+        document.getElementById("password-input").value = "";
         loginModal.show();
 	};
 
@@ -452,7 +457,7 @@
         var td = document.createElement("td");
         td.textContent = "데이터가 없습니다.";
         td.style.textAlign = "center";
-        td.colSpan = 3;
+        td.colSpan = 4;
         tr.appendChild(td);
         tableBody.appendChild(tr);
     }

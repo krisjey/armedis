@@ -1,13 +1,13 @@
 {
 	"key-description": "key, currentValue, category, description, dataType, options",
-	"dataType-description": "number, text, dropdown",
+	"dataType-description": "number, text, dropdown, memoryunit",
 	"configKeys": [
 		{
 			"key": "maxmemory",
 			"currentValue": "",
 			"category": "Memory",
 			"description": "최대 메모리 사용량 (바이트)",
-			"dataType": "number"
+			"dataType": "memoryunit"
 		},
 		{
 			"key": "maxmemory-policy",
