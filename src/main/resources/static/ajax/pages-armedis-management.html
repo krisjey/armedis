@@ -45,11 +45,16 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="modalTitle"></h5>
+                        <h5 class="modal-title" id="modalTitle" ></h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <p>현재값: <span id="modalCurrent">-</span></p>
+                        <div class="alert alert-danger rounded-top alert-solid alert-label-icon border-0 rounded-0 m-0 d-flex align-items-center d-none"
+                            role="alert">
+                            <i class="ri-error-warning-line label-icon"></i>
+                            <div class="flex-grow-1 text-truncate" id="alertMsg"></div>
+                        </div>
                         <div id="modalInputContainer"></div>
                     </div>
                     <div class="modal-footer">
@@ -170,11 +175,27 @@
         var key = event.key;
         var cat = event.cat;
         currentEdit = configKeys.find(i => i.key === key);
-        document.getElementById("modalTitle").textContent = `${key} 설정 변경`;
-        document.getElementById("modalCurrent").textContent = "불러오는 중...";
+        $("#modalTitle").text(`${key} 설정 변경`);
+        $("#modalCurrent").text("불러오는 중...");
         kvMap = {};
+
+        switch(currentEdit.dataType) {
+            case "memoryunit":
+                $(".alert")[0].classList.remove("d-none");
+                $(".alert > #alertMsg")[0].innerText = 
+`# 1k => 1000 bytes
+# 1kb => 1024 bytes
+# 1m => 1000000 bytes
+# 1mb => 1024*1024 bytes
+# 1g => 1000000000 bytes
+# 1gb => 1024*1024*1024 bytes`;
+                break;
+            default:
+                $(".alert")[0].classList.add("d-none");
+        }
         editModal.show();
-        //       // 조회
+
+        // 조회
         fetch("/v1/management/settings/config/" + key)
             .then(res=> {
                 if (!res.ok) {
@@ -191,12 +212,20 @@
                 if (!isNaN(viewCurrentVal)) {
                     viewCurrentVal = numberWithCommas(currentVal);
                 }
-                document.getElementById("modalCurrent").textContent = viewCurrentVal;
+                
+                switch(currentEdit.dataType) {
+                    case "memoryunit":
+                        $("#modalCurrent").text(getMemoryCapacityUnit(currentVal, "kbyte"));
+                        break;
+                    default:
+                        $("#modalCurrent").text(viewCurrentVal);
+                }
+
                 if (currentEdit.dataType === "keyvalue") 
                 try { 
                     kvMap = JSON.parse(currentVal);
                 } catch {
-                    document.getElementById("modalCurrent").textContent = "-";
+                    $("#modalCurrent").text("-");
                 };
                 renderModalInput(currentEdit, currentVal);
                 
@@ -204,7 +233,7 @@
             .catch(err=> {
                 console.error(err);
                 alert("관리자에게 문의하세요:" + err);
-            	document.getElementById("modalCurrent").textContent = "-";
+            	$("#modalCurrent").text("-");
                 editModal.hide();
             });
 	}
@@ -232,9 +261,8 @@
             case "keyvalue":
                 html = `<div id="kvContainer" class="mb-2"></div><button id="addKvBtn" class="btn btn-sm btn-outline-secondary mb-3">+ 추가</button>`;
                 break;
-            case "memoryUnit":
-                console.log("curr: ", curr);
-                html = `<input id="modalInput" type="text" class="form-control" value="${getMemoryCapacityUnit(curr, 0)}">`;
+            case "memoryunit":
+                html = `<input id="modalInput" type="text" class="form-control" value="${getMemoryCapacityUnit(curr, "kbyte")}">`;
                 break;
         }
         cont.innerHTML = html;
@@ -294,9 +322,8 @@
         }
 
         if (currentEdit.key === 'maxmemory') {
-            var memoryPattern = /^[0-9]?(\s*)?(b|k|kb|m|mb|g|gb)?$/i;
-            //var memoryPattern = /^[0-9]+(\s*)?(k|kb|m|mb|g|gb)?$/i;
-            if (!memoryPattern.test(val)){
+            var memoryPattern = /^\s*\d+?\s*(k|m|g|t)(b)?$/i;
+            if (val != 0 && !memoryPattern.test(val)) {
                 alert("memory 단위의 값이 아닙니다. 다시 입력해주세요.");
                 return;
             }
@@ -335,55 +362,51 @@
             method:"POST",
             headers:{"Content-Type":"application/x-www-form-urlencoded"},
             body: loginData.toString()
-            })
-            .then(res => {
-                if (res.status >= 200 && res.status < 300){
-                    return res.json();
-                } else {
-                    alert("로그인 인증이 실패하였습니다");
-                    return;
-                }
-            })
-            .then(data => {
-                if (data.hasOwnProperty("result") && data.result == "OK") {
-                    //저장
-                    var saveData = new URLSearchParams();
-                    saveData.append("value", val);
-                    fetch("/v1/management/settings/config/" + currentEdit.key, {
-                        method:"PUT",
-                        headers:{"Content-Type":"application/x-www-form-urlencoded"},
-                        body: saveData.toString()
-                        })
-                        .then(res=> {
-                        })
-                        .then(data => {
-                            document.querySelector(`.current-value[data-key="${currentEdit.key}"]`).textContent = val;
-                            loginModal.hide();
-                            editModal.hide();
-                            alert("저장 성공하였습니다");
-                        })
-                        .catch(err=> {
-                            alert("저장 실패실패하였습니다: " + err)
-                        });
-                } else {
-                    alert("저장 실패하였습니다");
-                    return;
-                }
-            })
-            .catch(err=> {
+        })
+        .then(res => res.json())
+        .then(loginRes => {
+            if (loginRes.hasOwnProperty("result") && loginRes.result.toUpperCase() === "OK") {
+                //저장
+                var saveData = new URLSearchParams();
+                saveData.append("value", val);
+                fetch("/v1/management/settings/config/" + currentEdit.key, {
+                    method:"PUT",
+                    headers:{"Content-Type":"application/x-www-form-urlencoded"},
+                    body: saveData.toString()
+                })
+                .then(res => res.json())
+                .then(saveRes => {
+                    document.querySelector(`.current-value[data-key="${currentEdit.key}"]`).textContent = val;
+                    loginModal.hide();
+                    editModal.hide();
+                    if (saveRes.hasOwnProperty("result") && saveRes.result.toUpperCase() === "OK") {
+                        alert("저장 성공하였습니다");
+                    } else {
+                        alert("저장 실패하였습니다");
+                    }
+                })
+                .catch(err => {
+                    alert("저장 실패하였습니다: " + err)
+                });
+            } else {
                 alert("로그인 인증이 실패하였습니다");
-            	console.error("로그인 인증이 실패하였습니다: ", err)
-            });
+                return;
+            }
+        })
+        .catch(err => {
+            alert("로그인 인증이 실패하였습니다");
+            console.error("로그인 인증이 실패하였습니다: ", err)
+        });
 	};
 
     // 검색이벤트	
-    document.getElementById("searchInput").oninput=()=>{
+    document.getElementById("searchInput").oninput = () => {
         var cat = document.querySelector("#categoryTabs .nav-link.active").dataset.cat;
         renderTable(cat,document.getElementById("searchInput").value);
     };
 
     // 초기화
-    document.getElementById("resetBtn").onclick=()=>{
+    document.getElementById("resetBtn").onclick = () => {
         document.getElementById("searchInput").value = "";
         renderTable();
     };
@@ -400,7 +423,7 @@
         ul.innerHTML = html;
 
 		// 탭 & 검색 이벤트
-        ul.addEventListener("click", e=> {
+        ul.addEventListener("click", e => {
             if(e.target && e.target.matches(".nav-link")) {
                 document.querySelectorAll("#categoryTabs .nav-link").forEach(t=>t.classList.remove("active")); 
                 e.target.classList.add("active"); 
@@ -417,15 +440,15 @@
 	// 조회
     function getList() {
         fetch("/v1/management/settings/configs")
-            .then(res=> { 
+            .then(res => { 
                 return res.json();
             })
-            .then(data=> {
+            .then(data => {
                 setCategory(data.configKeys);
                 configKeys = data.configKeys;
                 renderTable("All");
             })
-            .catch(err=>alert("조회 실패 되었습니다: " + err));
+            .catch(err =>alert("조회 실패 되었습니다: " + err));
     }
 
     function initTable() {
