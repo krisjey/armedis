@@ -27,6 +27,7 @@ public class RedisCommandExecuteResultBuilder {
     private ResultType resultType;
 
     private Class clazz;
+    private Object objectResult;
 
     public RedisCommandExecuteResultBuilder(ResultType resultType) {
         this.resultType = resultType;
@@ -72,7 +73,14 @@ public class RedisCommandExecuteResultBuilder {
         return this;
     }
 
+//    public RedisCommandExecuteResultBuilder setResult(Object objectResult) {
+//        this.objectResult = objectResult;
+//        return this;
+//    }
+
     public RedisCommandExecuteResult build() {
+//        LettuceResponseNormalizer normalize = new LettuceResponseNormalizer();
+//        normalize.wrap(objectResult);
         RedisCommandExecuteResult result = new RedisCommandExecuteResultImpl(resultType,
                 boolResult,
                 intResult,
@@ -82,8 +90,7 @@ public class RedisCommandExecuteResultBuilder {
                 doubleResult,
                 mapResult,
                 listResult,
-                clazz
-                );
+                clazz);
 
         return result;
     }

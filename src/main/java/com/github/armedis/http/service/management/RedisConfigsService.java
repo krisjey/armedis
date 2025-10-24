@@ -1,15 +1,13 @@
 
 package com.github.armedis.http.service.management;
 
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.github.armedis.http.service.BaseService;
 import com.github.armedis.http.service.ResponseCode;
+import com.github.armedis.http.service.management.configs.AllowedConfigCommands;
 import com.github.armedis.redis.command.management.RedisConfigRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.server.annotation.Consumes;
@@ -43,21 +41,11 @@ public class RedisConfigsService extends BaseService {
             // TODO Redis Template로 전환 필요
             // 설정 조회를 위한 Connection처리 Class 추출
 
-            /**
-             * TODO
-             * 1. key 목록 대상 정의 Enum
-             *   - Object key, category, desc, dataType, options(array), currentValue
-             * 2. 대상 키 목록에 대한 설정 조회.
-             *   - pipeline
-             * 3. json 변환 후 응답.
-             */
+//            // 클래스패스에서 configKeys.json 읽기
+//            InputStream is = this.getClass().getResourceAsStream("/configKeys.json");
+//            result = new String(is.readAllBytes(), StandardCharsets.UTF_8);
 
-            // 클래스패스에서 configKeys.json 읽기
-            InputStream is = this.getClass().getResourceAsStream("/configKeys.json");
-            result = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            result = mapper.readTree(result).toString();
-            
-            // TODO config
+            result = AllowedConfigCommands.toJsonString();
         }
         catch (Exception e) {
             logger.error("Can not execute redis command ", e);

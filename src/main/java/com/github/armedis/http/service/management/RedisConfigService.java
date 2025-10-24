@@ -1,9 +1,6 @@
 
 package com.github.armedis.http.service.management;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -11,6 +8,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.armedis.http.service.BaseService;
 import com.github.armedis.http.service.ResponseCode;
+import com.github.armedis.http.service.management.configs.AllowedConfigCommands;
 import com.github.armedis.http.service.request.RedisRequest;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.github.armedis.redis.command.management.RedisConfigRequest;
@@ -39,30 +37,8 @@ public class RedisConfigService extends BaseService {
 
     private static final String COMMAND_URL_WITH_KEY = COMMAND_URL + "/:key";
 
-    private static final Set<String> allowedConfigValues = allowedConfigValues();
-
-    /**
-     * @return
-     */
-    private static Set<String> allowedConfigValues() {
-        Set<String> allowedConfigs = new HashSet<>();
-        allowedConfigs.add("activedefrag");
-        allowedConfigs.add("maxmemory-policy");
-        allowedConfigs.add("maxmemory-samples");
-        allowedConfigs.add("maxmemory");
-        allowedConfigs.add("timeout");
-        allowedConfigs.add("maxclients");
-        allowedConfigs.add("save");
-        allowedConfigs.add("appendonly");
-        allowedConfigs.add("lazyfree-lazy-expire");
-        allowedConfigs.add("lazyfree-lazy-eviction");
-        allowedConfigs.add("lazyfree-lazy-server-del");
-
-        return allowedConfigs;
-    }
-
     private boolean isAllowedConfigValue(RedisConfigRequest redisRequest) {
-        return allowedConfigValues.contains(redisRequest.getKey());
+        return AllowedConfigCommands.contains(redisRequest.getKey());
     }
 
     @Get
@@ -156,7 +132,7 @@ public class RedisConfigService extends BaseService {
 
         return buildResponse(redisRequest, result);
     }
-    
+
     @Put
     @Post
     @Path(COMMAND_URL_WITH_KEY)

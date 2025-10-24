@@ -60,11 +60,13 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
 
         String key = this.redisRequest.getKey();
         Optional<String> value = this.redisRequest.getValue();
+        
+        // TODO command validator
 
         Set<RedisNode> nodes = RedisServerDetector.getAllNodes();
 
         Map<String, String> getResult = null;
-        String setResult = null;
+        String postResult = null;
         // execute command to each nodes.
         for (RedisNode node : nodes) {
             // TODO FIXME do not create connection for every execute.
@@ -74,7 +76,7 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
                     getResult = connection.sync().configGet(key);
                 }
                 else {
-                    setResult = connection.sync().configSet(key, value.get());
+                    postResult = connection.sync().configSet(key, value.get());
                 }
             }
             catch (Exception e) {
@@ -89,11 +91,12 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
                 }
             }
         }
+
         if (redisRequest.getRequestMethod().equals(HttpMethod.GET)) {
             return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(getResult);
         }
         else {
-            return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(setResult);
+            return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(postResult);
         }
     }
 }
