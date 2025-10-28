@@ -444,13 +444,6 @@ public final class AllowedConfigCommands {
                         .parseKey("save")
                         .build());
 
-        m.put("bgsave",
-                ConfigCommand.builder("bgsave")
-                        .category(Category.Persistence)
-                        .description("RDB 스냅샷 주기(비동기)")
-                        .dataType(DataType.STRING)
-                        .build());
-
         List<String> fsyncOpts = List.of("always", "everysec", "no");
         m.put("appendfsync",
                 ConfigCommand.builder("appendfsync")
