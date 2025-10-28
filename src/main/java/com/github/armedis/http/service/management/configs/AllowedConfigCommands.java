@@ -356,7 +356,7 @@ public final class AllowedConfigCommands {
                         .normalizer(lowerNormalizer())
                         .build());
 
-     // TODO allocator_frag_ratio값, allocator_frag_bytes 값 출력 필요.
+        // TODO allocator_frag_ratio값, allocator_frag_bytes 값 출력 필요.
         List<String> defragOpts = List.of("yes", "no");
         m.put("activedefrag",
                 ConfigCommand.builder("activedefrag")
@@ -399,7 +399,7 @@ public final class AllowedConfigCommands {
         m.put("active-defrag-ignore-bytes",
                 ConfigCommand.builder("active-defrag-ignore-bytes")
                         .category(Category.Memory)
-                        .description("동적 메모리 파편화 제거시작 최소값")
+                        .description("동적 메모리 파편화 제거-시작 최소값")
                         .dataType(DataType.MEMORYUNIT)
                         .parseKey("active-defrag-ignore-bytes")
                         .validator(memoryUnitValidator())

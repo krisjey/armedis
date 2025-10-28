@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.github.armedis.http.service.management.configs.AllowedConfigCommands;
 import com.github.armedis.redis.RedisNode;
 import com.github.armedis.redis.command.AbstractRedisCommandRunner;
 import com.github.armedis.redis.command.RedisCommandEnum;
@@ -79,6 +80,9 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
                 }
                 else {
                     postResult = connection.sync().configSet(key, value.get());
+                    
+                    // update value for allowed command value.
+                    AllowedConfigCommands.get(key).setCurrentValueFromDB(connection.sync().configGet(key).get(key));
                 }
             }
             catch (Exception e) {
