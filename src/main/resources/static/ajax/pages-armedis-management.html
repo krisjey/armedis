@@ -33,8 +33,8 @@
                 <tr>
                     <th>설정 키</th>
                     <th>현재값</th>
-                    <th>설명</th>
                     <th>편집</th>
+                    <th>설명</th>
 	            </tr>
             </thead>
             <tbody></tbody>
@@ -158,9 +158,9 @@
                     var tr = document.createElement("tr");
                     tr.innerHTML = `
                         <td>${i.key}</td>
-                        <td><span class="current-value" data-key="${i.key}">${i.currentValue ?? "-"}</span></td>
-                        <td>${i.description}</td>
+                        <td><span class="current-value" data-key="${i.key}">${i.dataType === "memoryunit" ? getMemoryCapacityUnit(i.currentValue, "kbyte") : i.currentValue}</span></td>
                         <td><button class="btn btn-sm btn-outline-primary edit-btn" data-key="${i.key}" data-cat="${i.category}">✏️</button></td>
+                        <td>${i.description}</td>
                         `;
                     tableBody.appendChild(tr);
                     });
@@ -243,7 +243,7 @@
 	    cont.innerHTML = "";
         var html = "";
         switch(cfg.dataType) {
-            case "number":
+            case "integer":
                 html = `<input id="modalInput" type="number" class="form-control" value="${curr}">`;
                 break;
             case "dropdown":
@@ -255,7 +255,7 @@
             case "password":
                 html = `<input id="modalInput" type="password" class="form-control" placeholder="새 비밀번호">`;
                 break;
-            case "text":
+            case "string":
                 html = `<textarea id="modalInput" class="form-control" rows="3">${curr}</textarea>`;
                 break;
             case "keyvalue":
@@ -314,7 +314,7 @@
             return;
         }
         
-        if (currentEdit.dataType === "number") {
+        if (currentEdit.dataType === "integer") {
             if (isNaN(val)) {
                 alert("숫자(0~9)만 입력 가능합니다.");
                 return;

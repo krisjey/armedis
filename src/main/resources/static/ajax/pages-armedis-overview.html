@@ -12,7 +12,6 @@
                             <li class="breadcrumb-item active">Overview</li>
                         </ol>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -672,7 +671,6 @@
 
     // Keyspace 설정
     function setKeyspace() {
-        var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
         var lastStatsSumKeyspace = _.last(statsData).redisInfoList.sum.keyspace;
         var { keys, expires } = lastStatsSumKeyspace[0];
         var nonTTL = keys - expires;
