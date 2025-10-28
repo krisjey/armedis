@@ -19,6 +19,8 @@ public interface RedisCommandExecuteResult {
      */
     ObjectNode toObjectNode();
 
+    public static final String RESULT_KEY = "result";
+
     static RedisCommandExecuteResult getEmptyResult(String responseString) {
         return new RedisCommandExecuteResult() {
 

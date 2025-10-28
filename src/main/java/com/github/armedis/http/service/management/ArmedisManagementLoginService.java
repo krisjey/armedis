@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.armedis.config.ArmedisConfiguration;
 import com.github.armedis.http.service.BaseService;
+import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
@@ -51,11 +52,11 @@ public class ArmedisManagementLoginService extends BaseService {
         ObjectNode result = mapper.createObjectNode();
 
         if (armedisConfiguration.getLoginId().equals(StringUtils.trim(loginId)) && armedisConfiguration.getLoginPassword().equals(StringUtils.trim(loginPassword.orElse(null)))) {
-            result.put("result", "OK");
+            result.put(RedisCommandExecuteResult.RESULT_KEY, "OK");
             return HttpResponse.of(HttpStatus.OK, MediaType.PLAIN_TEXT_UTF_8, result.toString());
         }
         else {
-            result.put("result", "Fail");
+            result.put(RedisCommandExecuteResult.RESULT_KEY, "Fail");
             return HttpResponse.of(HttpStatus.UNAUTHORIZED, MediaType.PLAIN_TEXT_UTF_8, result.toString());
         }
     }

@@ -64,22 +64,21 @@ public class RedisServerDetector {
      */
     public Set<RedisNode> lookupNodes() throws UnsupportedOperationException {
         // get seed connection
-        try (StatefulRedisConnection<String, String> redisSeedConnection = getSeedConnection();) {
-            // get nodes
-            logger.info("Tring to detect server type.");
-            allServers = detectRedisServerNodes(redisSeedConnection);
+        StatefulRedisConnection<String, String> redisSeedConnection = getSeedConnection();
+        // get nodes
+        logger.info("Tring to detect server type.");
+        allServers = detectRedisServerNodes(redisSeedConnection);
 
-            for (RedisNode node : allServers) {
-                if (node.getRedisNodeType().equals(RedisNodeType.REPLICA)) {
-                    replicaServers.add(node);
-                }
-                else {
-                    masterServers.add(node);
-                }
+        for (RedisNode node : allServers) {
+            if (node.getRedisNodeType().equals(RedisNodeType.REPLICA)) {
+                replicaServers.add(node);
             }
-
-            logger.info("Detected servers " + allServers.toString());
+            else {
+                masterServers.add(node);
+            }
         }
+
+        logger.info("Detected servers " + allServers.toString());
 
         return allServers;
     }

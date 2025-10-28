@@ -27,14 +27,13 @@ public class RedisConnector implements AutoCloseable {
 
     public RedisConnector(RedisNode redisNode) {
         this.redisNode = requireNonNull(redisNode, "Redis seed node info");
-        redisNode.toString();
     }
 
     public StatefulRedisConnection<String, String> connect() {
         StatefulRedisConnection<String, String> connection = REGISTRY.get(this.redisNode.toString());
 
         if (connection == null) {
-            logger.info(redisNode.toString() + " create new connection!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            logger.info(redisNode.toString() + " create new connection");
             this.redisNode.getUri().setTimeout(Duration.ofSeconds(2));
             client = RedisClient.create(this.redisNode.getUri());
 
@@ -46,6 +45,7 @@ public class RedisConnector implements AutoCloseable {
                             .build())
                     .build());
             connection = client.connect();
+
             REGISTRY.put(this.redisNode.toString(), connection);
         }
 

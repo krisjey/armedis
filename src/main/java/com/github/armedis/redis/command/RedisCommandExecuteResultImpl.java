@@ -51,33 +51,33 @@ public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult 
         ObjectNode result = mapper.createObjectNode();
         switch (resultType) {
             case BOOLEAN:
-                result.put("result", boolResult);
+                result.put(RedisCommandExecuteResult.RESULT_KEY, boolResult);
                 break;
             case INTEGER:
-                result.put("result", intResult);
+                result.put(RedisCommandExecuteResult.RESULT_KEY, intResult);
                 break;
 
             case LONG:
-                result.put("result", longResult);
+                result.put(RedisCommandExecuteResult.RESULT_KEY, longResult);
                 break;
             case FLOAT:
-                result.put("result", floatResult);
+                result.put(RedisCommandExecuteResult.RESULT_KEY, floatResult);
                 break;
 
             case DOUBLE:
-                result.put("result", doubleResult);
+                result.put(RedisCommandExecuteResult.RESULT_KEY, doubleResult);
                 break;
 
             case MAP:
-                result.set("result", mapper.convertValue(mapResult, ObjectNode.class));
+                result.set(RedisCommandExecuteResult.RESULT_KEY, mapper.convertValue(mapResult, ObjectNode.class));
                 break;
                 
             case LIST:
-                result.set("result", mapper.convertValue(listResult, ArrayNode.class));
+                result.set(RedisCommandExecuteResult.RESULT_KEY, mapper.convertValue(listResult, ArrayNode.class));
                 break;
 
             default:
-                result.put("result", stringResult);
+                result.put(RedisCommandExecuteResult.RESULT_KEY, stringResult);
                 break;
         }
 

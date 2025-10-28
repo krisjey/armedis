@@ -59,11 +59,10 @@ public class RedisNoneClusterNodeLookup implements RedisNodeLookup {
     }
 
     private List<RedisNode> findSlaves(RedisNode masterNode) {
-        try (RedisConnector connector = new RedisConnector(masterNode);
-                StatefulRedisConnection<String, String> connection = connector.connect();) {
-            String replicationInfo = connection.sync().info("Replication");
-            return retreveSlaveNodes(replicationInfo);
-        }
+        RedisConnector connector = new RedisConnector(masterNode);
+        StatefulRedisConnection<String, String> connection = connector.connect();
+        String replicationInfo = connection.sync().info("Replication");
+        return retreveSlaveNodes(replicationInfo);
     }
 
     private List<RedisNode> retreveSlaveNodes(String replicationInfo) {
@@ -131,10 +130,9 @@ public class RedisNoneClusterNodeLookup implements RedisNodeLookup {
         }
 
         if (isSlave) {
-            try (RedisConnector connector = new RedisConnector(new RedisNode(masterHost, masterPort));
-                    StatefulRedisConnection<String, String> connection = connector.connect();) {
-                return findMasterNode(connection.sync(), seedAddresses);
-            }
+            RedisConnector connector = new RedisConnector(new RedisNode(masterHost, masterPort));
+            StatefulRedisConnection<String, String> connection = connector.connect();
+            return findMasterNode(connection.sync(), seedAddresses);
         }
 
         return new RedisNode(masterHost, masterPort, RedisNodeType.MASTER);
@@ -161,10 +159,9 @@ public class RedisNoneClusterNodeLookup implements RedisNodeLookup {
 
         String masterAddress = null;
 
-        try (RedisConnector connector = new RedisConnector(new RedisNode(slaveHost, Integer.parseInt(slavePort)));
-                StatefulRedisConnection<String, String> connection = connector.connect();) {
-            masterAddress = connection.sync().configGet("slaveof").get("slaveof");
-        }
+        RedisConnector connector = new RedisConnector(new RedisNode(slaveHost, Integer.parseInt(slavePort)));
+        StatefulRedisConnection<String, String> connection = connector.connect();
+        masterAddress = connection.sync().configGet("slaveof").get("slaveof");
 
         return masterAddress.split(" ")[0];
     }

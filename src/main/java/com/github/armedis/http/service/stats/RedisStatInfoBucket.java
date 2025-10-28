@@ -103,6 +103,8 @@ public class RedisStatInfoBucket {
         }
 
         /**
+         * TODO RedisConnector사용? 아니면 Cluster connection 계속 유지?
+         * 클러스터 노드 변경되었을 때 필요.
          * 0. 노드 접속 정보 추출 1. polling 문자열 Return per sec. 2. Convert to RedisStatsInfo
          * per sec, every node RedisInfoVo 3.
          */
@@ -446,17 +448,17 @@ public class RedisStatInfoBucket {
     }
 
     private String getClusterNodesCommandResult(RedisConnectionPool<String, String> redisConnectionPool) {
-        String nodes = null;
+        String nodesInfo = null;
         try {
             StatefulRedisClusterConnection<String, String> connection = redisConnectionPool.getClusterConnection();
-            nodes = connection.sync().clusterNodes();
+            nodesInfo = connection.sync().clusterNodes();
             redisConnectionPool.returnObject(connection);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
 
-        return nodes;
+        return nodesInfo;
     }
 
     private List<RedisClusterNodeInfo> convertNodeInfoList(String clusterNodes) {

@@ -15,6 +15,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.armedis.ArmedisServer;
 import com.github.armedis.http.service.AbstractRedisServerTest;
+import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.linecorp.armeria.common.AggregatedHttpResponse;
 import com.linecorp.armeria.common.HttpData;
 import com.linecorp.armeria.common.HttpMethod;
@@ -52,7 +53,7 @@ public class RedisSetServiceTest extends AbstractRedisServerTest {
 
         assertThatJson(responseString)
                 .as("Check result field in result json")
-                .node("result").isPresent()
-                .node("result").isEqualTo("OK");
+                .node(RedisCommandExecuteResult.RESULT_KEY).isPresent()
+                .node(RedisCommandExecuteResult.RESULT_KEY).isEqualTo("OK");
     }
 }

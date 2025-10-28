@@ -17,10 +17,13 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -47,6 +50,8 @@ public final class AllowedConfigCommands {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .enable(SerializationFeature.INDENT_OUTPUT)
             .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+    private static boolean initialized;
 
     private AllowedConfigCommands() {
     }
@@ -83,6 +88,7 @@ public final class AllowedConfigCommands {
         private final String description;
         private final DataType dataType;
         private final List<String> options;
+        private final String parseKey;
         @JsonIgnore
         private final Predicate<String> validator;
         @JsonIgnore
@@ -95,6 +101,7 @@ public final class AllowedConfigCommands {
             this.description = Objects.requireNonNull(builder.description);
             this.dataType = Objects.requireNonNull(builder.dataType);
             this.options = List.copyOf(builder.options);
+            this.parseKey = Objects.requireNonNull(builder.parseKey);
             this.validator = builder.validator != null ? builder.validator : (v -> true);
             this.normalizer = builder.normalizer != null ? builder.normalizer : Function.identity();
             this.currentValue = builder.currentValue;
@@ -131,9 +138,24 @@ public final class AllowedConfigCommands {
             return options.isEmpty() ? null : options;
         }
 
-        public synchronized void setCurrentValue(String value) {
-            if (value == null)
+        @JsonProperty("parseKey")
+        public String getParseKey() {
+            return parseKey;
+        }
+
+        public void setCurrentValueFromDB(String value) {
+            if (value == null) {
                 throw new IllegalArgumentException("value cannot be null");
+            }
+
+            this.currentValue = normalizer.apply(value);
+        }
+
+        public void setCurrentValue(String value) {
+            if (value == null) {
+                throw new IllegalArgumentException("value cannot be null");
+            }
+
             if (!validator.test(value)) {
                 String base = "Invalid value for '" + key + "': " + value;
                 if (dataType == DataType.DROPDOWN && !options.isEmpty()) {
@@ -148,6 +170,15 @@ public final class AllowedConfigCommands {
             return value != null && validator.test(value);
         }
 
+        public String parseValue(JsonNode jsonNode) {
+            if (StringUtils.trimToNull(parseKey) == null) {
+                return jsonNode.asText("");
+            }
+            else {
+                return jsonNode.get(parseKey).asText("");
+            }
+        }
+
         public static Builder builder(String key) {
             return new Builder(key);
         }
@@ -158,6 +189,7 @@ public final class AllowedConfigCommands {
             private String description = "";
             private DataType dataType = DataType.STRING;
             private List<String> options = new ArrayList<>();
+            private String parseKey = "";
             private Predicate<String> validator;
             private Function<String, String> normalizer;
             private String currentValue = "";
@@ -183,6 +215,11 @@ public final class AllowedConfigCommands {
 
             public Builder options(List<String> opts) {
                 this.options = new ArrayList<>(opts);
+                return this;
+            }
+
+            public Builder parseKey(String parseKey) {
+                this.parseKey = parseKey;
                 return this;
             }
 
@@ -290,6 +327,7 @@ public final class AllowedConfigCommands {
                         .category(Category.Memory)
                         .description("최대 메모리 사용량 (바이트)")
                         .dataType(DataType.MEMORYUNIT)
+                        .parseKey("maxmemory")
                         .validator(memoryUnitValidator())
                         .normalizer(memoryUnitNormalizer())
                         .build());
@@ -300,6 +338,7 @@ public final class AllowedConfigCommands {
                         .category(Category.Memory)
                         .description("메모리 초과 시 키 삭제 정책")
                         .dataType(DataType.DROPDOWN)
+                        .parseKey("maxmemory-policy")
                         .options(policyOpts)
                         .validator(dropdownValidator(policyOpts))
                         .normalizer(lowerNormalizer())
@@ -311,17 +350,20 @@ public final class AllowedConfigCommands {
                         .category(Category.Memory)
                         .description("메모리 초과 시 키 삭제 정책(대상 조회 수)")
                         .dataType(DataType.DROPDOWN)
+                        .parseKey("maxmemory-samples")
                         .options(memorySampleOpts)
                         .validator(dropdownValidator(memorySampleOpts))
                         .normalizer(lowerNormalizer())
                         .build());
 
+     // TODO allocator_frag_ratio값, allocator_frag_bytes 값 출력 필요.
         List<String> defragOpts = List.of("yes", "no");
         m.put("activedefrag",
                 ConfigCommand.builder("activedefrag")
                         .category(Category.Memory)
                         .description("동적 메모리 파편화 제거")
                         .dataType(DataType.DROPDOWN)
+                        .parseKey("activedefrag")
                         .options(defragOpts)
                         .validator(dropdownValidator(defragOpts))
                         .normalizer(lowerNormalizer())
@@ -334,6 +376,7 @@ public final class AllowedConfigCommands {
                         .category(Category.Memory)
                         .description("동적 메모리 파편화 제거-최대성능시작 threshold")
                         .dataType(DataType.DROPDOWN)
+                        .parseKey("active-defrag-threshold-upper")
                         .options(thresholdUpperOpts)
                         .validator(dropdownValidator(thresholdUpperOpts))
                         .normalizer(lowerNormalizer())
@@ -346,28 +389,41 @@ public final class AllowedConfigCommands {
                         .category(Category.Memory)
                         .description("동적 메모리 파편화 제거-중지 threshold")
                         .dataType(DataType.DROPDOWN)
+                        .parseKey("active-defrag-threshold-lower")
                         .options(thresholdLowerOpts)
                         .validator(dropdownValidator(thresholdLowerOpts))
                         .normalizer(lowerNormalizer())
                         .build());
 
-        // active-defrag-ignore-bytes
+        // active-defrag-ignore-bytes flag
         m.put("active-defrag-ignore-bytes",
                 ConfigCommand.builder("active-defrag-ignore-bytes")
                         .category(Category.Memory)
                         .description("동적 메모리 파편화 제거시작 최소값")
                         .dataType(DataType.MEMORYUNIT)
+                        .parseKey("active-defrag-ignore-bytes")
                         .validator(memoryUnitValidator())
                         .normalizer(memoryUnitNormalizer())
                         .build());
 
-        // TODO allocator_frag_ratio값, allocator_frag_bytes 값 출력 필요.
+        List<String> hzOpts = List.of("10", "20", "30", "50");
+        m.put("hz",
+                ConfigCommand.builder("hz")
+                        .category(Category.Performance)
+                        .description("Background job frequency(expire, activedefrag, client close...)")
+                        .dataType(DataType.DROPDOWN)
+                        .parseKey("hz")
+                        .options(hzOpts)
+                        .validator(dropdownValidator(hzOpts))
+                        .normalizer(lowerNormalizer())
+                        .build());
 
         m.put("maxclients",
                 ConfigCommand.builder("maxclients")
                         .category(Category.Client)
                         .description("동시 접속 가능한 최대 클라이언트 수")
                         .dataType(DataType.INTEGER)
+                        .parseKey("maxclients")
                         .validator(integerValidator())
                         .build());
 
@@ -376,6 +432,7 @@ public final class AllowedConfigCommands {
                         .category(Category.Client)
                         .description("유휴 클라이언트 연결 종료 시간(초)")
                         .dataType(DataType.INTEGER)
+                        .parseKey("timeout")
                         .validator(integerValidator())
                         .build());
 
@@ -384,6 +441,7 @@ public final class AllowedConfigCommands {
                         .category(Category.Persistence)
                         .description("RDB 스냅샷 주기(동기)")
                         .dataType(DataType.STRING)
+                        .parseKey("save")
                         .build());
 
         m.put("bgsave",
@@ -393,23 +451,13 @@ public final class AllowedConfigCommands {
                         .dataType(DataType.STRING)
                         .build());
 
-//        List<String> ynOpts = List.of("yes", "no");
-//        m.put("appendonly",
-//                ConfigCommand.builder("appendonly")
-//                        .category(Category.Persistence)
-//                        .description("AOF 사용 여부")
-//                        .dataType(DataType.DROPDOWN)
-//                        .options(ynOpts)
-//                        .validator(dropdownValidator(ynOpts))
-//                        .normalizer(lowerNormalizer())
-//                        .build());
-
         List<String> fsyncOpts = List.of("always", "everysec", "no");
         m.put("appendfsync",
                 ConfigCommand.builder("appendfsync")
                         .category(Category.Persistence)
                         .description("AOF 동기화 정책")
                         .dataType(DataType.DROPDOWN)
+                        .parseKey("appendfsync")
                         .options(fsyncOpts)
                         .validator(dropdownValidator(fsyncOpts))
                         .normalizer(lowerNormalizer())
@@ -420,6 +468,7 @@ public final class AllowedConfigCommands {
                         .category(Category.Network)
                         .description("TCP keepalive 시간(초)")
                         .dataType(DataType.INTEGER)
+                        .parseKey("tcp-keepalive")
                         .validator(integerValidator())
                         .build());
 
@@ -429,6 +478,7 @@ public final class AllowedConfigCommands {
                         .category(Category.Logging)
                         .description("로그 레벨")
                         .dataType(DataType.DROPDOWN)
+                        .parseKey("loglevel")
                         .options(levelOpts)
                         .validator(dropdownValidator(levelOpts))
                         .normalizer(lowerNormalizer())
@@ -437,8 +487,9 @@ public final class AllowedConfigCommands {
         m.put("slowlog-log-slower-than",
                 ConfigCommand.builder("slowlog-log-slower-than")
                         .category(Category.Logging)
-                        .description("로그 레벨")
+                        .description("slow log detect threshold")
                         .dataType(DataType.INTEGER)
+                        .parseKey("slowlog-log-slower-than")
                         .validator(integerValidator())
                         .build());
 
@@ -447,6 +498,7 @@ public final class AllowedConfigCommands {
                         .category(Category.Cluster)
                         .description("클러스터 노드 타임아웃(밀리초)")
                         .dataType(DataType.INTEGER)
+                        .parseKey("cluster-node-timeout")
                         .validator(integerValidator())
                         .build());
 
@@ -456,15 +508,17 @@ public final class AllowedConfigCommands {
     public static ConfigCommand get(String key) {
         String normalizedKey = norm(key);
         ConfigCommand cmd = COMMANDS.get(normalizedKey);
-        if (cmd == null)
+        if (cmd == null) {
             throw new NoSuchElementException("Unknown config: " + key);
+        }
+
         return cmd;
     }
 
     public static Collection<ConfigCommand> all() {
         return COMMANDS.values();
     }
-    
+
     public static Set<String> keys() {
         return COMMANDS.keySet();
     }
@@ -483,5 +537,19 @@ public final class AllowedConfigCommands {
     public static String toJson(String key) throws JsonProcessingException {
         ConfigCommand cmd = get(key);
         return OBJECT_MAPPER.writeValueAsString(cmd);
+    }
+
+    /**
+     * 
+     */
+    public static void initialized() {
+        initialized = true;
+    }
+
+    /**
+     * 
+     */
+    public static boolean isInitialized() {
+        return initialized;
     }
 }
