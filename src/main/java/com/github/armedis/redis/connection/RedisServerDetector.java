@@ -137,8 +137,7 @@ public class RedisServerDetector {
      */
     private StatefulRedisConnection<String, String> getSeedConnection() {
         for (RedisNode seed : this.seedInfo) {
-            try {
-                RedisConnector redisSeedConnector = new RedisConnector(seed);
+            try (RedisConnector redisSeedConnector = new RedisConnector(seed);) {
                 logger.info("Connected server " + seed.toString());
 
                 return redisSeedConnector.connect();

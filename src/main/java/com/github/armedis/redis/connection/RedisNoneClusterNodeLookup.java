@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory;
 import com.github.armedis.redis.RedisNode;
 import com.github.armedis.redis.RedisNodeType;
 
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 
@@ -61,8 +59,8 @@ public class RedisNoneClusterNodeLookup implements RedisNodeLookup {
     }
 
     private List<RedisNode> findSlaves(RedisNode masterNode) {
-        RedisClient client = RedisClient.create(RedisURI.create(masterNode.getHost(), masterNode.getPort()));
-        try (StatefulRedisConnection<String, String> connection = client.connect();) {
+        try (RedisConnector connector = new RedisConnector(masterNode);
+                StatefulRedisConnection<String, String> connection = connector.connect();) {
             String replicationInfo = connection.sync().info("Replication");
             return retreveSlaveNodes(replicationInfo);
         }
@@ -133,8 +131,8 @@ public class RedisNoneClusterNodeLookup implements RedisNodeLookup {
         }
 
         if (isSlave) {
-            RedisClient client = RedisClient.create(RedisURI.create(masterHost, masterPort));
-            try (StatefulRedisConnection<String, String> connection = client.connect();) {
+            try (RedisConnector connector = new RedisConnector(new RedisNode(masterHost, masterPort));
+                    StatefulRedisConnection<String, String> connection = connector.connect();) {
                 return findMasterNode(connection.sync(), seedAddresses);
             }
         }
@@ -162,8 +160,9 @@ public class RedisNoneClusterNodeLookup implements RedisNodeLookup {
         }
 
         String masterAddress = null;
-        RedisClient client = RedisClient.create(RedisURI.create(slaveHost, Integer.parseInt(slavePort)));
-        try (StatefulRedisConnection<String, String> connection = client.connect();) {
+
+        try (RedisConnector connector = new RedisConnector(new RedisNode(slaveHost, Integer.parseInt(slavePort)));
+                StatefulRedisConnection<String, String> connection = connector.connect();) {
             masterAddress = connection.sync().configGet("slaveof").get("slaveof");
         }
 
