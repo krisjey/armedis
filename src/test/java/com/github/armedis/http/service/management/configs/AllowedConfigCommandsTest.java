@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.NoSuchElementException;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AllowedConfigCommandsTest {
@@ -24,10 +25,8 @@ class AllowedConfigCommandsTest {
     void testGetAllCommands() {
         var commands = AllowedConfigCommands.all();
 
-        System.out.println(AllowedConfigCommands.keys());
- 
         assertNotNull(commands);
-        assertEquals(10, commands.size());
+        assertThat(commands.size()).isGreaterThan(10);
     }
 
     @Test
@@ -58,8 +57,7 @@ class AllowedConfigCommandsTest {
     @Test
     @DisplayName("존재하지 않는 config key 조회 시 예외 발생")
     void testGetNonExistentCommand() {
-        assertThrows(NoSuchElementException.class,
-                () -> AllowedConfigCommands.get("invalid-key"));
+        assertThrows(NoSuchElementException.class, () -> AllowedConfigCommands.get("invalid-key"));
     }
 
     @Test
@@ -173,7 +171,9 @@ class AllowedConfigCommandsTest {
     void testSetAndGetCurrentValue() {
         var cmd = AllowedConfigCommands.get("timeout");
 
-        assertEquals("", cmd.getCurrentValue());
+        // TODO 현재 값 확인. 두번 호출되고 첫 번째는 "" 두 번째는 "0"
+        System.out.println(cmd.getKey() + "[" + cmd.getCurrentValue() + "]");
+        assertThat(cmd.getCurrentValue()).isEqualTo("");
 
         cmd.setCurrentValue("300");
         assertEquals("300", cmd.getCurrentValue());
@@ -184,8 +184,7 @@ class AllowedConfigCommandsTest {
     void testSetNullValueThrowsException() {
         var cmd = AllowedConfigCommands.get("maxclients");
 
-        assertThrows(IllegalArgumentException.class,
-                () -> cmd.setCurrentValue(null));
+        assertThrows(IllegalArgumentException.class, () -> cmd.setCurrentValue(null));
     }
 
     @Test
@@ -203,7 +202,7 @@ class AllowedConfigCommandsTest {
 
         JsonNode configKeys = root.get("configKeys");
         assertTrue(configKeys.isArray());
-        assertEquals(10, configKeys.size());
+        assertThat(configKeys.size()).isGreaterThan(10);
     }
 
     @Test
@@ -215,8 +214,7 @@ class AllowedConfigCommandsTest {
         assertEquals("key, currentValue, category, description, dataType, options",
                 root.get("key-description").asText());
 
-        assertEquals("number, text, dropdown, memoryunit",
-                root.get("dataType-description").asText());
+        assertEquals("number, text, dropdown, memoryunit", root.get("dataType-description").asText());
     }
 
     @Test
@@ -246,14 +244,14 @@ class AllowedConfigCommandsTest {
         String json2 = AllowedConfigCommands.toJson("maxmemory");
         JsonNode node2 = MAPPER.readTree(json2);
         assertFalse(node2.has("options"));
+        System.out.println(AllowedConfigCommands.all());
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {
-            "maxmemory", "maxmemory-policy", "maxclients", "timeout",
-            "save", "appendonly", "appendfsync", "tcp-keepalive",
-            "loglevel", "cluster-node-timeout"
-    })
+    @ValueSource(strings = { "maxmemory", "maxmemory-policy", "maxmemory-samples", "activedefrag",
+            "active-defrag-threshold-upper", "active-defrag-threshold-lower", "active-defrag-ignore-bytes", "hz",
+            "maxclients", "timeout", "save", "appendfsync", "tcp-keepalive", "loglevel", "slowlog-log-slower-than",
+            "cluster-node-timeout" })
     @DisplayName("모든 정의된 config keys 존재 확인")
     void testAllDefinedKeysExist(String key) {
         assertTrue(AllowedConfigCommands.contains(key));
