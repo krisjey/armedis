@@ -4,12 +4,12 @@
         <div class="row">
             <div class="col-12">
                 <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                    <h4 class="mb-sm-0">Sitemap</h4>
+                    <h4 class="mb-sm-0">Realtime Stats</h4>
 
                     <div class="page-title-right">
                         <ol class="breadcrumb m-0">
                             <li class="breadcrumb-item"><a href="javascript: void(0);">Armedis</a></li>
-                            <li class="breadcrumb-item active">Realtime</li>
+                            <li class="breadcrumb-item active">Realtime Stats</li>
                         </ol>
                     </div>
                 </div>
@@ -50,7 +50,7 @@
         <!-- end row -->
 
         <div class="row">
-            <div class="col-xl-12">
+            <div class="col-xl-6">
                 <!-- Memory START -->
                 <div class="card" id="memoryCard">
                     <div class="card-header">
@@ -63,6 +63,22 @@
                     </div><!-- end card-body -->
                 </div><!-- end card -->
                 <!-- Memory END -->
+            </div>
+            <!-- end col -->
+
+            <!-- end col -->
+            <div class="col-xl-6">
+                <!-- Hit Rate START -->
+                <div class="card" id="receivedConnectionsCard">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0"></h4>
+                    </div><!-- end card header -->
+
+                    <div class="card-body">
+                        <div id="area_chart_stacked" data-colors='["--vz-primary"]' class="apex-charts" dir="ltr"></div>
+                    </div><!-- end card-body -->
+                </div><!-- end card -->
+                <!-- Hit Rate END -->
             </div>
             <!-- end col -->
         </div>
@@ -142,6 +158,7 @@
         { name: "RSS", data: [] },
         { name: "Used Memory", data: [] }
     ];
+    var receivedConnectionsSeries = [{ name: "Recevied Connections", data: [] }];
     var tables = [
         { 
             id: "redisAnalysis", 
@@ -285,8 +302,6 @@
                 }
             }
     
-            // var chart = new ApexCharts(chartElement, chartOptions);
-            // chart.render();
             charts[cardId] = new ApexCharts(chartElement, chartOptions);
             charts[cardId].render();
         }
@@ -356,6 +371,27 @@
                     tickAmount: 5,
                     labels: { formatter: val => val.toFixed(0) + "%" }
                 };
+
+            // ============================
+            // Received Connections Card
+            // ============================
+            } else if (cardId === "receivedConnectionsCard") {
+                var allY = series[0].data.map(d => d.y);
+                var maxY = Math.max(...allY);
+                var adjustedMaxY = maxY * 1.1; // 10% 여유
+
+                // max값에 따라 1000 또는 5000단위로 조정
+                var step = adjustedMaxY > 500 ? 500 : 100;
+                var roundedMaxY = Math.ceil(adjustedMaxY / step) * step;
+
+                optionsUpdate.yaxis = {
+                    min: 0,
+                    max: roundedMaxY,
+                    tickAmount: 5,
+                    labels: {
+                        formatter: val => val.toLocaleString()
+                    }
+                };
             }
 
             charts[cardId].updateOptions(optionsUpdate, true, true);
@@ -368,6 +404,7 @@
             { id: "tpsCard", title: "TPS" },
             { id: "hitRateCard", title: "Hit Rate" },
             { id: "memoryCard", title: "Memory" },
+            { id: "receivedConnectionsCard", title: "Received Connections" },
             { id: "redisAnalysis", title: "Analysis" },
             { id: "instanceInformation", title: "Instance Information" }
         ];
@@ -383,14 +420,15 @@
 
     // 차트 초기설정
     function initChart() {
-        createChartCard("tpsCard", tpsSeries);
-        createChartCard("hitRateCard", hitRateSeries);
-        createChartCard("memoryCard", memorySeries);
+        createChartCard("tpsCard", _.cloneDeep(tpsSeries));
+        createChartCard("hitRateCard", _.cloneDeep(hitRateSeries));
+        createChartCard("memoryCard", _.cloneDeep(memorySeries));
+        createChartCard("receivedConnectionsCard", _.cloneDeep(receivedConnectionsSeries));
     }
 
     // 차트 제거 후 재생성
     function destroyChart() {
-        var cardIds = ["tpsCard", "hitRateCard", "memoryCard"];
+        var cardIds = ["tpsCard", "hitRateCard", "memoryCard", "receivedConnectionsCard"];
 
         cardIds.forEach((elem, idx) => {
             if (charts[elem]) {
@@ -411,27 +449,27 @@
     // TPS 차트 데이터 설정
     function setTPSData() {
         var cardId = "tpsCard";
-        var tpsTotalPoints = 60;
+        var totalPoints = 60;
 
         var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
         tpsSeries[0].data.push({
             x: moment().toDate().getTime(),
             y: lastStatsSumStats.instantaneousOpsPerSec
         });
-
-        if (tpsSeries[0].data.length > tpsTotalPoints) {
+        
+        if (tpsSeries[0].data.length > totalPoints) {
             // tpsSeries[0].data.shift();
-            // tpsSeries[0].data.splice(0, tpsSeries[0].data.length - tpsTotalPoints);
-            tpsSeries[0].data.slice(-tpsTotalPoints);
+            // tpsSeries[0].data.splice(0, tpsSeries[0].data.length - totalPoints);
+            // tpsSeries[0].data.slice(-totalPoints);
+            tpsSeries[0].data = _.drop(tpsSeries[0].data, tpsSeries[0].data.length - totalPoints);
         }
-
         addDataPoint(cardId, tpsSeries);
     }
 
     // Hit Rate 차트 데이터 설정
     function setHitRateData() {
         var cardId = "hitRateCard";
-        var hitRateTotalPoints = 60;
+        var totalPoints = 60;
 
         var beforeStats = _.nth(statsData, -2).redisInfoList.sum.stats;
         var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
@@ -447,9 +485,10 @@
             x: moment().toDate().getTime(),
             y: newHitRate
         })
-        if (hitRateSeries[0].data.length > hitRateTotalPoints) {
+        if (hitRateSeries[0].data.length > totalPoints) {
             // hitRateSeries[0].data.shift();
-            hitRateSeries[0].data.slice(-hitRateTotalPoints);
+            // hitRateSeries[0].data.slice(-totalPoints);
+            hitRateSeries[0].data = _.drop(hitRateSeries[0].data, hitRateSeries[0].data.length - totalPoints);
         }
 
         addDataPoint(cardId, hitRateSeries);
@@ -458,7 +497,7 @@
     // Memory 차트 데이터 설정
     function setMemory() {
         var cardId = "memoryCard";
-        var memoryTotalPoints = 100;
+        var totalPoints = 60;
 
         var maxmemory = _.last(statsData).redisInfoList.sum.memory.maxmemory ?? 0;
         var usedMemoryRss = _.last(statsData).redisInfoList.sum.memory.usedMemoryRss ?? 0;
@@ -478,13 +517,43 @@
         });
 
         memorySeries.forEach(elem => {
-            if (elem.data.length > memoryTotalPoints) {
+            if (elem.data.length > totalPoints) {
                 // elem.data.shift();
-                elem.data.slice(-memoryTotalPoints);
+                // elem.data.slice(-totalPoints);
+                elem.data = _.drop(elem.data, elem.data.length - totalPoints);
             }
         })
 
         addDataPoint(cardId, memorySeries);
+    }
+
+    // Received Connections 차트 데이터 설정
+    function setReceivedConnectionsData() {
+        var cardId = "receivedConnectionsCard";
+        var totalPoints = 60;
+
+        // 1초전 stats
+        var secondsAgoStatsSumStats = _.nth(statsData, -2).redisInfoList.sum.stats;
+        // 1초전 totalConnectionsReceived 
+        var secondsAgoConnectedReceived = secondsAgoStatsSumStats.totalConnectionsReceived;
+        var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
+        // 마지막 totalConnectionsReceived
+        var lastConnectedReceived = lastStatsSumStats.totalConnectionsReceived;
+        // 마지막 totalConnectionsReceived - 1초전 totalConnectionsReceived
+        var computedConnectedReceived = Math.max(lastConnectedReceived - secondsAgoConnectedReceived, 0);
+        receivedConnectionsSeries[0].data.push({
+            x: moment().toDate().getTime(),
+            y: computedConnectedReceived
+        });
+        
+        if (receivedConnectionsSeries[0].data.length > totalPoints) {
+            // receivedConnectionsSeries[0].data.shift();
+            // receivedConnectionsSeries[0].data.slice(-totalPoints);
+            receivedConnectionsSeries[0].data = _.drop(receivedConnectionsSeries[0].data, receivedConnectionsSeries[0].data.length - totalPoints);
+        }
+
+        
+        addDataPoint(cardId, receivedConnectionsSeries);
     }
 
     // Table 설정
@@ -555,7 +624,7 @@
             redisStatDatas.push(newRow)
             if (redisStatDatas.length > totalRows) {
                 // redisStatDatas.shift();
-                redisStatDatas.slice(-totalRows);
+                // redisStatDatas.slice(-totalRows);
             }
 
             var cardId = "redisAnalysis";
@@ -596,12 +665,14 @@
         var response = await fetch("/v1/redis/stats");
         if (!response.ok) throw new Error("HTTP " + res.status);
 
-        var data = await response.json();
-        statsData = data;
+        // var data = await response.json();
+        // statsData = data;
+        statsData = await response.json();
 
         setTPSData();
         setHitRateData();
         setMemory();
+        setReceivedConnectionsData();
         setRedisStat();
         setInstanceInfo();
     }
@@ -624,7 +695,7 @@
             var ipParts = ip.split(".").map(Number);
             return _.padStart(port, 5, "0") + ipParts.map(n => _.padStart(n, 3, "0")).join("");
         })
-        redisInfoHeaders.unshift("information");
+        // redisInfoHeaders.unshift("information");
 
         // row datas 설정
         for (var i = 0; i < instanceInfoTableContent.length; i++) {
@@ -716,8 +787,8 @@
         }
     }
 
-    function intervalInit() {
-        getStats();
+    async function intervalInit() {
+        await getStats();
     }
 
     function clearIntervalIds() {
