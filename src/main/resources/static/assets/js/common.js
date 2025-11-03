@@ -478,6 +478,6 @@ function getMemoryCapacityUnit(size, unit = 'byte') {
         value = size;
         suffix = 'K';
       }
-      return `${Math.round(value)} ${suffix}`;
+      return `${Math.round(value)}${suffix}`;
     }
   }
