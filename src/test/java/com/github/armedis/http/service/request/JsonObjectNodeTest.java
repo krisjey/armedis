@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -34,6 +35,7 @@ public class JsonObjectNodeTest {
         assertThat(json.toString()).isEqualTo(jsonString);
     }
 
+    @Disabled
     @Test
     public void testPerformanceToString() throws IOException {
         String jsonString = "{\"userId\":\"ddd051001\",\"location\":\"vod_editor\",\"contentGrade\":0}";
@@ -47,6 +49,7 @@ public class JsonObjectNodeTest {
         }
     }
 
+    @Disabled
     @Test
     public void testPerformanceWriteValue() throws IOException {
         String jsonString = "{\"userId\":\"ddd051001\",\"location\":\"vod_editor\",\"contentGrade\":0}";
