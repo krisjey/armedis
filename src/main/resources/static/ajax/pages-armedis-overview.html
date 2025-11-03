@@ -4,7 +4,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                    <h4 class="mb-sm-0">Sitemap</h4>
+                    <h4 class="mb-sm-0">Overview</h4>
 
                     <div class="page-title-right">
                         <ol class="breadcrumb m-0">
@@ -529,7 +529,7 @@
     function initCard() {
         var cards = [
             { id: "opsPerSecCard", title: "Ops/sec" },
-            { id: "connectedClientsCard", title: "Connected Clients" },
+            { id: "connectedClientsCard", title: "Connected Clients/Connections Received" },
             { id: "networkCard", title: "Network" },
             { id: "memoryCard", title: "Memory" },
             { id: "uptimeCard", title: "Uptime" },
@@ -576,8 +576,18 @@
     // Connected Clients 설정
     function setConnectedClients() {
         var cardId = "connectedClientsCard";
+        // 5초전 stats
+        var fiveSecondsAgoStatsSumStats = _.nth(statsData, -6).redisInfoList.sum.stats;
+        // 마지막 stats
+        var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
+        // 5초전 totalConnectionsReceived 
+        var fiveSecondsAgoConnectedReceived = fiveSecondsAgoStatsSumStats.totalConnectionsReceived;
+        // 마지막 totalConnectionsReceived
+        var lastConnectedReceived = lastStatsSumStats.totalConnectionsReceived;
+        // 마지막 totalConnectionsReceived - 5초전 totalConnectionsReceived
+        var computedConnectedReceived = Math.max(lastConnectedReceived - fiveSecondsAgoConnectedReceived, 0);
         var lastStatsSumClients = _.last(statsData).redisInfoList.sum.clients;
-        setDataValue(cardId, lastStatsSumClients.connectedClients.toLocaleString());
+        setDataValue(cardId, `${lastStatsSumClients.connectedClients.toLocaleString()}/${computedConnectedReceived.toLocaleString()}`);
     }
 
     // Number of Keys 설정
@@ -896,9 +906,9 @@
     window.pageHooks["pages-armedis-overview.html"] = {
         onLoad: function () {
             initCard();
+            intervalInit();
             initChart();
             initTable();
-            intervalInit();
             
             // 기존 interval 모두 제거
             clearIntervalIds();
