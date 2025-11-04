@@ -262,7 +262,7 @@
         </div> <!-- end row-->
 
         <div class="row">
-            <div class="col-xl-3">
+            <div class="col-xl-4">
                 <div class="card card-animate" id="clientConnectionsCard">
                     <div class="card-header">
                         <h4 class="card-title mb-0"></h4>
@@ -280,7 +280,7 @@
                 </div><!-- end card -->
             </div> <!-- end col -->
 
-            <div class="col-xl-3">
+            <div class="col-xl-4">
                 <div class="card card-animate" id="commandStatisticsCard">
                     <div class="card-header">
                         <h4 class="card-title mb-0"></h4>
@@ -298,7 +298,7 @@
                 </div><!-- end card -->
             </div> <!-- end col -->
 
-            <div class="col-xl-6">
+            <div class="col-xl-4">
                 <div class="card card-animate" id="slowQueriesLogCard">
                     <div class="card-header">
                         <h4 class="card-title mb-0"></h4>
@@ -531,7 +531,7 @@
     function initCard() {
         var cards = [
             { id: "opsPerSecCard", title: "Ops/sec" },
-            { id: "connectedClientsCard", title: "Connected Clients/Connections Received" },
+            { id: "connectedClientsCard", title: "Connections(New conn)" },
             { id: "networkCard", title: "Network" },
             { id: "memoryCard", title: "Memory" },
             { id: "uptimeCard", title: "Uptime" },
@@ -589,7 +589,7 @@
         // 마지막 totalConnectionsReceived - 5초전 totalConnectionsReceived
         var computedConnectedReceived = Math.max(lastConnectedReceived - fiveSecondsAgoConnectedReceived, 0);
         var lastStatsSumClients = _.last(statsData).redisInfoList.sum.clients;
-        setDataValue(cardId, `${lastStatsSumClients.connectedClients.toLocaleString()}/${computedConnectedReceived.toLocaleString()}`);
+        setDataValue(cardId, `${lastStatsSumClients.connectedClients.toLocaleString()}(${computedConnectedReceived.toLocaleString()})`);
     }
 
     // Number of Keys 설정
