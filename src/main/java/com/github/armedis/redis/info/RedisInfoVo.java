@@ -303,7 +303,6 @@ public class RedisInfoVo {
         result.setCluster(new Cluster());
         result.setKeyspace(Keyspace.fromString("db0:keys=0,expires=0,avg_ttl=0,subexpiry=0", false));
 
-        // set sub objec
         return result;
     }
 }

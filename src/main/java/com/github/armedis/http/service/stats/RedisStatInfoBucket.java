@@ -146,15 +146,11 @@ public class RedisStatInfoBucket {
             }
         }
 
-        // calculate sum.
-        // Create dummy info object from last data. info object can not create
-        // 기본값 생성.
-        RedisInfoVo sumRedisInfoVo = RedisInfoVo.from(info, armedisConfiguration.isAddContentSection());
+        // FIXED: Create empty RedisInfoVo object for sum calculation
+        RedisInfoVo sumRedisInfoVo = RedisInfoVo.emptyObject();
         sumRedisInfoVo.getServer().setHost(redisNodeIp);
 
-//        RedisInfoVo sumRedisInfoVo = RedisInfoVo.emptyObject();
-//        sumRedisInfoVo.getServer().setHost(redisNodeIp);
-
+        // 각 노드의 통계를 합산
         for (Entry<String, RedisInfoVo> item : redisStatsInfo.getRedisInfoList().entrySet()) {
             RedisInfoVo redisInfoVo = item.getValue();
             accumulateStatValue(sumRedisInfoVo, redisInfoVo);
@@ -162,6 +158,7 @@ public class RedisStatInfoBucket {
 
         redisStatsInfo.put("sum", sumRedisInfoVo);
         logger.debug("TOTAL OPS " + sumRedisInfoVo.getStats().getInstantaneousOpsPerSec());
+
         if (redisStatsInfoList.isAtFullCapacity()) {
             redisStatsInfoList.remove();
         }
@@ -434,7 +431,7 @@ public class RedisStatInfoBucket {
 
         return resultSumValue;
     }
-    
+
     /**
      * 
      * @param redisStatsInfo
