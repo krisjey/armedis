@@ -5,12 +5,9 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +23,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.armedis.config.ArmedisConfiguration;
 import com.github.armedis.redis.connection.pool.RedisConnectionPool;
+import com.github.armedis.redis.info.RedisInfoAggregator;
 import com.github.armedis.redis.info.RedisInfoVo;
-import com.github.armedis.redis.info.ReflectionManipulator;
-import com.github.armedis.redis.info.StatsBaseVo;
 
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
@@ -146,290 +142,24 @@ public class RedisStatInfoBucket {
             }
         }
 
-        // FIXED: Create empty RedisInfoVo object for sum calculation
-        RedisInfoVo sumRedisInfoVo = RedisInfoVo.emptyObject();
-        sumRedisInfoVo.getServer().setHost(redisNodeIp);
-
-        // 각 노드의 통계를 합산
-        for (Entry<String, RedisInfoVo> item : redisStatsInfo.getRedisInfoList().entrySet()) {
-            RedisInfoVo redisInfoVo = item.getValue();
-            accumulateStatValue(sumRedisInfoVo, redisInfoVo);
+        // Calculate sum using Collector pattern
+        RedisInfoVo sumRedisInfoVo = RedisInfoAggregator.aggregate(
+            redisStatsInfo.getRedisInfoList().values()
+        );
+        
+        // Set host information from last processed node
+        if (redisNodeIp != null) {
+            sumRedisInfoVo.getServer().setHost(redisNodeIp);
         }
 
         redisStatsInfo.put("sum", sumRedisInfoVo);
         logger.debug("TOTAL OPS " + sumRedisInfoVo.getStats().getInstantaneousOpsPerSec());
-
+        
         if (redisStatsInfoList.isAtFullCapacity()) {
             redisStatsInfoList.remove();
         }
 
         redisStatsInfoList.add(redisStatsInfo);
-    }
-
-    /**
-     * Compare, Sum every Sub VO and then set value to sumVo
-     * @param sumRedisInfoVo
-     * @param redisInfoVo
-     */
-    private void accumulateStatValue(RedisInfoVo sumRedisInfoVo, RedisInfoVo redisInfoVo) {
-
-        accumulateStatSubVo(sumRedisInfoVo.getServer(), redisInfoVo.getServer());
-        accumulateStatSubVo(sumRedisInfoVo.getClients(), redisInfoVo.getClients());
-        accumulateStatSubVo(sumRedisInfoVo.getMemory(), redisInfoVo.getMemory());
-        accumulateStatSubVo(sumRedisInfoVo.getPersistence(), redisInfoVo.getPersistence());
-        accumulateStatSubVo(sumRedisInfoVo.getStats(), redisInfoVo.getStats());
-        accumulateStatSubVo(sumRedisInfoVo.getReplication(), redisInfoVo.getReplication());
-        accumulateStatSubVo(sumRedisInfoVo.getCpu(), redisInfoVo.getCpu());
-        accumulateStatSubVo(sumRedisInfoVo.getModules(), redisInfoVo.getModules());
-        accumulateStatSubVo(sumRedisInfoVo.getErrorstats(), redisInfoVo.getErrorstats());
-        accumulateStatSubVo(sumRedisInfoVo.getCluster(), redisInfoVo.getCluster());
-//        accumulateStatSubVo(sumRedisInfoVo.getKeyspace(), redisInfoVo.getKeyspace());
-
-//        System.out.println(sumRedisInfoVo.getStats().getInstantaneousInputKbps() + "-" + redisInfoVo.getStats().getInstantaneousInputKbps());
-        // cluster이면 0만 사용.
-
-//        keyList = redisInfoVo.getKeyspace().operationKeyList();
-    }
-
-    /**
-     * @param sumRedisInfoVo 
-     * @param baseVo 
-     * 
-     */
-    private void accumulateStatSubVo(StatsBaseVo sumBaseVo, StatsBaseVo baseVo) {
-        Map<String, String> keyList = baseVo.operationKeyList();
-
-        for (Entry<String, String> item : keyList.entrySet()) {
-            String fieldName = item.getKey();
-            String operation = item.getValue();
-
-//            String operation = null;
-//            String dataType = null;
-//            String[] temp = StringUtils.split(operationAndType, '-');
-//            operation = temp[0];
-//            if (temp.length == 2) {
-//                dataType = temp[1];
-//            }
-
-            // 필드명으로 두 클래스의 값 가져와서 비교 후 할당.
-            Object sourceValue = ReflectionManipulator.getMethodInvokeResult(sumBaseVo, fieldName);
-            Object targetValue = ReflectionManipulator.getMethodInvokeResult(baseVo, fieldName);
-
-            if ((targetValue == null) && !operation.equals(StatsBaseVo.EMPTY)) {
-                logger.info("[{}] [{}] [{}]", fieldName, sourceValue, targetValue);
-            }
-
-            switch (operation) {
-                case StatsBaseVo.SUM:
-                    String resultSumValue = calculateSumValue(sourceValue, targetValue);
-                    ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, resultSumValue);
-                    break;
-                case StatsBaseVo.AVG:
-                    String resultAvgValue = calculateAvgValue(sourceValue, targetValue);
-                    ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, resultAvgValue);
-                    break;
-                case StatsBaseVo.CONCAT:
-                    ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, sourceValue + "," + targetValue);
-                    break;
-                case StatsBaseVo.DIFF:
-                    String compareValue = calculateDiffValue(sourceValue, targetValue, fieldName);
-                    ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, compareValue);
-                    break;
-                case StatsBaseVo.EMPTY:
-                    ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, "-");
-                    break;
-                case StatsBaseVo.MAX:
-                    String maxValue = calculateMaxValue(sourceValue, targetValue);
-                    ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, maxValue);
-                    break;
-                case StatsBaseVo.MIN:
-                    String minValue = calculateMinValue(sourceValue, targetValue);
-                    ReflectionManipulator.setFieldValue(sumBaseVo, fieldName, minValue);
-                    break;
-
-                default:
-                    break;
-            }
-        }
-    }
-
-    /**
-     * @param sumValue
-     * @param targetValue
-     * @return
-     */
-    private String calculateMaxValue(Object sumValue, Object targetValue) {
-        String resultSumValue = null;
-        try {
-            if (sumValue instanceof Number && sumValue.getClass().getSimpleName().equals(targetValue.getClass().getSimpleName())) {
-                Number sumValueNumber = (Number) sumValue;
-                Number targetValueNumber = (Number) targetValue;
-
-                Double maxValue = Double.max(sumValueNumber.doubleValue(), targetValueNumber.doubleValue());
-                resultSumValue = maxValue.toString();
-            }
-        }
-        catch (Exception e) {
-            logger.error("Cannot create class {}", sumValue.getClass().getSimpleName(), e);
-        }
-
-        return resultSumValue;
-    }
-
-    /**
-     * @param sumValue
-     * @param targetValue
-     * @return
-     */
-    private String calculateMinValue(Object sumValue, Object targetValue) {
-        String resultSumValue = null;
-        try {
-            if (sumValue instanceof Number && sumValue.getClass().getSimpleName().equals(targetValue.getClass().getSimpleName())) {
-                Number sumValueNumber = (Number) sumValue;
-                Number targetValueNumber = (Number) targetValue;
-
-                Double minValue = Double.min(sumValueNumber.doubleValue(), targetValueNumber.doubleValue());
-                resultSumValue = minValue.toString();
-            }
-        }
-        catch (Exception e) {
-            logger.error("Cannot create class {}", sumValue.getClass().getSimpleName(), e);
-        }
-
-        return resultSumValue;
-    }
-
-    /**
-     * If the values are different, add (*) at the end if it is a string, and convert it to a negative number if it is a number.
-     * diffString(*), -123
-     * @param sumValue
-     * @param targetValue
-     * @param fieldName 
-     * @return
-     */
-    private String calculateDiffValue(Object sumValue, Object targetValue, String fieldName) {
-        String resultSumValue = null;
-        try {
-            if (sumValue instanceof Number && sumValue.getClass().getSimpleName().equals(targetValue.getClass().getSimpleName())) {
-                Number sumValueNumber = (Number) sumValue;
-                Number targetValueNumber = (Number) targetValue;
-
-                resultSumValue = String.valueOf(targetValue);
-
-                // double, float, int, long, and short
-                switch (sumValue.getClass().getSimpleName()) {
-                    case "Short", "Integer" -> {
-                        if (sumValueNumber.intValue() != targetValueNumber.intValue()) {
-                            resultSumValue = String.valueOf(-targetValueNumber.intValue());
-                        }
-                    }
-                    case "Float" -> {
-                        if (sumValueNumber.floatValue() != targetValueNumber.floatValue())
-                            resultSumValue = String.valueOf(-targetValueNumber.floatValue());
-                    }
-                    case "Double" -> {
-                        if (sumValueNumber.doubleValue() != targetValueNumber.doubleValue()) {
-                            resultSumValue = String.valueOf(-targetValueNumber.doubleValue());
-                        }
-                    }
-                    case "Long" -> {
-                        if (sumValueNumber.longValue() != targetValueNumber.longValue()) {
-                            resultSumValue = String.valueOf(-targetValueNumber.longValue());
-                        }
-                    }
-                    default -> resultSumValue = String.format("%d, %d", sumValueNumber, targetValueNumber);
-                }
-            }
-            else {
-                if (sumValue == null || sumValue.equals(targetValue)) {
-                    resultSumValue = String.valueOf(targetValue);
-                }
-                else {
-                    resultSumValue = String.valueOf(targetValue) + "(*)";
-                }
-            }
-        }
-        catch (Exception e) {
-            logger.error("Cannot create field [{}], value[{}]", fieldName, sumValue, e);
-        }
-
-        return resultSumValue;
-    }
-
-    private String calculateSumValue(Object sumValue, Object targetValue) {
-        String resultSumValue = null;
-//        Objects.requireNonNullElse(sumValue, 0);
-        try {
-            if (sumValue instanceof Number && sumValue.getClass().getSimpleName().equals(targetValue.getClass().getSimpleName())) {
-//                NumberUtils.
-                Number sumValueNumber = (Number) sumValue;
-                Number targetValueNumber = (Number) targetValue;
-
-                // double, float, int, long, and short
-                switch (sumValue.getClass().getSimpleName()) {
-                    case "Short", "Integer" -> {
-                        resultSumValue = String.valueOf(sumValueNumber.intValue() + targetValueNumber.intValue());
-                    }
-                    case "Float" -> {
-                        resultSumValue = String.valueOf(sumValueNumber.floatValue() + targetValueNumber.floatValue());
-                    }
-                    case "Double" -> {
-                        resultSumValue = String.valueOf(sumValueNumber.doubleValue() + targetValueNumber.doubleValue());
-                    }
-                    case "Long" -> {
-                        resultSumValue = String.valueOf(sumValueNumber.longValue() + targetValueNumber.longValue());
-                    }
-                    // this is string.
-                    default -> resultSumValue = String.format("%d, %d", sumValueNumber, targetValueNumber);
-                }
-            }
-            else {
-                resultSumValue = String.format("%s, %s", StringUtils.trimToEmpty((String) sumValue), targetValue);
-            }
-        }
-        catch (Exception e) {
-            logger.error("Cannot create class {}", sumValue.getClass().getSimpleName(), e);
-        }
-
-        return resultSumValue;
-    }
-
-    private String calculateAvgValue(Object sumValue, Object targetValue) {
-        String resultSumValue = null;
-//        Objects.requireNonNullElse(sumValue, 0);
-        try {
-            if (sumValue instanceof Number && sumValue.getClass().getSimpleName().equals(targetValue.getClass().getSimpleName())) {
-//                NumberUtils.
-                Number sumValueNumber = (Number) sumValue;
-                Number targetValueNumber = (Number) targetValue;
-
-                // double, float, int, long, and short
-                switch (sumValue.getClass().getSimpleName()) {
-                    case "Short", "Integer" -> {
-                        resultSumValue = String.valueOf(sumValueNumber.intValue() + targetValueNumber.intValue());
-                    }
-                    case "Float" -> {
-                        resultSumValue = String.valueOf(sumValueNumber.floatValue() + targetValueNumber.floatValue());
-                    }
-                    case "Double" -> {
-                        resultSumValue = String.valueOf(sumValueNumber.doubleValue() + targetValueNumber.doubleValue());
-                    }
-                    case "Long" -> {
-                        resultSumValue = String.valueOf(sumValueNumber.longValue() + targetValueNumber.longValue());
-                    }
-                    // this is string.
-                    default -> resultSumValue = String.format("%d, %d", sumValueNumber, targetValueNumber);
-                }
-            }
-            else {
-                resultSumValue = String.format("%s, %s", StringUtils.trimToEmpty((String) sumValue), targetValue);
-            }
-        }
-        catch (Exception e) {
-            logger.error("Cannot create class {}", sumValue.getClass().getSimpleName(), e);
-        }
-
-        return resultSumValue;
     }
 
     /**
