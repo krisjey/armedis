@@ -280,7 +280,7 @@
                 </div><!-- end card -->
             </div> <!-- end col -->
         </div> <!-- end row-->
-        
+
         <div class="row">
             <div class="col-xl-4">
                 <div class="card card-animate" id="clientConnectionsCard">
@@ -538,7 +538,7 @@
             { id: "versionCard", title: "Version" },
             { id: "totalKeysCard", title: "Total Keys" },
             { id: "keyspaceCard", title: "Keyspace" },
-            { id: "hitRateCard", title: "Average Hit Rate" },
+            { id: "hitRateCard", title: "Cache Hit/Miss" },
             { id: "evictionPolicyCard", title: "Eviction Policy" },
             { id: "clientConnectionsCard", title: "Client connections" },
             { id: "commandStatisticsCard", title: "Command statistics" },
@@ -730,8 +730,8 @@
         }
 
         $("#ksHits").css("width", Math.max(2, hitRate) + "%");
-        $("#hitsCount").text(getMemoryCapacityUnit(hits));
-        $("#missesCount").text(getMemoryCapacityUnit(misses));
+        $("#hitsCount").text(hits.toLocaleString());
+        $("#missesCount").text(misses.toLocaleString());
     }
 
     // Version 설정
