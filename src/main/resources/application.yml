@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: armedis
+
+# Armedis Configuration
+config:
+  redis:
+    seed: 192.168.56.105:17001
+
+server:
+  service:
+    port: 8080
+    instanceCount: 1
+  config:
+    stat:
+      enabled: true
+      addContentSection: false
+      logging:
+        enableed: false
+  management:
+    loginId: admin
+    loginPassword: armedis1234!
+
+# Spring Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  info:
+    git:
+      mode: full
+  cloudfoundry:
+    skip-ssl-validation: true
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.github.armedis: INFO
+    com.linecorp.armeria: INFO
+    com.linecorp.armeria.server.logging.LoggingService: INFO
+    com.linecorp.armeria.server.HttpServerHandler: ERROR
+    com.linecorp.armeria.server.Routers: DEBUG
+    com.linecorp.armeria.logging.access: INFO
+    org.springframework.boot.autoconfigure: DEBUG
+    org.springframework.beans: DEBUG
+    io.netty: DEBUG
+    io.netty.handler.codec: INFO
+    org.apache.zookeeper: INFO
+  pattern:
+    console: '%d{HH:mm:ss.SSS} [%thread] %-5level %logger{50}:%line - %msg%n'
+    file: '%d{HH:mm:ss.SSS} [%thread] %-5level %logger{35}:%line - %msg%n'
+  file:
+    name: logs/armedis.api.${server.service.port}.log
+    max-history: 30
