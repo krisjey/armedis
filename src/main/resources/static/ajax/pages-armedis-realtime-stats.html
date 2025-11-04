@@ -304,6 +304,13 @@
     
             charts[cardId] = new ApexCharts(chartElement, chartOptions);
             charts[cardId].render();
+
+            var lastX = series[0].data.length > 0 && series[0].data[series[0].data.length - 1].x;
+            var optionsUpdate = {
+                xaxis: { min: lastX - 60000, max: lastX }
+            };
+            charts[cardId].updateSeries(series);
+            charts[cardId].updateOptions(optionsUpdate, false, true);
         }
     }
 
@@ -329,7 +336,7 @@
                 var maxY = Math.max(...allY);
                 var adjustedMaxY = maxY * 1.1; // 10% 여유
 
-                // TPS 단위: max값에 따라 100 또는 500단위로 조정
+                // max값에 따라 100 또는 500단위로 조정
                 var step = adjustedMaxY > 500 ? 500 : 100;
                 var roundedMaxY = Math.ceil(adjustedMaxY / step) * step;
 
@@ -380,7 +387,7 @@
                 var maxY = Math.max(...allY);
                 var adjustedMaxY = maxY * 1.1; // 10% 여유
 
-                // max값에 따라 1000 또는 5000단위로 조정
+                // max값에 따라 100 또는 500단위로 조정
                 var step = adjustedMaxY > 500 ? 500 : 100;
                 var roundedMaxY = Math.ceil(adjustedMaxY / step) * step;
 
@@ -394,7 +401,7 @@
                 };
             }
 
-            charts[cardId].updateOptions(optionsUpdate, true, true);
+            charts[cardId].updateOptions(optionsUpdate, false, true);
         }
     }
 
@@ -419,10 +426,18 @@
     }
 
     // 차트 초기설정
-    function initChart() {
+    async function initChart() {
+        await getStats();
+        setTPSData();
         createChartCard("tpsCard", _.cloneDeep(tpsSeries));
+        
+        setHitRateData();
         createChartCard("hitRateCard", _.cloneDeep(hitRateSeries));
+
+        setMemory()
         createChartCard("memoryCard", _.cloneDeep(memorySeries));
+
+        setReceivedConnectionsData();
         createChartCard("receivedConnectionsCard", _.cloneDeep(receivedConnectionsSeries));
     }
 
@@ -438,7 +453,12 @@
 
             switch (idx) {
                 case 1: hitRateSeries[0].data = []; break;
-                case 2: memorySeries[0].data = []; break;
+                case 2: 
+                    memorySeries[0].data = []; 
+                    memorySeries[1].data = []; 
+                    memorySeries[2].data = []; 
+                    break;
+                case 3: receivedConnectionsSeries[0].data = []; break;
                 default: tpsSeries[0].data = [];
             }
         });
@@ -448,112 +468,154 @@
 
     // TPS 차트 데이터 설정
     function setTPSData() {
-        var cardId = "tpsCard";
         var totalPoints = 60;
 
-        var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
-        tpsSeries[0].data.push({
-            x: moment().toDate().getTime(),
-            y: lastStatsSumStats.instantaneousOpsPerSec
+        var cloneStatsData = _.cloneDeep(statsData);
+        var statsSum = cloneStatsData.map(elem => {
+            elem.redisInfoList = _.pick(elem.redisInfoList, ["sum"]);
+            return { ...elem }
+        });
+        console.log("statsSum: ", statsSum);
+        
+        statsSum.forEach((item) => {
+            var curTime = moment(item.formatedEpochTime, "YYYY-MM-DD HH:mm:ss").toDate().getTime()
+            if(!_.some(tpsSeries[0].data, { x: curTime })) {
+                tpsSeries[0].data.push({
+                    x: curTime,
+                    y: item.redisInfoList.sum.stats.instantaneousOpsPerSec
+                })
+            }
         });
         
         if (tpsSeries[0].data.length > totalPoints) {
-            // tpsSeries[0].data.shift();
-            // tpsSeries[0].data.splice(0, tpsSeries[0].data.length - totalPoints);
-            // tpsSeries[0].data.slice(-totalPoints);
-            tpsSeries[0].data = _.drop(tpsSeries[0].data, tpsSeries[0].data.length - totalPoints);
+            tpsSeries[0].data.shift();
+            // tpsSeries[0].data = _.drop(tpsSeries[0].data, tpsSeries[0].data.length - totalPoints);
         }
-        addDataPoint(cardId, tpsSeries);
     }
 
     // Hit Rate 차트 데이터 설정
     function setHitRateData() {
-        var cardId = "hitRateCard";
         var totalPoints = 60;
 
-        var beforeStats = _.nth(statsData, -2).redisInfoList.sum.stats;
-        var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
+        var cloneStatsData = _.cloneDeep(statsData);
+        var statsSum = cloneStatsData.map(elem => {
+            elem.redisInfoList = _.pick(elem.redisInfoList, ["sum"]);
+            return { ...elem }
+        });
 
-        var keyspaceHits = lastStatsSumStats.keyspaceHits - beforeStats.keyspaceHits;
-        var keyspaceMisses = lastStatsSumStats.keyspaceMisses - beforeStats.keyspaceMisses;
-        var newHitRate = keyspaceHits / (keyspaceHits + keyspaceMisses) * 100;
-        if (Number.isNaN(newHitRate)) {
-            newHitRate = 0;
-        }
+        statsSum.forEach((item, index) => {
+            var curTime = moment(item.formatedEpochTime, "YYYY-MM-DD HH:mm:ss").toDate().getTime()
+            if(!_.some(hitRateSeries[0].data, { x: curTime })) {
+                if (index > 0) {
+                    var beforeStats = statsSum[index - 1].redisInfoList.sum.stats;
+                    var lastStatsSumStats = statsSum[index].redisInfoList.sum.stats;
         
-        hitRateSeries[0].data.push({
-            x: moment().toDate().getTime(),
-            y: newHitRate
-        })
+                    var keyspaceHits = lastStatsSumStats.keyspaceHits - beforeStats.keyspaceHits;
+                    var keyspaceMisses = lastStatsSumStats.keyspaceMisses - beforeStats.keyspaceMisses;
+                    var newHitRate = keyspaceHits / (keyspaceHits + keyspaceMisses) * 100;
+        
+                    if (Number.isNaN(newHitRate)) {
+                        newHitRate = 0;
+                    }
+                    hitRateSeries[0].data.push({
+                        x: curTime,
+                        y: newHitRate
+                    })
+                }
+            }
+        });
+        
         if (hitRateSeries[0].data.length > totalPoints) {
-            // hitRateSeries[0].data.shift();
-            // hitRateSeries[0].data.slice(-totalPoints);
-            hitRateSeries[0].data = _.drop(hitRateSeries[0].data, hitRateSeries[0].data.length - totalPoints);
+            hitRateSeries[0].data.shift();
+            // hitRateSeries[0].data = _.drop(hitRateSeries[0].data, hitRateSeries[0].data.length - totalPoints);
         }
-
-        addDataPoint(cardId, hitRateSeries);
     }
 
     // Memory 차트 데이터 설정
     function setMemory() {
-        var cardId = "memoryCard";
         var totalPoints = 60;
 
-        var maxmemory = _.last(statsData).redisInfoList.sum.memory.maxmemory ?? 0;
-        var usedMemoryRss = _.last(statsData).redisInfoList.sum.memory.usedMemoryRss ?? 0;
-        var usedMemory = _.last(statsData).redisInfoList.sum.memory.usedMemory ?? 0;
+        var cloneStatsData = _.cloneDeep(statsData);
+        var statsSum = cloneStatsData.map(elem => {
+            elem.redisInfoList = _.pick(elem.redisInfoList, ["sum"]);
+            return { ...elem }
+        });
 
-        memorySeries[0].data.push({
-            x: moment().toDate().getTime(),
-            y: maxmemory
-        });
-        memorySeries[1].data.push({
-            x: moment().toDate().getTime(),
-            y: usedMemoryRss
-        });
-        memorySeries[2].data.push({
-            x: moment().toDate().getTime(),
-            y: usedMemory
+        statsSum.forEach((item, index) => {
+            var curTime = moment(item.formatedEpochTime, "YYYY-MM-DD HH:mm:ss").toDate().getTime()
+            if(!_.some(memorySeries[0].data, { x: curTime })) {
+                var maxmemory = item.redisInfoList.sum.memory.maxmemory ?? 0;
+                memorySeries[0].data.push({
+                    x: curTime,
+                    y: maxmemory
+                });
+            }
+
+            if(!_.some(memorySeries[1].data, { x: curTime })) {
+                var usedMemoryRss = item.redisInfoList.sum.memory.usedMemoryRss ?? 0;
+                memorySeries[1].data.push({
+                    x: curTime,
+                    y: usedMemoryRss
+                });
+            }
+            
+            if(!_.some(memorySeries[2].data, { x: curTime })) {
+                var usedMemory = item.redisInfoList.sum.memory.usedMemory ?? 0;
+                memorySeries[2].data.push({
+                    x: curTime,
+                    y: usedMemory
+                });
+            }
         });
 
         memorySeries.forEach(elem => {
             if (elem.data.length > totalPoints) {
-                // elem.data.shift();
-                // elem.data.slice(-totalPoints);
-                elem.data = _.drop(elem.data, elem.data.length - totalPoints);
+                elem.data.shift();
+                // elem.data = _.drop(elem.data, elem.data.length - totalPoints);
             }
         })
-
-        addDataPoint(cardId, memorySeries);
     }
 
     // Received Connections 차트 데이터 설정
     function setReceivedConnectionsData() {
-        var cardId = "receivedConnectionsCard";
         var totalPoints = 60;
 
-        // 1초전 stats
-        var secondsAgoStatsSumStats = _.nth(statsData, -2).redisInfoList.sum.stats;
-        // 1초전 totalConnectionsReceived 
-        var secondsAgoConnectedReceived = secondsAgoStatsSumStats.totalConnectionsReceived;
-        var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
-        // 마지막 totalConnectionsReceived
-        var lastConnectedReceived = lastStatsSumStats.totalConnectionsReceived;
-        // 마지막 totalConnectionsReceived - 1초전 totalConnectionsReceived
-        var computedConnectedReceived = Math.max(lastConnectedReceived - secondsAgoConnectedReceived, 0);
-        receivedConnectionsSeries[0].data.push({
-            x: moment().toDate().getTime(),
-            y: computedConnectedReceived
+        var cloneStatsData = _.cloneDeep(statsData);
+        var statsSum = cloneStatsData.map(elem => {
+            elem.redisInfoList = _.pick(elem.redisInfoList, ["sum"]);
+            return { ...elem }
+        });
+
+        statsSum.forEach((item, index) => {
+            var curTime = moment(item.formatedEpochTime, "YYYY-MM-DD HH:mm:ss").toDate().getTime()
+            if(!_.some(receivedConnectionsSeries[0].data, { x: curTime })) {
+                if (index > 0) {
+                    // 1초전 stats
+                    var secondsAgoStatsSumStats = statsSum[index - 1].redisInfoList.sum.stats;
+                    
+                    // 1초전 totalConnectionsReceived 
+                    var secondsAgoConnectedReceived = secondsAgoStatsSumStats.totalConnectionsReceived;
+
+                    // 마지막 stats 데이터
+                    var lastStatsSumStats = statsSum[index].redisInfoList.sum.stats;
+                    
+                    // 마지막 totalConnectionsReceived
+                    var lastConnectedReceived = lastStatsSumStats.totalConnectionsReceived;
+                    
+                    // 마지막 totalConnectionsReceived - 1초전 totalConnectionsReceived
+                    var computedConnectedReceived = Math.max(lastConnectedReceived - secondsAgoConnectedReceived, 0);
+                    receivedConnectionsSeries[0].data.push({
+                        x: curTime,
+                        y: computedConnectedReceived
+                    })
+                }
+            }
         });
         
         if (receivedConnectionsSeries[0].data.length > totalPoints) {
-            // receivedConnectionsSeries[0].data.shift();
-            // receivedConnectionsSeries[0].data.slice(-totalPoints);
-            receivedConnectionsSeries[0].data = _.drop(receivedConnectionsSeries[0].data, receivedConnectionsSeries[0].data.length - totalPoints);
+            receivedConnectionsSeries[0].data.shift();
+            // receivedConnectionsSeries[0].data = _.drop(receivedConnectionsSeries[0].data, receivedConnectionsSeries[0].data.length - totalPoints);
         }
-
-        
-        addDataPoint(cardId, receivedConnectionsSeries);
     }
 
     // Table 설정
@@ -608,7 +670,7 @@
             var newRow = {
                 Time: moment(elem.formatedEpochTime).format("HH:mm:ss"),
                 CPU: (Number(elem.redisInfoList.sum.cpu.usedCpuSys) + Number(elem.redisInfoList.sum.cpu.usedCpuUser)).toFixed(2) ?? "-",
-                Clients: getMemoryCapacityUnit(elem.redisInfoList.sum.clients.connectedClients) ?? "-",
+                Clients: elem.redisInfoList.sum.clients.connectedClients.toLocaleString() ?? "-",
                 bClients: elem.redisInfoList.sum.clients.blockedClients.toLocaleString() ?? "-",
                 Mem: getMemoryCapacityUnit(elem.redisInfoList.sum.memory.usedMemory) ?? "-",
                 RSS: getMemoryCapacityUnit(elem.redisInfoList.sum.memory.usedMemoryRss) ?? "-",
@@ -623,8 +685,7 @@
             }
             redisStatDatas.push(newRow)
             if (redisStatDatas.length > totalRows) {
-                // redisStatDatas.shift();
-                // redisStatDatas.slice(-totalRows);
+                redisStatDatas.shift();
             }
 
             var cardId = "redisAnalysis";
@@ -665,20 +726,12 @@
         var response = await fetch("/v1/redis/stats");
         if (!response.ok) throw new Error("HTTP " + res.status);
 
-        // var data = await response.json();
-        // statsData = data;
         statsData = await response.json();
-
-        setTPSData();
-        setHitRateData();
-        setMemory();
-        setReceivedConnectionsData();
-        setRedisStat();
-        setInstanceInfo();
     }
 
     // Instance Information 데이터 설정
     function setInstanceInfo() {
+        console.log("setInstanceInfo() - statsData: ", statsData);
         var instanceInfoData = [];
         var redisList = {};
         var instanceInfoTableContent = ['version', 'mode', 'role', 'uptime', 'master_info', 'slave_info', 'aof_enable', 'hz', 'rdb_last_save_time', 'memory_policy', 'connected_clients', 'pid', 'maxclients', 'blocked_clients', 'mem_fragmentation_ratio'];
@@ -695,7 +748,7 @@
             var ipParts = ip.split(".").map(Number);
             return _.padStart(port, 5, "0") + ipParts.map(n => _.padStart(n, 3, "0")).join("");
         })
-        // redisInfoHeaders.unshift("information");
+        redisInfoHeaders.unshift("information");
 
         // row datas 설정
         for (var i = 0; i < instanceInfoTableContent.length; i++) {
@@ -707,10 +760,9 @@
                     dataRow[elem] = "-";
                 }
             });
-
             instanceInfoData.push(dataRow);
         }
-
+        
         const keys = Object.getOwnPropertyNames(statsRedisServer);
         instanceInfoData.forEach(elem => {
             var ports = Object.keys(elem);
@@ -765,11 +817,10 @@
                             elem[port] = redisInfo.clients.maxclients.toLocaleString();
                             return true;
                         } else if (elem["information"] == "blocked_clients") {
-                            elem[port] = redisInfo.clients.blockedClients;
+                            elem[port] = redisInfo.clients.blockedClients.toLocaleString();
                             return true;
                         } else if (elem["information"] == "mem_fragmentation_ratio") {
                             elem[port] = redisInfo.memory.memFragmentationRatio;
-                            // elem[port] = ((redisInfo.memory.memFragmentationRatio - 1) * 100).toFixed(2) + "%";
                             return true;
                         }
                     });
@@ -789,6 +840,20 @@
 
     async function intervalInit() {
         await getStats();
+        setTPSData();
+        addDataPoint("tpsCard", tpsSeries)
+
+        setHitRateData();
+        addDataPoint("hitRateCard", hitRateSeries);
+        
+        setMemory();
+        addDataPoint("memoryCard", memorySeries);
+        
+        setReceivedConnectionsData();
+        addDataPoint("receivedConnectionsCard", receivedConnectionsSeries);
+
+        setRedisStat();
+        setInstanceInfo();
     }
 
     function clearIntervalIds() {
@@ -807,7 +872,6 @@
             initCard();
             initChart();
             initTableHeader();
-            intervalInit();
             
             // 기존 interval 모두 제거
             clearIntervalIds();
