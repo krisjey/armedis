@@ -41,7 +41,7 @@ public class Server extends StatsBaseVo {
     private String multiplexingApi;
     private String atomicvarApi;
     private String gccVersion;
-    private int processId;
+    private String processId;
     private String processSupervised;
     private String runId;
     private String host;
@@ -213,14 +213,14 @@ public class Server extends StatsBaseVo {
     /**
      * @return the processId
      */
-    public int getProcessId() {
+    public String getProcessId() {
         return processId;
     }
 
     /**
      * @param processId the processId to set
      */
-    public void setProcessId(int processId) {
+    public void setProcessId(String processId) {
         this.processId = processId;
     }
 
