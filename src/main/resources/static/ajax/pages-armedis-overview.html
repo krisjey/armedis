@@ -467,7 +467,8 @@
                                 fontSize: "22px",
                                 formatter: function (val, opts) {
                                     var originValue = opts.config.custom ? opts.config.custom.origin : 0;
-                                    return getMemoryCapacityUnit(originValue) + "/s" ;
+                                    // return getMemoryCapacityUnit(originValue) + "/s";
+                                    return `${getDataSize(originValue)}/s`;
                                 }
                             }
                         }
@@ -486,16 +487,17 @@
                     height: 250,
                     type: "bar",
                     toolbar: {
-                        show: false,
+                        show: false
                     }
                 },
                 plotOptions: {
                     bar: {
-                        horizontal: true,
+                        horizontal: true
                     }
                 },
                 dataLabels: {
                     enabled: true,
+                    offsetX: 10,
                     style: {
                         colors: ["#000000"]
                     },
@@ -506,7 +508,7 @@
                 series: series.series,
                 colors: getChartColorsArray(cardBodyTarget),
                 grid: {
-                    borderColor: "#f1f1f1",
+                    borderColor: "#f1f1f1"
                 },
                 xaxis: {
                     categories: series.categories,
@@ -602,10 +604,15 @@
         var cardId = "networkCard";
         var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
         
-        // total 10GB 기준
-        var total =  10 * (1024 * 1024 * 1024);
-        var inputPct = Math.round((lastStatsSumStats.totalNetInputBytes / total) * 100);
-        var outputPct = Math.round((lastStatsSumStats.totalNetOutputBytes / total) * 100);
+        var inputTotal =  lastStatsSumStats.totalNetInputBytes;
+        var outputTotal =  lastStatsSumStats.totalNetOutputBytes;
+        
+        // kbps 단위 데이터를 Byte 단위로 변환
+        var input = lastStatsSumStats.instantaneousInputKbps * 1024 / 8;
+        var output = lastStatsSumStats.instantaneousOutputKbps * 1024 / 8;
+
+        var inputPct = input / inputTotal * 100;
+        var outputPct = output / outputTotal * 100;
         
         var limit = (num, max = 100) => Math.min(num, max);
         networkInputSeries.data[0] = limit(inputPct);
@@ -618,13 +625,13 @@
     
             charts["inputRadialbar"].updateOptions({
                 custom: {
-                    origin: lastStatsSumStats.totalNetInputBytes
+                    origin: lastStatsSumStats.instantaneousInputKbps
                 },
                 colors: [getChartColors("inputRadialbar", inputPct)]
             }, true, true);
             charts["outputRadialbar"].updateOptions({
                 custom: {
-                    origin: lastStatsSumStats.totalNetOutputBytes
+                    origin: lastStatsSumStats.instantaneousOutputKbps
                 },
                 colors: [getChartColors("outputRadialbar", outputPct)]
             }, true, true);

@@ -460,7 +460,7 @@ function getMemoryCapacityUnit(size, unit = 'byte') {
         value = size;
         suffix = 'B';
       }
-      return `${value.toFixed(1)} ${suffix}`;
+      return `${value.toFixed(1)}${suffix}`;
     } else {
       if (size >= decimal.TB) {
         value = size / decimal.TB;
@@ -480,4 +480,17 @@ function getMemoryCapacityUnit(size, unit = 'byte') {
       }
       return `${Math.round(value)}${suffix}`;
     }
+  }
+
+  function getDataSize(kb) {
+    var units = ["KB", "MB", "GB", "TB"];
+    var value = kb;
+    var unitIndex = 0;
+
+    while (value >= 1024 && unitIndex < units.length -1) {
+        value /= 1024;
+        unitIndex++;
+    }
+    
+    return `${value.toFixed(2)} ${units[unitIndex]}`;
   }
