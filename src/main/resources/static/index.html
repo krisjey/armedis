@@ -19,6 +19,7 @@
 
     <!-- Layout config Js -->
     <script src="/assets/js/layout.js"></script>
+
     <!-- Bootstrap Css -->
     <link href="/assets/css/bootstrap.min.css" id="bootstrap-style" rel="stylesheet" type="text/css" />
     <!-- Icons Css -->
@@ -73,7 +74,9 @@
                             </span>
                         </button>
                     </div>
-
+                    <div class="d-flex align-items-center">
+                        <h4 class="mb-sm-0">Server : </h4><h4 class="mb-sm-0" id="serverType"></h4>
+                    </div>
                     <div class="d-flex align-items-center">
                         <div class="ms-1 header-item d-none d-sm-flex">
                             <button type="button" class="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle"
@@ -996,6 +999,9 @@
     <!-- App js -->
     <script src="/assets/js/app.js"></script>
     <script src="/assets/js/ajax.js"></script>
+    <script>
+    console.log(document.domain);
+    </script>
 </body>
 
 </html>

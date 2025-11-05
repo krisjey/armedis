@@ -8,7 +8,7 @@ import com.linecorp.armeria.server.annotation.Param;
 public class RedisHgetRequest extends RedisRequest {
     @Param("field")
     protected String field;
-    
+
     public RedisHgetRequest(AggregatedHttpRequest httpRequest) {
         super(httpRequest);
         this.setCommand("Hget");

@@ -71,7 +71,7 @@ public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult 
             case MAP:
                 result.set(RedisCommandExecuteResult.RESULT_KEY, mapper.convertValue(mapResult, ObjectNode.class));
                 break;
-                
+
             case LIST:
                 result.set(RedisCommandExecuteResult.RESULT_KEY, mapper.convertValue(listResult, ArrayNode.class));
                 break;

@@ -80,7 +80,7 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
                 }
                 else {
                     postResult = connection.sync().configSet(key, value.get());
-                    
+
                     // update value for allowed command value.
                     AllowedConfigCommands.get(key).setCurrentValueFromDB(connection.sync().configGet(key).get(key));
                 }

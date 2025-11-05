@@ -22,25 +22,25 @@ import com.linecorp.armeria.server.annotation.Path;
  */
 @Component
 public class RedisStatsService extends BaseService {
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	@Autowired
-	private RedisStatInfoBucket redisStatInfoBucket;
+    @Autowired
+    private RedisStatInfoBucket redisStatInfoBucket;
 
-	@Autowired
-	private ArmedisConfiguration armedisConfiguration;
+    @Autowired
+    private ArmedisConfiguration armedisConfiguration;
 
-	/**
-	 * Are you ok service for server instance.
-	 * 
-	 * @param redisRequest
-	 * @return
-	 */
-	@Get
-	@Path(ServiceUrl.REDIS_STATS)
-	public HttpResponse redisStats() {
-		logger.info("Armedis - redis stats GET");
+    /**
+     * Are you ok service for server instance.
+     * 
+     * @param redisRequest
+     * @return
+     */
+    @Get
+    @Path(ServiceUrl.REDIS_STATS)
+    public HttpResponse redisStats() {
+        logger.info("Armedis - redis stats GET");
 
-		return buildStatResponse(ResponseCode.SUCCESS, redisStatInfoBucket.getStats());
-	}
+        return buildStatResponse(ResponseCode.SUCCESS, redisStatInfoBucket.getStats());
+    }
 }
