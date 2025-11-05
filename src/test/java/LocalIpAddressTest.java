@@ -16,6 +16,6 @@ public class LocalIpAddressTest {
         String ipAddress = localIpAddress.getLocalIpAddress();
 
         // local IP address, This address connectable at out of the system.
-        //assertThat(ipAddress).isEqualTo("175.123.88.73");
+        // assertThat(ipAddress).isEqualTo("175.123.88.73");
     }
 }

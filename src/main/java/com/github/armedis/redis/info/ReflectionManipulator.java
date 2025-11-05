@@ -86,7 +86,7 @@ public class ReflectionManipulator {
             Field field = objects.getClass().getDeclaredField(fieldName);
             result = field.get(objects);
             Class<?> declaredType = field.getType();
-            
+
             if (result != null && !declaredType.isInstance(result)) {
                 throw new ClassCastException("Expected " + declaredType.getName() + " but got " + result.getClass().getName());
             }

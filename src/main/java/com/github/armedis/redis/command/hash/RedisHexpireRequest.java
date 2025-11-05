@@ -8,10 +8,10 @@ import com.linecorp.armeria.server.annotation.Param;
 public class RedisHexpireRequest extends RedisRequest {
     @Param("field")
     protected String field;
-    
+
     @Param("seconds")
     protected Long seconds;
-    
+
     public RedisHexpireRequest(AggregatedHttpRequest httpRequest) {
         super(httpRequest);
         this.setCommand("Hexpire");

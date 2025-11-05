@@ -144,9 +144,8 @@ public class RedisStatInfoBucket {
 
         // Calculate sum using Collector pattern
         RedisInfoVo sumRedisInfoVo = RedisInfoAggregator.aggregate(
-            redisStatsInfo.getRedisInfoList().values()
-        );
-        
+                redisStatsInfo.getRedisInfoList().values());
+
         // Set host information from last processed node
         if (redisNodeIp != null) {
             sumRedisInfoVo.getServer().setHost(redisNodeIp);
@@ -154,7 +153,7 @@ public class RedisStatInfoBucket {
 
         redisStatsInfo.put("sum", sumRedisInfoVo);
         logger.debug("TOTAL OPS " + sumRedisInfoVo.getStats().getInstantaneousOpsPerSec());
-        
+
         if (redisStatsInfoList.isAtFullCapacity()) {
             redisStatsInfoList.remove();
         }

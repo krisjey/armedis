@@ -47,9 +47,6 @@ public class RedisSlowlogCommandRunner extends AbstractRedisCommandRunner {
 
         var result = commands.slowlogGet(size);
 
-        System.out.println(commands.clientList());
-        System.out.println(commands.info("commandstats"));
-
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result, Object.class);
     }
 }
