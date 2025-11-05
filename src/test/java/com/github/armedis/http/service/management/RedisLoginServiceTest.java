@@ -52,7 +52,7 @@ class RedisLoginServiceTest extends AbstractRedisServerTest {
                 .node(RedisCommandExecuteResult.RESULT_KEY).isPresent()
                 .node(RedisCommandExecuteResult.RESULT_KEY).isEqualTo("Fail");
     }
-    
+
     @Test
     void testLoginFail2() {
         String responseString = null;

@@ -8,10 +8,10 @@ import com.linecorp.armeria.server.annotation.Param;
 public class RedisHsetRequest extends RedisRequest {
     @Param("field")
     protected String field;
-    
+
     @Param("value")
     protected String value;
-    
+
     public RedisHsetRequest(AggregatedHttpRequest httpRequest) {
         super(httpRequest);
         this.setCommand("Hset");

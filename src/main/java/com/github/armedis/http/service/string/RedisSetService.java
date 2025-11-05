@@ -27,129 +27,133 @@ import com.linecorp.armeria.server.annotation.Put;
  */
 @Component
 public class RedisSetService extends BaseService {
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private static final String REDIS_COMMAND = "set";
+    private static final String REDIS_COMMAND = "set";
 
-	private static final String COMMAND_URL = "/v1/" + REDIS_COMMAND;
+    private static final String COMMAND_URL = "/v1/" + REDIS_COMMAND;
 
-	private static final String COMMAND_URL_WITH_KEY = COMMAND_URL + "/:key";
+    private static final String COMMAND_URL_WITH_KEY = COMMAND_URL + "/:key";
 
-	/**
-	 * Process set command request by x-www-form-urlencoded without redis key at
-	 * URL.
-	 * 
-	 * @param redisRequest
-	 * @return HttpResponse
-	 */
-	@Post
-	@Put
-	@Path(COMMAND_URL)
-	@Consumes("application/x-www-form-urlencoded")
-	public HttpResponse urlencodedWithoutKey(RedisSetRequest redisRequest) {
-		logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
+    /**
+     * Process set command request by x-www-form-urlencoded without redis key at
+     * URL.
+     * 
+     * @param redisRequest
+     * @return HttpResponse
+     */
+    @Post
+    @Put
+    @Path(COMMAND_URL)
+    @Consumes("application/x-www-form-urlencoded")
+    public HttpResponse urlencodedWithoutKey(RedisSetRequest redisRequest) {
+        logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
-		// execute redis command by http request params.
-		RedisCommandExecuteResult result = null;
-		try {
-			result = executeCommand(redisRequest);
-		} catch (Exception e) {
-			logger.error("Can not execute redis command ", e);
-			return buildResponse(ResponseCode.UNKNOWN_ERROR, redisRequest);
-		}
+        // execute redis command by http request params.
+        RedisCommandExecuteResult result = null;
+        try {
+            result = executeCommand(redisRequest);
+        }
+        catch (Exception e) {
+            logger.error("Can not execute redis command ", e);
+            return buildResponse(ResponseCode.UNKNOWN_ERROR, redisRequest);
+        }
 
-		return buildResponse(redisRequest, result);
-	}
+        return buildResponse(redisRequest, result);
+    }
 
-	/**
-	 * Process set command request by x-www-form-urlencoded with redis key at URL.
-	 * 
-	 * @param redisRequest
-	 * @return
-	 */
-	@Post
-	@Put
-	@Path(COMMAND_URL_WITH_KEY)
-	@Consumes("application/x-www-form-urlencoded")
-	public HttpResponse urlencodedWithKey(RedisSetRequest redisRequest) {
-		logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
+    /**
+     * Process set command request by x-www-form-urlencoded with redis key at URL.
+     * 
+     * @param redisRequest
+     * @return
+     */
+    @Post
+    @Put
+    @Path(COMMAND_URL_WITH_KEY)
+    @Consumes("application/x-www-form-urlencoded")
+    public HttpResponse urlencodedWithKey(RedisSetRequest redisRequest) {
+        logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
-		// execute redis command by http request params.
-		RedisCommandExecuteResult result = null;
-		try {
-			result = executeCommand(redisRequest);
-		} catch (Exception e) {
-			logger.error("Can not execute redis command ", e);
-			return buildResponse(ResponseCode.UNKNOWN_ERROR, redisRequest);
-		}
+        // execute redis command by http request params.
+        RedisCommandExecuteResult result = null;
+        try {
+            result = executeCommand(redisRequest);
+        }
+        catch (Exception e) {
+            logger.error("Can not execute redis command ", e);
+            return buildResponse(ResponseCode.UNKNOWN_ERROR, redisRequest);
+        }
 
-		return buildResponse(redisRequest, result);
-	}
+        return buildResponse(redisRequest, result);
+    }
 
-	/**
-	 * Process set command request by application json without redis key at URL.
-	 * 
-	 * When request body is absent then JacksonRequestConverterFunction not working.
-	 * <br/>
-	 * So, just use AggregatedHttpRequest.contentUtf8() method and convert to
-	 * JsonNode.
-	 * 
-	 * @param httpRequest
-	 * @return HttpResponse
-	 */
-	@Put
-	@Post
-	@Path(COMMAND_URL)
-	@Consumes("application/json")
-	public HttpResponse jsonWithoutKey(AggregatedHttpRequest httpRequest) {
-		JsonNode jsonBody = getAsJsonBody(httpRequest);
+    /**
+     * Process set command request by application json without redis key at URL.
+     * 
+     * When request body is absent then JacksonRequestConverterFunction not working.
+     * <br/>
+     * So, just use AggregatedHttpRequest.contentUtf8() method and convert to
+     * JsonNode.
+     * 
+     * @param httpRequest
+     * @return HttpResponse
+     */
+    @Put
+    @Post
+    @Path(COMMAND_URL)
+    @Consumes("application/json")
+    public HttpResponse jsonWithoutKey(AggregatedHttpRequest httpRequest) {
+        JsonNode jsonBody = getAsJsonBody(httpRequest);
 
-		RedisRequest redisRequest = buildRedisRequest(REDIS_COMMAND, httpRequest, jsonBody);
+        RedisRequest redisRequest = buildRedisRequest(REDIS_COMMAND, httpRequest, jsonBody);
 
-		logger.info("Json request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
+        logger.info("Json request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
-		RedisCommandExecuteResult result = null;
-		try {
-			result = executeCommand(redisRequest);
-		} catch (Exception e) {
-			logger.error("Can not execute redis command ", e);
-			return buildResponse(ResponseCode.UNKNOWN_ERROR, redisRequest);
-		}
+        RedisCommandExecuteResult result = null;
+        try {
+            result = executeCommand(redisRequest);
+        }
+        catch (Exception e) {
+            logger.error("Can not execute redis command ", e);
+            return buildResponse(ResponseCode.UNKNOWN_ERROR, redisRequest);
+        }
 
-		return buildResponse(redisRequest, result);
-	}
+        return buildResponse(redisRequest, result);
+    }
 
-	/**
-	 * Process set command request by application json with redis key at URL.
-	 * 
-	 * When request body is absent then JacksonRequestConverterFunction not working.
-	 * <br/>
-	 * So, just use AggregatedHttpRequest.contentUtf8() method and convert to
-	 * JsonNode.
-	 * 
-	 * @param httpRequest
-	 * @param key
-	 * @return HttpResponse
-	 */
-	@Put
-	@Post
-	@Path(COMMAND_URL_WITH_KEY)
-	@Consumes("application/json")
-	public HttpResponse jsonWithKey(AggregatedHttpRequest httpRequest, @Param("key") String key) {
-		JsonNode jsonBody = getAsJsonBody(httpRequest);
+    /**
+     * Process set command request by application json with redis key at URL.
+     * 
+     * When request body is absent then JacksonRequestConverterFunction not working.
+     * <br/>
+     * So, just use AggregatedHttpRequest.contentUtf8() method and convert to
+     * JsonNode.
+     * 
+     * @param httpRequest
+     * @param key
+     * @return HttpResponse
+     */
+    @Put
+    @Post
+    @Path(COMMAND_URL_WITH_KEY)
+    @Consumes("application/json")
+    public HttpResponse jsonWithKey(AggregatedHttpRequest httpRequest, @Param("key") String key) {
+        JsonNode jsonBody = getAsJsonBody(httpRequest);
 
-		RedisRequest redisRequest = buildRedisRequest(REDIS_COMMAND, key, httpRequest, jsonBody);
+        RedisRequest redisRequest = buildRedisRequest(REDIS_COMMAND, key, httpRequest, jsonBody);
 
-		logger.info("Json request " + REDIS_COMMAND + " command with key at URL " + redisRequest.toString());
+        logger.info("Json request " + REDIS_COMMAND + " command with key at URL " + redisRequest.toString());
 
-		RedisCommandExecuteResult result = null;
-		try {
-			result = executeCommand(redisRequest);
-		} catch (Exception e) {
-			logger.error("Can not execute redis command ", e);
-			return buildResponse(ResponseCode.UNKNOWN_ERROR, redisRequest);
-		}
+        RedisCommandExecuteResult result = null;
+        try {
+            result = executeCommand(redisRequest);
+        }
+        catch (Exception e) {
+            logger.error("Can not execute redis command ", e);
+            return buildResponse(ResponseCode.UNKNOWN_ERROR, redisRequest);
+        }
 
-		return buildResponse(redisRequest, result);
-	}
+        return buildResponse(redisRequest, result);
+    }
 }

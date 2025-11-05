@@ -8,7 +8,7 @@ import com.linecorp.armeria.server.annotation.Param;
 public class RedisHdelRequest extends RedisRequest {
     @Param("field")
     protected String field;
-    
+
     public RedisHdelRequest(AggregatedHttpRequest httpRequest) {
         super(httpRequest);
         this.setCommand("Hdel");

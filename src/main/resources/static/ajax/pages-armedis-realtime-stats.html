@@ -150,6 +150,8 @@
     window.globalIntervalIds = window.globalIntervalIds || [];
     
     var charts = {};
+    var prevStatsData = [];
+    var redisStatDatas = [];
     var statsData = [];
     var tpsSeries = [{ name: "TPS", data: [] }];
     var hitRateSeries = [{ name: "HitRate", data: [] }];
@@ -163,20 +165,21 @@
         { 
             id: "redisAnalysis", 
             headers: [
-                    { name: "time", title: "Time", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
-                    { name: "cpu", title: "CPU", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
-                    { name: "clients", title: "Clients", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
-                    { name: "bclients", title: "bClients", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
-                    { name: "mem", title: "Mem", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
-                    { name: "rss", title: "RSS", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
-                    { name: "keys", title: "keys", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
-                    { name: "cps", title: "CPS", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
-                    { name: "exp", title: "EXP", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
-                    { name: "evt", title: "EVT", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
-                    { name: "hitrate", title: "HitRate", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
-                    { name: "hit", title: "HIT", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
-                    { name: "in", title: "IN", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } },
-                    { name: "out", title: "OUT", style: { headerTextAlign: "center", cellTextAlign: "center", width: "14%" } }
+                    { name: "time", title: "Time", style: { headerTextAlign: "center", cellTextAlign: "center", width: "6.7%" } },
+                    { name: "cpu", title: "CPU", style: { headerTextAlign: "center", cellTextAlign: "center", width: "6.7%" } },
+                    { name: "clients", title: "Clients", style: { headerTextAlign: "center", cellTextAlign: "center", width: "6.7%" } },
+                    { name: "bclients", title: "bClients", style: { headerTextAlign: "center", cellTextAlign: "center", width: "6.7%" } },
+                    { name: "received", title: "Received", style: { headerTextAlign: "center", cellTextAlign: "center", width: "6.7%" } },
+                    { name: "mem", title: "Mem", style: { headerTextAlign: "center", cellTextAlign: "center", width: "6.7%" } },
+                    { name: "rss", title: "RSS", style: { headerTextAlign: "center", cellTextAlign: "center", width: "6.7%" } },
+                    { name: "keys", title: "keys", style: { headerTextAlign: "center", cellTextAlign: "center", width: "6.7%" } },
+                    { name: "cps", title: "CPS", style: { headerTextAlign: "center", cellTextAlign: "center", width: "6.7%" } },
+                    { name: "exp", title: "EXP", style: { headerTextAlign: "center", cellTextAlign: "center", width: "6.7%" } },
+                    { name: "evt", title: "EVT", style: { headerTextAlign: "center", cellTextAlign: "center", width: "6.7%" } },
+                    { name: "hitrate", title: "HitRate", style: { headerTextAlign: "center", cellTextAlign: "center", width: "6.7%" } },
+                    { name: "hit", title: "HIT", style: { headerTextAlign: "center", cellTextAlign: "center", width: "6.7%" } },
+                    { name: "in", title: "IN", style: { headerTextAlign: "center", cellTextAlign: "center", width: "6.7%" } },
+                    { name: "out", title: "OUT", style: { headerTextAlign: "center", cellTextAlign: "center", width: "6.7%" } }
             ] 
         }
     ];
@@ -475,7 +478,6 @@
             elem.redisInfoList = _.pick(elem.redisInfoList, ["sum"]);
             return { ...elem }
         });
-        console.log("statsSum: ", statsSum);
         
         statsSum.forEach((item) => {
             var curTime = moment(item.formatedEpochTime, "YYYY-MM-DD HH:mm:ss").toDate().getTime()
@@ -660,65 +662,111 @@
             return { ...elem }
         });
 
-        var redisStatDatas = [];
         var totalRows = 10;
-        statsSum.forEach(elem => {
-            var hitRate = 0
-            if (elem.redisInfoList.sum.stats.keyspaceHits + elem.redisInfoList.sum.stats.keyspaceMisses > 0) {
-                hitRate = elem.redisInfoList.sum.stats.keyspaceHits / (elem.redisInfoList.sum.stats.keyspaceHits + elem.redisInfoList.sum.stats.keyspaceMisses);
-            }
-            var newRow = {
-                Time: moment(elem.formatedEpochTime).format("HH:mm:ss"),
-                CPU: (Number(elem.redisInfoList.sum.cpu.usedCpuSys) + Number(elem.redisInfoList.sum.cpu.usedCpuUser)).toFixed(2) ?? "-",
-                Clients: elem.redisInfoList.sum.clients.connectedClients.toLocaleString() ?? "-",
-                bClients: elem.redisInfoList.sum.clients.blockedClients.toLocaleString() ?? "-",
-                Mem: getMemoryCapacityUnit(elem.redisInfoList.sum.memory.usedMemory) ?? "-",
-                RSS: getMemoryCapacityUnit(elem.redisInfoList.sum.memory.usedMemoryRss) ?? "-",
-                keys: elem.redisInfoList.sum.keyspace["0"].keys.toLocaleString() ?? "-",
-                CPS: elem.redisInfoList.sum.stats.instantaneousOpsPerSec.toLocaleString() ?? "-",
-                EXP: elem.redisInfoList.sum.stats.expiredKeys.toLocaleString() ?? "-",
-                EVT: elem.redisInfoList.sum.stats.evictedKeys.toLocaleString() ?? "-",
-                HitRate: (hitRate * 100).toFixed(0) + "%" ?? "-",
-                HIT: elem.redisInfoList.sum.stats.keyspaceHits.toLocaleString() ?? "-",
-                IN: elem.redisInfoList.sum.stats.instantaneousInputKbps.toFixed(2) ?? "-",
-                OUT: elem.redisInfoList.sum.stats.instantaneousOutputKbps.toFixed(2) ?? "-"
-            }
-            redisStatDatas.push(newRow)
-            if (redisStatDatas.length > totalRows) {
-                redisStatDatas.shift();
-            }
-
-            var cardId = "redisAnalysis";
-            var parent = document.getElementById(cardId);
-            if (parent) {
-                var tableTbody = parent.querySelector("table tbody");
+        
+        var newItems = [];
+        var lastPrevItems = [];
+        if (_.isEmpty(prevStatsData)) {
+            newItems = statsSum;
+        } else {
+            lastPrevItems = _.last(prevStatsData);
+            lastPrevDate = lastPrevItems.epochTime;
+            newItems = _.filter(statsSum, d => d.epochTime > lastPrevDate);    
+        }
+        
+        newItems.map((elem, idx) => {
+            var curTime = moment(elem.formatedEpochTime).format("HH:mm:ss");
+            if(!_.some(redisStatDatas, { Time: curTime })) {
                 
-                tableTbody.innerHTML = "";
-                if (cloneStatsData.length > 0) {
-                    redisStatDatas.forEach(elem => {
-                        var tableTr = document.createElement("tr");
-                        var keys = Object.keys(elem);
-                        keys.forEach(key => {
-                            var tableTd = document.createElement("td");
-                            tableTd.style.textAlign = "center";
-                            tableTd.innerText = elem[key];
-                            tableTr.appendChild(tableTd);
-                        })
-                        tableTbody.appendChild(tableTr);
-                    });
+                var beforeStats;
+                if (!_.isEmpty(lastPrevItems)) {
+                    beforeStats = lastPrevItems.redisInfoList.sum.stats;
                 } else {
-                    var tableTr = document.createElement("tr");
-                    var tableTd = document.createElement("td");
-                    tableTd.textContent = "데이터가 없습니다.";
-                    tableTd.style.textAlign = "center";
-                    tableTd.colSpan = tableInfo.headers.length;
-                    tableTr.appendChild(tableTd);
-    
-                    tableTbody.innerHTML = "";
-                    tableTbody.appendChild(tableTr);
+                    if (idx > 0) {
+                        beforeStats = newItems[idx - 1].redisInfoList.sum.stats;
+                    } else {
+                        beforeStats = {}
+                    }
                 }
+
+                var lastStatsSumStats = elem.redisInfoList.sum.stats;
+
+                // Hit Rate
+                var keyspaceHits = lastStatsSumStats.keyspaceHits - beforeStats.keyspaceHits || 0;
+                var keyspaceMisses = lastStatsSumStats.keyspaceMisses - beforeStats.keyspaceMisses || 0;
+                var newHitRate = keyspaceHits / (keyspaceHits + keyspaceMisses) * 100;
+                if (Number.isNaN(newHitRate)) {
+                    newHitRate = 0;
+                }
+
+                // Received Connections
+                // 1초전 totalConnectionsReceived 
+                var secondsAgoConnectedReceived = beforeStats.totalConnectionsReceived;
+                // 마지막 totalConnectionsReceived
+                var lastConnectedReceived = lastStatsSumStats.totalConnectionsReceived;
+                // 마지막 totalConnectionsReceived - 1초전 totalConnectionsReceived
+                var computedConnectedReceived = Math.max(lastConnectedReceived - secondsAgoConnectedReceived, 0);
+    
+                var newRow = {
+                    Time: moment(elem.formatedEpochTime).format("HH:mm:ss"),
+                    CPU: (Number(elem.redisInfoList.sum.cpu.usedCpuSys) + Number(elem.redisInfoList.sum.cpu.usedCpuUser)).toFixed(2) ?? "-",
+                    Clients: elem.redisInfoList.sum.clients.connectedClients.toLocaleString() ?? "-",
+                    bClients: elem.redisInfoList.sum.clients.blockedClients.toLocaleString() ?? "-",
+                    Received: computedConnectedReceived.toLocaleString() ?? "-",
+                    Mem: getMemoryCapacityUnit(elem.redisInfoList.sum.memory.usedMemory) ?? "-",
+                    RSS: getMemoryCapacityUnit(elem.redisInfoList.sum.memory.usedMemoryRss) ?? "-",
+                    keys: elem.redisInfoList.sum.keyspace["0"].keys.toLocaleString() ?? "-",
+                    CPS: elem.redisInfoList.sum.stats.instantaneousOpsPerSec.toLocaleString() ?? "-",
+                    EXP: elem.redisInfoList.sum.stats.expiredKeys.toLocaleString() ?? "-",
+                    EVT: elem.redisInfoList.sum.stats.evictedKeys.toLocaleString() ?? "-",
+                    HitRate: newHitRate.toFixed(0) + "%" ?? "-",
+                    HIT: elem.redisInfoList.sum.stats.keyspaceHits.toLocaleString() ?? "-",
+                    IN: elem.redisInfoList.sum.stats.instantaneousInputKbps.toFixed(2) ?? "-",
+                    OUT: elem.redisInfoList.sum.stats.instantaneousOutputKbps.toFixed(2) ?? "-"
+                }
+                redisStatDatas.push(newRow)
             }
         });
+
+        var diffCnt = redisStatDatas.length - totalRows;
+        if (diffCnt > 0) {
+            for (var i=0; i<diffCnt; i++) {
+                redisStatDatas.shift();
+            }
+        }
+        
+        var cardId = "redisAnalysis";
+        var parent = document.getElementById(cardId);
+        if (parent) {
+            var tableTbody = parent.querySelector("table tbody");
+            
+            tableTbody.innerHTML = "";
+            if (cloneStatsData.length > 0) {
+                redisStatDatas.forEach(elem => {
+                    var tableTr = document.createElement("tr");
+                    var keys = Object.keys(elem);
+                    keys.forEach(key => {
+                        var tableTd = document.createElement("td");
+                        tableTd.style.textAlign = "center";
+                        tableTd.innerText = elem[key];
+                        tableTr.appendChild(tableTd);
+                    })
+                    tableTbody.appendChild(tableTr);
+                });
+            } else {
+                var tableTr = document.createElement("tr");
+                var tableTd = document.createElement("td");
+                tableTd.textContent = "데이터가 없습니다.";
+                tableTd.style.textAlign = "center";
+                tableTd.colSpan = tableInfo.headers.length;
+                tableTr.appendChild(tableTd);
+
+                tableTbody.innerHTML = "";
+                tableTbody.appendChild(tableTr);
+            }
+        }
+
+        prevStatsData = _.cloneDeep(statsSum);
     }
 
     // Redis 정보 조회
@@ -731,7 +779,6 @@
 
     // Instance Information 데이터 설정
     function setInstanceInfo() {
-        console.log("setInstanceInfo() - statsData: ", statsData);
         var instanceInfoData = [];
         var redisList = {};
         var instanceInfoTableContent = ['version', 'mode', 'role', 'uptime', 'master_info', 'slave_info', 'aof_enable', 'hz', 'rdb_last_save_time', 'memory_policy', 'connected_clients', 'pid', 'maxclients', 'blocked_clients', 'mem_fragmentation_ratio'];

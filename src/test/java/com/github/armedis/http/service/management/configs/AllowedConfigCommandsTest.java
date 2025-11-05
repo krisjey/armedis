@@ -173,10 +173,10 @@ class AllowedConfigCommandsTest {
 
         // TODO 현재 값 확인. 두번 호출되고 첫 번째는 "" 두 번째는 "0"
         System.out.println(cmd.getKey() + "[" + cmd.getCurrentValue() + "]");
-        if (AllowedConfigCommands.isInitialized())   {
+        if (AllowedConfigCommands.isInitialized()) {
             // do nothing.
         }
-        else    {
+        else {
             assertThat(cmd.getCurrentValue()).isEqualTo("");
         }
 

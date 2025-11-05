@@ -36,9 +36,9 @@ public class RedisInfoAggregator {
             return RedisInfoVo.emptyObject();
         }
 
-        List<RedisInfoVo> infoList = redisInfos instanceof List 
-            ? (List<RedisInfoVo>) redisInfos 
-            : redisInfos.stream().collect(Collectors.toList());
+        List<RedisInfoVo> infoList = redisInfos instanceof List
+                ? (List<RedisInfoVo>) redisInfos
+                : redisInfos.stream().collect(Collectors.toList());
 
         // 결과 객체 생성
         RedisInfoVo result = RedisInfoVo.emptyObject();
@@ -71,14 +71,14 @@ public class RedisInfoAggregator {
      * 서브 VO 집계 메인 로직
      */
     private static <T extends StatsBaseVo> void aggregateSubVo(
-            T resultVo, 
+            T resultVo,
             List<RedisInfoVo> infoList,
             SubVoExtractor<T> extractor) {
-        
+
         // 모든 노드의 해당 서브 VO 추출
         List<T> subVos = infoList.stream()
-            .map(extractor::extract)
-            .collect(Collectors.toList());
+                .map(extractor::extract)
+                .collect(Collectors.toList());
 
         // 연산 대상 필드 목록 가져오기
         Map<String, String> operationMap = resultVo.operationKeyList();
@@ -102,7 +102,7 @@ public class RedisInfoAggregator {
 
         try {
             Class<?> voClass = resultVo.getClass();
-            
+
             // Getter 메서드 가져오기 (캐시 활용)
             Method getter = getGetterMethod(voClass, fieldName);
             if (getter == null) {
@@ -122,29 +122,35 @@ public class RedisInfoAggregator {
                 if (setter != null) {
                     try {
                         setter.invoke(resultVo, aggregatedValue);
-                    } catch (IllegalArgumentException e) {
+                    }
+                    catch (IllegalArgumentException e) {
                         // 타입 불일치 시 String으로 변환 시도
                         if (returnType == String.class && !(aggregatedValue instanceof String)) {
                             setter.invoke(resultVo, String.valueOf(aggregatedValue));
-                        } else if (returnType != String.class && aggregatedValue instanceof String) {
+                        }
+                        else if (returnType != String.class && aggregatedValue instanceof String) {
                             // String을 숫자로 변환 시도
                             Object converted = convertStringToType((String) aggregatedValue, returnType);
                             if (converted != null) {
                                 setter.invoke(resultVo, converted);
-                            } else {
+                            }
+                            else {
                                 throw e;
                             }
-                        } else {
+                        }
+                        else {
                             throw e;
                         }
                     }
-                } else {
+                }
+                else {
                     logger.debug("No setter found for field: {} in class: {}", fieldName, voClass.getSimpleName());
                 }
             }
-        } catch (Exception e) {
-            logger.error("Failed to aggregate field: {} with operation: {} - {}", 
-                fieldName, operation, e.getMessage(), e);
+        }
+        catch (Exception e) {
+            logger.error("Failed to aggregate field: {} with operation: {} - {}",
+                    fieldName, operation, e.getMessage(), e);
         }
     }
 
@@ -155,14 +161,18 @@ public class RedisInfoAggregator {
         try {
             if (targetType == int.class || targetType == Integer.class) {
                 return Integer.parseInt(value);
-            } else if (targetType == long.class || targetType == Long.class) {
+            }
+            else if (targetType == long.class || targetType == Long.class) {
                 return Long.parseLong(value);
-            } else if (targetType == double.class || targetType == Double.class) {
+            }
+            else if (targetType == double.class || targetType == Double.class) {
                 return Double.parseDouble(value);
-            } else if (targetType == float.class || targetType == Float.class) {
+            }
+            else if (targetType == float.class || targetType == Float.class) {
                 return Float.parseFloat(value);
             }
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e) {
             logger.debug("Cannot convert '{}' to {}", value, targetType.getSimpleName());
         }
         return null;
@@ -180,25 +190,25 @@ public class RedisInfoAggregator {
         switch (operation) {
             case StatsBaseVo.SUM:
                 return performSum(subVos, getter, returnType);
-            
+
             case StatsBaseVo.AVG:
                 return performAvg(subVos, getter, returnType);
-            
+
             case StatsBaseVo.MAX:
                 return performMax(subVos, getter, returnType);
-            
+
             case StatsBaseVo.MIN:
                 return performMin(subVos, getter, returnType);
-            
+
             case StatsBaseVo.DIFF:
                 return performDiff(subVos, getter, returnType);
-            
+
             case StatsBaseVo.CONCAT:
                 return performConcat(subVos, getter);
-            
+
             case StatsBaseVo.EMPTY:
                 return "-";
-            
+
             default:
                 logger.warn("Unknown operation: {}", operation);
                 return null;
@@ -264,11 +274,14 @@ public class RedisInfoAggregator {
         int count = subVos.size();
         if (sum instanceof Integer) {
             return ((Integer) sum) / count;
-        } else if (sum instanceof Long) {
+        }
+        else if (sum instanceof Long) {
             return ((Long) sum) / count;
-        } else if (sum instanceof Double) {
+        }
+        else if (sum instanceof Double) {
             return ((Double) sum) / count;
-        } else if (sum instanceof Float) {
+        }
+        else if (sum instanceof Float) {
             return ((Float) sum) / count;
         }
         return null;
@@ -388,7 +401,7 @@ public class RedisInfoAggregator {
 
         // 값이 다른 경우 처리
         Object last = getter.invoke(subVos.get(subVos.size() - 1));
-        
+
         if (returnType == String.class) {
             return last != null ? last.toString() + "(*)" : "(*)";
         }
@@ -425,7 +438,8 @@ public class RedisInfoAggregator {
                         first = false;
                     }
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 logger.debug("Error invoking getter in CONCAT operation: {}", e.getMessage());
             }
         }
@@ -438,12 +452,13 @@ public class RedisInfoAggregator {
      */
     private static Method getGetterMethod(Class<?> clazz, String fieldName) {
         String cacheKey = clazz.getName() + ".get" + capitalize(fieldName);
-        
+
         return GETTER_CACHE.computeIfAbsent(cacheKey, key -> {
             try {
                 String methodName = "get" + capitalize(fieldName);
                 return clazz.getMethod(methodName);
-            } catch (NoSuchMethodException e) {
+            }
+            catch (NoSuchMethodException e) {
                 logger.debug("Getter not found: {}", key);
                 return null;
             }
@@ -455,12 +470,13 @@ public class RedisInfoAggregator {
      */
     private static Method getSetterMethod(Class<?> clazz, String fieldName, Class<?> paramType) {
         String cacheKey = clazz.getName() + ".set" + capitalize(fieldName) + "." + paramType.getName();
-        
+
         return SETTER_CACHE.computeIfAbsent(cacheKey, key -> {
             try {
                 String methodName = "set" + capitalize(fieldName);
                 return clazz.getMethod(methodName, paramType);
-            } catch (NoSuchMethodException e) {
+            }
+            catch (NoSuchMethodException e) {
                 logger.debug("Setter not found: {}", key);
                 return null;
             }
@@ -472,7 +488,7 @@ public class RedisInfoAggregator {
      */
     private static Map<Integer, Keyspace> aggregateKeyspace(List<RedisInfoVo> infos) {
         Map<Integer, Keyspace> result = new java.util.TreeMap<>();
-        
+
         // 모든 노드에서 사용 중인 DB 번호 수집
         Set<Integer> allDbNos = new java.util.HashSet<>();
         for (RedisInfoVo info : infos) {
@@ -480,27 +496,27 @@ public class RedisInfoAggregator {
                 allDbNos.addAll(info.getKeyspace().keySet());
             }
         }
-        
+
         // 각 DB 번호별로 집계
         for (Integer dbNo : allDbNos) {
             List<Keyspace> dbKeyspaces = new ArrayList<>();
-            
+
             // 해당 DB를 가진 노드들의 Keyspace 수집
             for (RedisInfoVo info : infos) {
                 if (info.getKeyspace() != null && info.getKeyspace().containsKey(dbNo)) {
                     dbKeyspaces.add(info.getKeyspace().get(dbNo));
                 }
             }
-            
+
             if (!dbKeyspaces.isEmpty()) {
                 Keyspace aggregated = aggregateKeyspaceForDb(dbNo, dbKeyspaces);
                 result.put(dbNo, aggregated);
             }
         }
-        
+
         return result;
     }
-    
+
     /**
      * 특정 DB의 Keyspace 집계
      */
@@ -508,24 +524,24 @@ public class RedisInfoAggregator {
         // Keyspace는 private 생성자를 가질 수 있으므로 리플렉션 사용
         try {
             Keyspace result = new Keyspace();
-            
+
             // DB 번호 설정
             result.setNo(dbNo);
-            
+
             // keys 합계
             int totalKeys = 0;
             for (Keyspace ks : keyspaces) {
                 totalKeys += ks.getKeys();
             }
             result.setKeys(totalKeys);
-            
+
             // expires 합계
             int totalExpires = 0;
             for (Keyspace ks : keyspaces) {
                 totalExpires += ks.getExpires();
             }
             result.setExpires(totalExpires);
-            
+
             // avgTtl 평균
             int totalAvgTtl = 0;
             int count = 0;
@@ -536,9 +552,10 @@ public class RedisInfoAggregator {
                 }
             }
             result.setAvgTtl(count > 0 ? totalAvgTtl / count : 0);
-            
+
             return result;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             logger.error("Failed to aggregate keyspace for DB {}", dbNo, e);
             return null;
         }

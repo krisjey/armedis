@@ -24,7 +24,7 @@ public class RedisSetexRequest extends RedisRequest {
     public void setValue(String value) {
         this.value = value;
     }
-    
+
     /**
      * @return the seconds
      */
