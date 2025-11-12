@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+
+    <Properties>
+        <Property name="LOG_DIR">logs</Property>
+        <Property name="SERVICE_PORT">${env:SERVICE_PORT:-8080}</Property>
+        <Property name="LOG_PATTERN">%d{HH:mm:ss.SSS} [%t] %-5level %logger{35}:%line - %msg%n</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- 콘솔 로그 -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+        <!-- 메인 파일 로그 -->
+        <RollingFile name="File"
+                     fileName="${LOG_DIR}/armedis.api.${SERVICE_PORT}.log"
+                     filePattern="${LOG_DIR}/armedis.api.${SERVICE_PORT}.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <!-- 앱이 뜰 때마다 '정리(purge)'를 보장하기 위해 롤오버 이벤트 한 번 트리거 -->
+                <OnStartupTriggeringPolicy/>
+                <!-- (선택) 자정마다도 한 번 롤오버 유도해 정리 로직이 일 최소 1회는 실행되게 함 -->
+                <CronTriggeringPolicy schedule="0 0 0 * * ?"/>
+            </Policies>
+            <DefaultRolloverStrategy>
+                <!-- 2일보다 오래된 파일 삭제 -->
+                <Delete basePath="${LOG_DIR}" maxDepth="2">
+                    <!-- 대상 파일 패턴(현재 파일과 아카이브 모두 포괄) -->
+                    <IfFileName glob="armedis.api.*.log"/>
+                    <IfFileName glob="archive/*/armedis.api.*.log.gz"/>
+                    <!-- 최종 수정 시각 기준 2일 초과 -->
+                    <IfLastModified age="2d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+        <!-- Access 로그 (armeria access 전용) -->
+        <RollingFile name="AccessLog"
+                     fileName="${LOG_DIR}/access.log"
+                     filePattern="${LOG_DIR}/access.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%-21t] %-5level %logger{30}:%line - %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <!-- 패키지별 로그 레벨 -->
+        <Logger name="com.linecorp.armeria.logging.access" level="info" additivity="false">
+            <AppenderRef ref="AccessLog"/>
+        </Logger>
+
+        <Logger name="com.linecorp.armeria.server.logging.LoggingService" level="info"/>
+        <Logger name="com.linecorp.armeria.server.HttpServerHandler" level="error"/>
+        <Logger name="com.linecorp.armeria.server.Routers" level="debug"/>
+        <Logger name="org.springframework.boot.autoconfigure" level="debug"/>
+        <Logger name="org.springframework.beans" level="debug"/>
+        <Logger name="com.linecorp.armeria" level="debug"/>
+
+        <Logger name="io.netty" level="debug"/>
+        <Logger name="io.netty.handler.codec" level="info"/>
+        <Logger name="org.apache.zookeeper" level="info"/>
+
+        <!-- 루트 로거 -->
+        <Root level="info">
+            <AppenderRef ref="File"/>
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+
+</Configuration>
