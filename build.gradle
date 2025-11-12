@@ -55,6 +55,7 @@ tasks.withType(ProcessResources) {
 }
 
 tasks.named('processResources') {
+    // Logback 설정 파일만 제외 (Log4j2는 포함)
     exclude('application.properties', 'logback-spring.xml')
 }
 
