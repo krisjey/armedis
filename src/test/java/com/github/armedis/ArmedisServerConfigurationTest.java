@@ -24,6 +24,7 @@ public class ArmedisServerConfigurationTest extends AbstractRedisServerTest {
 
     @Test
     public void test() {
-        assertThat(armedisConfiguration.getRedisSeedAddress()).isNotNull();
+        assertThat(armedisConfiguration.getRedisSeedHost()).isNotNull();
+        assertThat(armedisConfiguration.getRedisSeedPort()).isGreaterThan(0);
     }
 }

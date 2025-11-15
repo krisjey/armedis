@@ -14,8 +14,11 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties
 public class ArmedisConfiguration {
-    @Value("${config.redis.seed}")
-    private String redisSeedAddress;
+    @Value("${config.redis.seed.host}")
+    private String redisSeedHost;
+
+    @Value("${config.redis.seed.port}")
+    private Integer redisSeedPort;
 
     @Value("${server.service.port}")
     private int servicePort;
@@ -38,8 +41,12 @@ public class ArmedisConfiguration {
     @Value("${server.management.loginPassword}")
     private String loginPassword;
 
-    public String getRedisSeedAddress() {
-        return redisSeedAddress;
+    public String getRedisSeedHost() {
+        return redisSeedHost;
+    }
+
+    public int getRedisSeedPort() {
+        return redisSeedPort;
     }
 
     public int getServicePort() {

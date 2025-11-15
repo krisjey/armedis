@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 import com.github.armedis.redis.command.RedisCommandEnum;
@@ -36,6 +37,7 @@ class RedisRequestBuilderFactoryTest {
     }
 
     @Test
+    @Order(1)
     public void testImplementedRequestBuilder() {
         Set<RedisCommandEnum> implementedRequestBuilder = new HashSet<RedisCommandEnum>();
         implementedRequestBuilder.add(RedisCommandEnum.GET);

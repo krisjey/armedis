@@ -1,11 +1,27 @@
-spring:
-  application:
-    name: armedis
-
 # Armedis Configuration
 config:
   redis:
-    seed: 192.168.56.105:17001
+    seed:
+      host: 192.168.56.105
+      port: 17001
+      password: foobar   # optional
+
+spring:
+  application:
+    name: armedis
+  data:
+    redis:
+      host: ${config.redis.seed.host}  # Armedis가 seed 기반으로 해석해서 사용
+      port: ${config.redis.seed.port}  # Armedis가 seed 기반으로 해석해서 사용
+      password: ${config.redis.seed.password:}   # optional
+      lettuce:
+        pool:
+          enabled: true
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+          max-wait: 2000ms
+          time-between-eviction-runs: 60s
 
 server:
   service:
@@ -33,24 +49,3 @@ management:
   cloudfoundry:
     skip-ssl-validation: true
 
-# Logging Configuration
-logging:
-  level:
-    root: INFO
-    com.github.armedis: INFO
-    com.linecorp.armeria: INFO
-    com.linecorp.armeria.server.logging.LoggingService: INFO
-    com.linecorp.armeria.server.HttpServerHandler: ERROR
-    com.linecorp.armeria.server.Routers: DEBUG
-    com.linecorp.armeria.logging.access: INFO
-    org.springframework.boot.autoconfigure: DEBUG
-    org.springframework.beans: DEBUG
-    io.netty: DEBUG
-    io.netty.handler.codec: INFO
-    org.apache.zookeeper: INFO
-  pattern:
-    console: '%d{HH:mm:ss.SSS} [%thread] %-5level %logger{50}:%line - %msg%n'
-    file: '%d{HH:mm:ss.SSS} [%thread] %-5level %logger{35}:%line - %msg%n'
-  file:
-    name: logs/armedis.api.${server.service.port}.log
-    max-history: 30
