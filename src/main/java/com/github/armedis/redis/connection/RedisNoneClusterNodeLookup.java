@@ -20,30 +20,27 @@ import io.lettuce.core.api.sync.RedisCommands;
  */
 public class RedisNoneClusterNodeLookup implements RedisNodeLookup {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private String seedAddresses;
+    private String seedHost;
+    private Integer seedPort;
 
-    public RedisNoneClusterNodeLookup(String seedAddresses) {
-        this.seedAddresses = seedAddresses;
+    public RedisNoneClusterNodeLookup(String seedHost, Integer seedPort) {
+        this.seedHost = seedHost;
+        this.seedPort = seedPort;
     }
 
     /**
-     *  master ==>
-     *         role:master
-     *         connected_slaves:2
-     *         slave0:ip=192.168.56.104,port=6380,state=online,offset=2482,lag=1
-     *         slave1:ip=192.168.56.104,port=6381,state=online,offset=2482,lag=1
+     * master ==> role:master connected_slaves:2
+     * slave0:ip=192.168.56.104,port=6380,state=online,offset=2482,lag=1
+     * slave1:ip=192.168.56.104,port=6381,state=online,offset=2482,lag=1
      * 
-     *  slave ==>
-     *         role:slave
-     *         master_host:192.168.56.104
-     *         master_port:6379
+     * slave ==> role:slave master_host:192.168.56.104 master_port:6379
      */
     @Override
     public Set<RedisNode> lookup(StatefulRedisConnection<String, String> redisSeedConnection) {
         Set<RedisNode> actualServers = new HashSet<>();
 
         try {
-            RedisNode masterNode = findMasterNode(redisSeedConnection.sync(), seedAddresses);
+            RedisNode masterNode = findMasterNode(redisSeedConnection.sync(), seedHost, seedPort);
             actualServers.add(masterNode);
 
             List<RedisNode> slaveNodes = findSlaves(masterNode);
@@ -59,10 +56,11 @@ public class RedisNoneClusterNodeLookup implements RedisNodeLookup {
     }
 
     private List<RedisNode> findSlaves(RedisNode masterNode) {
-        RedisConnector connector = new RedisConnector(masterNode);
-        StatefulRedisConnection<String, String> connection = connector.connect();
-        String replicationInfo = connection.sync().info("Replication");
-        return retreveSlaveNodes(replicationInfo);
+        try (RedisConnector connector = new RedisConnector(masterNode);
+                StatefulRedisConnection<String, String> connection = connector.connect();) {
+            String replicationInfo = connection.sync().info("Replication");
+            return retreveSlaveNodes(replicationInfo);
+        }
     }
 
     private List<RedisNode> retreveSlaveNodes(String replicationInfo) {
@@ -88,7 +86,7 @@ public class RedisNoneClusterNodeLookup implements RedisNodeLookup {
     }
 
     // TODO support multi level replication
-    private RedisNode findMasterNode(RedisCommands<String, String> redisCommand, String seedAddresses) {
+    private RedisNode findMasterNode(RedisCommands<String, String> redisCommand, String seedHost, Integer seedPort) {
         String info = redisCommand.info("Replication");
 
         boolean isSlave = false;
@@ -115,7 +113,7 @@ public class RedisNoneClusterNodeLookup implements RedisNodeLookup {
 
                 if ("master".equals(type.toLowerCase())) {
                     if (connectedSlaves == 0) {
-                        masterHost = seedAddresses.split(":")[0];
+                        masterHost = seedHost;
                     }
                     else {
                         masterHost = detectMasterHost(info);
@@ -130,9 +128,11 @@ public class RedisNoneClusterNodeLookup implements RedisNodeLookup {
         }
 
         if (isSlave) {
-            RedisConnector connector = new RedisConnector(new RedisNode(masterHost, masterPort));
-            StatefulRedisConnection<String, String> connection = connector.connect();
-            return findMasterNode(connection.sync(), seedAddresses);
+            try (RedisConnector connector = new RedisConnector(new RedisNode(masterHost, masterPort));
+                    StatefulRedisConnection<String, String> connection = connector.connect();) {
+
+                return findMasterNode(connection.sync(), seedHost, seedPort);
+            }
         }
 
         return new RedisNode(masterHost, masterPort, RedisNodeType.MASTER);
@@ -159,9 +159,10 @@ public class RedisNoneClusterNodeLookup implements RedisNodeLookup {
 
         String masterAddress = null;
 
-        RedisConnector connector = new RedisConnector(new RedisNode(slaveHost, Integer.parseInt(slavePort)));
-        StatefulRedisConnection<String, String> connection = connector.connect();
-        masterAddress = connection.sync().configGet("slaveof").get("slaveof");
+        try (RedisConnector connector = new RedisConnector(new RedisNode(slaveHost, Integer.parseInt(slavePort)));
+                StatefulRedisConnection<String, String> connection = connector.connect();) {
+            masterAddress = connection.sync().configGet("slaveof").get("slaveof");
+        }
 
         return masterAddress.split(" ")[0];
     }

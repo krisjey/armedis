@@ -31,9 +31,8 @@ public class RedisServerModeTest {
 //    @Disabled
     @Test
     public void test() throws InterruptedException, ExecutionException {
-        String seedHostConfig = armedisConfiguration.getRedisSeedAddress();
-        String seedHost = seedHostConfig.split(":")[0];
-        int seedPort = Integer.parseInt(seedHostConfig.split(":")[1]);
+        String seedHost = armedisConfiguration.getRedisSeedHost();
+        int seedPort = armedisConfiguration.getRedisSeedPort();
 
         RedisURI uri = RedisURI.create(seedHost, seedPort);
         RedisClient redisClient = RedisClient.create(uri);
