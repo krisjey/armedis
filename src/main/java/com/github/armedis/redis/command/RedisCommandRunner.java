@@ -14,6 +14,9 @@ public interface RedisCommandRunner {
 
     RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands);
 
+    // TODO executeAndGet(RedisClusterCommands<String, String> commands) 제거 후 아래 메서드로 대체. tps local 10000 tps
+//    RedisCommandExecuteResult executeAndGet();
+
     static String getCommandRunnerName(String requestCommand) {
         return REDIS_COMMAND_RUNNER_PREFIX + StringUtils.capitalize(requestCommand) + REDIS_COMMAND_RUNNER_POSTFIX;
     }
