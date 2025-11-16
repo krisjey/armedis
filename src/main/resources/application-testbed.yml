@@ -1,8 +1,19 @@
+# Armedis Configuration
+config:
+  redis:
+    seed:
+      host: 192.168.56.105
+      port: 17001
+      password: foobar   # optional
+
 spring:
   application:
-    name: armedis-test
+    name: armedis
   data:
     redis:
+      host: ${config.redis.seed.host}  # Armedis가 seed 기반으로 해석해서 사용
+      port: ${config.redis.seed.port}  # Armedis가 seed 기반으로 해석해서 사용
+      password: ${config.redis.seed.password:}   # optional
       lettuce:
         pool:
           enabled: true
@@ -12,29 +23,35 @@ spring:
           max-wait: 2000ms
           time-between-eviction-runs: 60s
 
-config:
-  redis:
-    seed:
-      host: 192.168.56.105
-      port: 17001
-      password:  # optional
-
 server:
   service:
-    port: 8081
+    port: 8080
     instanceCount: 1
   config:
     stat:
-      enabled: false
+      enabled: true
       addContentSection: false
       logging:
-        enableed: false
+        enabled: false
+    service:
+      access:
+        logging:
+          enabled: false
+      http:
+        logging:
+          enabled: false
   management:
     loginId: admin
     loginPassword: armedis1234!
 
-logging:
-  level:
-    root: INFO
-    com.github.armedis: DEBUG
-    org.springframework.data.redis: DEBUG
+# Spring Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  info:
+    git:
+      mode: full
+  cloudfoundry:
+    skip-ssl-validation: true

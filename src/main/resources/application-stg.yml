@@ -1,56 +1,57 @@
+# Armedis Configuration
+config:
+  redis:
+    seed:
+      host: 192.168.56.105
+      port: 17001
+      password: foobar   # optional
+
 spring:
   application:
     name: armedis
-
-# Armedis Configuration - STG Environment
-config:
-  redis:
-    seed: stg-redis-server:17001
+  data:
+    redis:
+      host: ${config.redis.seed.host}  # Armedis가 seed 기반으로 해석해서 사용
+      port: ${config.redis.seed.port}  # Armedis가 seed 기반으로 해석해서 사용
+      password: ${config.redis.seed.password:}   # optional
+      lettuce:
+        pool:
+          enabled: true
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+          max-wait: 2000ms
+          time-between-eviction-runs: 60s
 
 server:
   service:
     port: 8080
-    instanceCount: 3
+    instanceCount: 1
   config:
     stat:
       enabled: true
       addContentSection: false
       logging:
-        enableed: false
+        enabled: false
+    service:
+      access:
+        logging:
+          enabled: false
+      http:
+        logging:
+          enabled: false
   management:
     loginId: admin
-    loginPassword: ${ARMEDIS_ADMIN_PASSWORD}
+    loginPassword: armedis1234!
 
 # Spring Actuator Configuration
 management:
   endpoints:
     web:
       exposure:
-        include: 'health,info,metrics,prometheus'
+        include: '*'
   info:
     git:
-      mode: simple
+      mode: full
   cloudfoundry:
-    skip-ssl-validation: false
-
-# Logging Configuration
-logging:
-  level:
-    root: INFO
-    com.github.armedis: INFO
-    com.linecorp.armeria: INFO
-    com.linecorp.armeria.server.logging.LoggingService: INFO
-    com.linecorp.armeria.server.HttpServerHandler: WARN
-    com.linecorp.armeria.server.Routers: INFO
-    com.linecorp.armeria.logging.access: INFO
-    org.springframework.boot.autoconfigure: WARN
-    org.springframework.beans: WARN
-    io.netty: WARN
-    io.netty.handler.codec: WARN
-    org.apache.zookeeper: WARN
-  pattern:
-    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}:%line - %msg%n'
-    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{35}:%line - %msg%n'
-  file:
-    name: logs/armedis.api.${server.service.port}.log
-    max-history: 60
+    skip-ssl-validation: true

@@ -32,7 +32,14 @@ server:
       enabled: true
       addContentSection: false
       logging:
-        enableed: false
+        enabled: false
+    service:
+      access:
+        logging:
+          enabled: false
+      http:
+        logging:
+          enabled: false
   management:
     loginId: admin
     loginPassword: armedis1234!
@@ -48,4 +55,3 @@ management:
       mode: full
   cloudfoundry:
     skip-ssl-validation: true
-
