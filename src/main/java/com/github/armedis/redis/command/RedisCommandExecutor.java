@@ -74,12 +74,14 @@ public class RedisCommandExecutor {
     }
 
     private RedisCommandExecuteResult executeNonClusterCommand(RedisCommandRunner commandRunner) throws Exception {
-        StatefulRedisConnection<String, String> connection = this.redisConnectionPool.getNonClusterConnection();
-        RedisCommands<String, String> commands = connection.sync();
+//        StatefulRedisConnection<String, String> connection = this.redisConnectionPool.getNonClusterConnection();
+//        RedisCommands<String, String> commands = connection.sync();
+//
+//        RedisCommandExecuteResult result = commandRunner.executeAndGet(commands);
+//
+//        this.redisConnectionPool.returnObject(connection);
 
-        RedisCommandExecuteResult result = commandRunner.executeAndGet(commands);
-
-        this.redisConnectionPool.returnObject(connection);
+        RedisCommandExecuteResult result = commandRunner.executeAndGet();
 
         logger.info("Command execute with redisRequest " + commandRunner.toString());
 
@@ -92,13 +94,15 @@ public class RedisCommandExecutor {
         // send master
         // send slave
 
-        StatefulRedisClusterConnection<String, String> connection = this.redisConnectionPool.getClusterConnection();
-
-        RedisAdvancedClusterCommands<String, String> commands = connection.sync();
-
-        RedisCommandExecuteResult result = commandRunner.executeAndGet(commands);
-
-        this.redisConnectionPool.returnObject(connection);
+//        StatefulRedisClusterConnection<String, String> connection = this.redisConnectionPool.getClusterConnection();
+//
+//        RedisAdvancedClusterCommands<String, String> commands = connection.sync();
+//
+//        RedisCommandExecuteResult result = commandRunner.executeAndGet(commands);
+//
+//        this.redisConnectionPool.returnObject(connection);
+        
+        RedisCommandExecuteResult result = commandRunner.executeAndGet();
 
         logger.info("Command execute with redisRequest " + commandRunner.toString());
 

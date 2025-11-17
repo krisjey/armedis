@@ -29,7 +29,7 @@ public class RedisConfigurationTest extends AbstractRedisServerTest {
     private RedisConnectionFactory redisConnectionFactory;
 
     @Autowired
-    private RedisTemplate<String, JsonNode> redisTemplate;
+    private RedisTemplate<String, String> redisTemplate;
 
     @Test
     public void testRedisPropertiesLoaded() {

@@ -25,7 +25,7 @@ import java.util.Set;
  */
 @Configuration
 public class RedisConfiguration {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(RedisConfiguration.class);
 
     private final RedisProperties redisProperties;
@@ -47,8 +47,8 @@ public class RedisConfiguration {
     @Value("${spring.data.redis.lettuce.pool.time-between-eviction-runs:60s}")
     private Duration timeBetweenEvictionRuns;
 
-    public RedisConfiguration(RedisProperties redisProperties, 
-                               RedisServerInfoMaker redisServerInfoMaker) {
+    public RedisConfiguration(RedisProperties redisProperties,
+            RedisServerInfoMaker redisServerInfoMaker) {
         this.redisProperties = redisProperties;
         this.redisServerInfoMaker = redisServerInfoMaker;
     }
@@ -72,17 +72,17 @@ public class RedisConfiguration {
 
             // ConnectionFactory 빌드
             RedisConnectionFactory factory = new RedisConnectionFactoryBuilder(
-                    redisProperties, 
-                    instanceType, 
-                    redisNodes
-            )
-            .withPoolConfig(maxActive, maxIdle, minIdle, maxWait, timeBetweenEvictionRuns)
-            .build();
+                    redisProperties,
+                    instanceType,
+                    redisNodes)
+                            .withPoolConfig(maxActive, maxIdle, minIdle, maxWait, timeBetweenEvictionRuns)
+                            .build();
 
             logger.info("RedisConnectionFactory created successfully for type: {}", instanceType);
             return factory;
 
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             logger.error("Failed to create RedisConnectionFactory. Application will not start.", e);
             throw new IllegalStateException("Cannot connect to Redis seed server: " + redisProperties, e);
         }
@@ -92,25 +92,27 @@ public class RedisConfiguration {
      * RedisTemplate<String, JsonNode> Bean 생성
      */
     @Bean
-    public RedisTemplate<String, JsonNode> redisTemplate(RedisConnectionFactory connectionFactory) {
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         logger.info("Creating RedisTemplate<String, JsonNode>");
 
-        RedisTemplate<String, JsonNode> template = new RedisTemplate<>();
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
         // Key Serializer
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
 
-        // Value Serializer (Jackson2JsonRedisSerializer for JsonNode)
-        Jackson2JsonRedisSerializer<JsonNode> jsonSerializer = 
-                new Jackson2JsonRedisSerializer<>(new ObjectMapper(), JsonNode.class);
-        
-        template.setValueSerializer(jsonSerializer);
-        template.setHashValueSerializer(jsonSerializer);
+//        // Value Serializer (Jackson2JsonRedisSerializer for JsonNode)
+//        Jackson2JsonRedisSerializer<JsonNode> jsonSerializer = new Jackson2JsonRedisSerializer<>(new ObjectMapper(), JsonNode.class);
+//
+//        template.setValueSerializer(jsonSerializer);
+//        template.setHashValueSerializer(jsonSerializer);
+
+        template.setValueSerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(new StringRedisSerializer());
 
         template.afterPropertiesSet();
-        
+
         logger.info("RedisTemplate created successfully");
         return template;
     }

@@ -22,7 +22,7 @@ public class RedisCommandExecuteResultBuilder {
     private float floatResult;
     private long longResult;
     private double doubleResult;
-    private Map<String, String> mapResult;
+    private Map<Object, Object> mapResult;
     private List<?> listResult;
     private ResultType resultType;
 
@@ -63,7 +63,7 @@ public class RedisCommandExecuteResultBuilder {
         return this;
     }
 
-    public RedisCommandExecuteResultBuilder setResult(Map<String, String> mapResult) {
+    public RedisCommandExecuteResultBuilder setResult(Map<Object, Object> mapResult) {
         this.mapResult = mapResult;
         return this;
     }

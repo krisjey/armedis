@@ -4,8 +4,10 @@ package com.github.armedis.redis.command.hash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.github.armedis.redis.command.AbstractRedisCommandRunner;
 import com.github.armedis.redis.command.RedisCommandEnum;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
@@ -26,32 +28,47 @@ public class RedisHsetCommandRunner extends AbstractRedisCommandRunner {
 
     private RedisHsetRequest redisRequest;
 
-    public RedisHsetCommandRunner(RedisHsetRequest redisRequest) {
+    private RedisTemplate<String, String> redisTemplate;
+
+    public RedisHsetCommandRunner(RedisHsetRequest redisRequest, RedisTemplate<String, String> redisTemplate) {
         this.redisRequest = redisRequest;
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
-    public RedisCommandExecuteResult executeAndGet(RedisCommands<String, String> commands) {
-
+    public RedisCommandExecuteResult executeAndGet() {
         logger.info(redisRequest.toString());
 
         String key = this.redisRequest.getKey();
         String field = this.redisRequest.getField();
         String value = this.redisRequest.getValue();
-        Boolean result = commands.hset(key, field, value);
+        redisTemplate.opsForHash().put(key, field, value);
 
-        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
+        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(true);
     }
 
-    @Override
-    public RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands) {
-        logger.info(redisRequest.toString());
-
-        String key = this.redisRequest.getKey();
-        String field = this.redisRequest.getField();
-        String value = this.redisRequest.getValue();
-        Boolean result = commands.hset(key, field, value);
-
-        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
-    }
+//    @Override
+//    public RedisCommandExecuteResult executeAndGet(RedisCommands<String, String> commands) {
+//
+//        logger.info(redisRequest.toString());
+//
+//        String key = this.redisRequest.getKey();
+//        String field = this.redisRequest.getField();
+//        String value = this.redisRequest.getValue();
+//        Boolean result = commands.hset(key, field, value);
+//
+//        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
+//    }
+//
+//    @Override
+//    public RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands) {
+//        logger.info(redisRequest.toString());
+//
+//        String key = this.redisRequest.getKey();
+//        String field = this.redisRequest.getField();
+//        String value = this.redisRequest.getValue();
+//        Boolean result = commands.hset(key, field, value);
+//
+//        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
+//    }
 }
