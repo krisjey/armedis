@@ -25,9 +25,9 @@ public class RedisHlenCommandRunner extends AbstractRedisCommandRunner {
 
     private RedisHlenRequest redisRequest;
 
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
-    public RedisHlenCommandRunner(RedisHlenRequest redisRequest, RedisTemplate<String, String> redisTemplate) {
+    public RedisHlenCommandRunner(RedisHlenRequest redisRequest, RedisTemplate<String, Object> redisTemplate) {
         this.redisRequest = redisRequest;
         this.redisTemplate = redisTemplate;
     }

@@ -89,11 +89,11 @@ public class RedisConfiguration {
     }
 
     /**
-     * RedisTemplate<String, JsonNode> Bean 생성
+     * RedisTemplate<String, Object> Bean 생성
      */
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
-        logger.info("Creating RedisTemplate<String, JsonNode>");
+        logger.info("Creating RedisTemplate<String, Object>");
 
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);

@@ -28,9 +28,9 @@ public class RedisGetCommandRunner extends AbstractRedisCommandRunner {
 
     private RedisGetRequest redisRequest;
 
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
-    public RedisGetCommandRunner(RedisGetRequest redisRequest, RedisTemplate<String, String> redisTemplate) {
+    public RedisGetCommandRunner(RedisGetRequest redisRequest, RedisTemplate<String, Object> redisTemplate) {
         this.redisRequest = redisRequest;
         this.redisTemplate = redisTemplate;
     }
@@ -40,7 +40,7 @@ public class RedisGetCommandRunner extends AbstractRedisCommandRunner {
         logger.info(redisRequest.toString());
 
         String key = this.redisRequest.getKey();
-        String result = this.redisTemplate.opsForValue().get(key);
+        String result = (String) this.redisTemplate.opsForValue().get(key);
 
         System.out.println(result.toString());
 

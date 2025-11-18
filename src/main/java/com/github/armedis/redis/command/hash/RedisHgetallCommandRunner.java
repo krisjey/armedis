@@ -30,9 +30,9 @@ public class RedisHgetallCommandRunner extends AbstractRedisCommandRunner {
 
     private RedisHgetallRequest redisRequest;
 
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
-    public RedisHgetallCommandRunner(RedisHgetallRequest redisRequest, RedisTemplate<String, String> redisTemplate) {
+    public RedisHgetallCommandRunner(RedisHgetallRequest redisRequest, RedisTemplate<String, Object> redisTemplate) {
         this.redisRequest = redisRequest;
         this.redisTemplate = redisTemplate;
     }

@@ -39,11 +39,11 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
 
     private RedisConfigRequest redisRequest;
 
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     private RedisServerInfoMaker redisServerInfoMaker;
 
-    public RedisConfigCommandRunner(RedisConfigRequest redisRequest, RedisTemplate<String, String> redisTemplate, RedisServerInfoMaker redisServerInfoMaker) {
+    public RedisConfigCommandRunner(RedisConfigRequest redisRequest, RedisTemplate<String, Object> redisTemplate, RedisServerInfoMaker redisServerInfoMaker) {
         this.redisRequest = redisRequest;
         this.redisTemplate = redisTemplate;
         this.redisServerInfoMaker = redisServerInfoMaker;
@@ -55,17 +55,19 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
 
         String key = this.redisRequest.getKey();
 
-        if (redisRequest.getRequestMethod().equals(HttpMethod.GET)) {
-            redisTemplate.execute((RedisConnection connection) -> {
-              connection.serverCommands().getConfig(key).get(key);
-              return "OK";
-          });
-            return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(redisTemplate.serverCommands().configGet(key));
-        }
-        else {
-            Optional<String> value = this.redisRequest.getValue();
-            return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(commands.configSet(key, value.get()));
-        }
+//        if (redisRequest.getRequestMethod().equals(HttpMethod.GET)) {
+//            redisTemplate.execute((RedisConnection connection) -> {
+//              connection.serverCommands().getConfig(key).get(key);
+//              return "OK";
+//          });
+//            return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(redisTemplate.serverCommands().configGet(key));
+//        }
+//        else {
+//            Optional<String> value = this.redisRequest.getValue();
+//            return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(commands.configSet(key, value.get()));
+//        }
+        
+        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(true);
     }
 
 //    public RedisCommandExecuteResult executeAndGet() {

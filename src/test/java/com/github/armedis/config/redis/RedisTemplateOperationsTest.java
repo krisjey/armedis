@@ -28,7 +28,7 @@ import com.github.armedis.http.service.AbstractRedisServerTest;
 public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
 
     @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -56,7 +56,7 @@ public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
 
         // When
         redisTemplate.opsForValue().set(testKey, jsonValue.asText());
-        String result = redisTemplate.opsForValue().get(testKey);
+        String result = (String) redisTemplate.opsForValue().get(testKey);
 
         // Then
         assertThat(result).isNotNull();
@@ -75,7 +75,7 @@ public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
         redisTemplate.opsForValue().set(testKey, jsonValue.toString(), 2, TimeUnit.SECONDS);
 
         // Then - 즉시 조회 시 존재해야 함
-        String result = redisTemplate.opsForValue().get(testKey);
+        String result = (String) redisTemplate.opsForValue().get(testKey);
         assertThat(result).isNotNull();
         assertThat(result).isEqualTo(jsonValue.toString());
 
@@ -83,7 +83,7 @@ public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
         Thread.sleep(3000);
 
         // Then - 만료 후 조회 시 null이어야 함
-        String expiredResult = redisTemplate.opsForValue().get(testKey);
+        String expiredResult = (String) redisTemplate.opsForValue().get(testKey);
         assertThat(expiredResult).isNull();
 
         System.out.println("SET with EXPIRE test passed");
@@ -106,7 +106,7 @@ public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
         assertThat(firstSet).isTrue();
         assertThat(secondSet).isFalse();
 
-        String result = redisTemplate.opsForValue().get(testKey);
+        String result = (String) redisTemplate.opsForValue().get(testKey);
         assertThat(result).isEqualTo(jsonValue2.toString());
 
         System.out.println("SETNX test passed");

@@ -68,6 +68,7 @@
         <!-- 루트 로거 -->
         <Root level="info">
             <AppenderRef ref="File"/>
+            <AppenderRef ref="Console"/>
         </Root>
     </Loggers>
 

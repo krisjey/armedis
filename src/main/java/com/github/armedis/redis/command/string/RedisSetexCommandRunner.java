@@ -30,9 +30,9 @@ public class RedisSetexCommandRunner extends AbstractRedisCommandRunner {
 
     private RedisSetexRequest redisRequest;
 
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
-    public RedisSetexCommandRunner(RedisSetexRequest redisRequest, RedisTemplate<String, String> redisTemplate) {
+    public RedisSetexCommandRunner(RedisSetexRequest redisRequest, RedisTemplate<String, Object> redisTemplate) {
         this.redisRequest = redisRequest;
         this.redisTemplate = redisTemplate;
     }

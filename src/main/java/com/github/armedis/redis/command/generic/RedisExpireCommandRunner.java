@@ -31,9 +31,9 @@ public class RedisExpireCommandRunner extends AbstractRedisCommandRunner {
 
     private RedisExpireRequest redisRequest;
 
-    private final RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
-    public RedisExpireCommandRunner(RedisExpireRequest redisRequest, RedisTemplate<String, String> redisTemplate) {
+    public RedisExpireCommandRunner(RedisExpireRequest redisRequest, RedisTemplate<String, Object> redisTemplate) {
         this.redisRequest = redisRequest;
         this.redisTemplate = redisTemplate;
     }

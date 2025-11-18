@@ -32,9 +32,9 @@ public class RedisClientListCommandRunner extends AbstractRedisCommandRunner {
     private static final boolean classLoaded = detectAnnotation(RedisClientListCommandRunner.class);
 
     private RedisClientListRequest redisRequest;
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
-    public RedisClientListCommandRunner(RedisClientListRequest redisRequest, RedisTemplate<String, String> redisTemplate) {
+    public RedisClientListCommandRunner(RedisClientListRequest redisRequest, RedisTemplate<String, Object> redisTemplate) {
         this.redisRequest = redisRequest;
         this.redisTemplate = redisTemplate;
     }

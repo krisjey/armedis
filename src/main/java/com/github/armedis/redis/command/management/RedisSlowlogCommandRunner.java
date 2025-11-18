@@ -31,9 +31,9 @@ public class RedisSlowlogCommandRunner extends AbstractRedisCommandRunner {
 
     private RedisSlowlogRequest redisRequest;
 
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
-    public RedisSlowlogCommandRunner(RedisSlowlogRequest redisRequest, RedisTemplate<String, String> redisTemplate) {
+    public RedisSlowlogCommandRunner(RedisSlowlogRequest redisRequest, RedisTemplate<String, Object> redisTemplate) {
         this.redisRequest = redisRequest;
         this.redisTemplate = redisTemplate;
     }

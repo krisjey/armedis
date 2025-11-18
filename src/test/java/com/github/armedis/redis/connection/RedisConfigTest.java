@@ -20,14 +20,14 @@ import com.github.armedis.http.service.AbstractRedisServerTest;
 class RedisConfigTest extends AbstractRedisServerTest {
 
     @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Test
     void testRedisConnection() {
         redisTemplate.opsForValue().set("test-key",
                 new ObjectMapper().createObjectNode().put("message", "Hello Redis").toString());
 
-        String value = redisTemplate.opsForValue().get("test-key");
+        String value = (String) redisTemplate.opsForValue().get("test-key");
         assertNotNull(value);
     }
 }

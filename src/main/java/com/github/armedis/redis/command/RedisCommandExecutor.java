@@ -4,8 +4,10 @@ package com.github.armedis.redis.command;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import com.github.armedis.http.service.request.RedisRequest;
@@ -22,23 +24,25 @@ import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 public class RedisCommandExecutor {
     private final Logger logger = LoggerFactory.getLogger(RedisCommandExecutor.class);
 
-    private RedisConnectionPool<String, String> redisConnectionPool;
+//    private RedisConnectionPool<String, String> redisConnectionPool;
+    private RedisTemplate<String, Object> redisTemplate;
 
+    // TODO 서버 분기 제거, 분기 필요 없음.
     private RedisInstanceType redisServerInfo;
 
-    private ApplicationContext context;
+    private BeanFactory beanFactory;
 
     @Autowired
-    public RedisCommandExecutor(RedisConnectionPool<String, String> redisConnectionPool, RedisServerInfoMaker redisServerInfoMaker, ApplicationContext context) {
-        this.context = context;
-        this.redisConnectionPool = redisConnectionPool;
+    public RedisCommandExecutor(RedisTemplate<String, Object> redisTemplate, RedisServerInfoMaker redisServerInfoMaker, BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
+        this.redisTemplate = redisTemplate;
         this.redisServerInfo = redisServerInfoMaker.getRedisServerInfo().getRedisInstanceType();
     }
 
     public RedisCommandExecuteResult execute(RedisRequest redisRequest) throws Exception {
         String commandRunnerName = RedisCommandRunner.getCommandRunnerName(redisRequest.getCommand());
 
-        Object commandRunner = this.context.getBean(commandRunnerName, redisRequest);
+        Object commandRunner = this.beanFactory.getBean(commandRunnerName, redisRequest, redisTemplate);
 
         // never enter the condition, There is no constructor with redisRequest class.
         if (commandRunner == null) {
@@ -101,7 +105,7 @@ public class RedisCommandExecutor {
 //        RedisCommandExecuteResult result = commandRunner.executeAndGet(commands);
 //
 //        this.redisConnectionPool.returnObject(connection);
-        
+
         RedisCommandExecuteResult result = commandRunner.executeAndGet();
 
         logger.info("Command execute with redisRequest " + commandRunner.toString());
