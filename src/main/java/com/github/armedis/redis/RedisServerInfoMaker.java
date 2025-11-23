@@ -27,7 +27,8 @@ public class RedisServerInfoMaker {
 
     public RedisServerInfo getRedisServerInfo() {
         if (this.redisServerInfo == null) {
-            RedisServerDetector redisServerDetector = new RedisServerDetector(armedisConfiguration.getRedisSeedAddress());
+            RedisServerDetector redisServerDetector = new RedisServerDetector(armedisConfiguration.getRedisSeedHost(),
+                    armedisConfiguration.getRedisSeedPort());
 
             Set<RedisNode> redisNodes = null;
             try {

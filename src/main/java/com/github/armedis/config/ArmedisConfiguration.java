@@ -14,8 +14,11 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties
 public class ArmedisConfiguration {
-    @Value("${config.redis.seed}")
-    private String redisSeedAddress;
+    @Value("${config.redis.seed.host}")
+    private String redisSeedHost;
+
+    @Value("${config.redis.seed.port}")
+    private Integer redisSeedPort;
 
     @Value("${server.service.port}")
     private int servicePort;
@@ -29,7 +32,7 @@ public class ArmedisConfiguration {
     @Value("${server.config.stat.enabled}")
     private boolean statEnabled;
 
-    @Value("${server.config.stat.logging.enableed}")
+    @Value("${server.config.stat.logging.enabled}")
     private boolean loggingEnabled;
 
     @Value("${server.management.loginId}")
@@ -38,8 +41,26 @@ public class ArmedisConfiguration {
     @Value("${server.management.loginPassword}")
     private String loginPassword;
 
-    public String getRedisSeedAddress() {
-        return redisSeedAddress;
+    @Value("${server.config.service.access.logging.enabled}")
+    private boolean accessloggingEnabled;
+
+    @Value("${server.config.service.http.logging.enabled}")
+    private boolean httplogEnabled;
+
+    public boolean getAccessLoggingEnabled() {
+        return accessloggingEnabled;
+    }
+
+    public boolean getHttpLoggingEnabled() {
+        return httplogEnabled;
+    }
+
+    public String getRedisSeedHost() {
+        return redisSeedHost;
+    }
+
+    public int getRedisSeedPort() {
+        return redisSeedPort;
     }
 
     public int getServicePort() {

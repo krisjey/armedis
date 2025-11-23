@@ -94,11 +94,15 @@ public class ArmedisServerConfiguration {
             // browser.
             builder.serviceUnder("/docs", new DocService());
 
-            // Log every message which the server receives and responds.
-            builder.decorator(LoggingService.newDecorator());
+            if (armedisConfiguration.getHttpLoggingEnabled()) {
+                // Log every message which the server receives and responds.
+                builder.decorator(LoggingService.newDecorator());
+            }
 
-            // Write access log after completing a request.
-            builder.accessLogWriter(AccessLogWriter.combined(), true);
+            if (armedisConfiguration.getAccessLoggingEnabled()) {
+                // Write access log after completing a request.
+                builder.accessLogWriter(AccessLogWriter.combined(), true);
+            }
 
             // ArmeriaAnnotatedHttpService를 impl 하고 type of 로 갈라서 grpc로 등록하기.
 

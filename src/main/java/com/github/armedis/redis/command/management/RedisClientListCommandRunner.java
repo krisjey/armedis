@@ -6,6 +6,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.types.RedisClientInfo;
 import org.springframework.stereotype.Component;
 
 import com.github.armedis.redis.command.AbstractRedisCommandRunner;
@@ -13,10 +15,6 @@ import com.github.armedis.redis.command.RedisCommandEnum;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.github.armedis.redis.command.RedisCommandExecuteResultFactory;
 import com.github.armedis.redis.command.RequestRedisCommandName;
-import com.github.armedis.redis.command.management.vo.ConnectedClient;
-
-import io.lettuce.core.api.sync.RedisCommands;
-import io.lettuce.core.cluster.api.sync.RedisClusterCommands;
 
 @Component
 @Scope("prototype")
@@ -29,32 +27,46 @@ public class RedisClientListCommandRunner extends AbstractRedisCommandRunner {
     private static final boolean classLoaded = detectAnnotation(RedisClientListCommandRunner.class);
 
     private RedisClientListRequest redisRequest;
+    private RedisTemplate<String, Object> redisTemplate;
 
-    public RedisClientListCommandRunner(RedisClientListRequest redisRequest) {
+    public RedisClientListCommandRunner(RedisClientListRequest redisRequest, RedisTemplate<String, Object> redisTemplate) {
         this.redisRequest = redisRequest;
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
-    public RedisCommandExecuteResult executeAndGet(RedisCommands<String, String> commands) {
+    public RedisCommandExecuteResult executeAndGet() {
         logger.info(redisRequest.toString());
 
         // TODO command send to all cluster
-        String clientList = commands.clientList();
+        List<RedisClientInfo> clientList = this.redisTemplate.getClientList();
 
-        List<ConnectedClient> result = ConnectedClientParser.parseClientList(clientList);
+//        List<ConnectedClient> result = ConnectedClientParser.parseClientList(clientList);
 
-        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result.subList(0, LIMIT), Object.class);
+        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(clientList.subList(0, LIMIT), RedisClientInfo.class);
     }
 
-    @Override
-    public RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands) {
-        logger.info(redisRequest.toString());
-
-        // TODO command send to all cluster
-        String clientList = commands.clientList();
-
-        List<ConnectedClient> result = ConnectedClientParser.parseClientList(clientList);
-
-        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result, Object.class);
-    }
+//    @Override
+//    public RedisCommandExecuteResult executeAndGet(RedisCommands<String, String> commands) {
+//        logger.info(redisRequest.toString());
+//
+//        // TODO command send to all cluster
+//        String clientList = commands.clientList();
+//
+//        List<ConnectedClient> result = ConnectedClientParser.parseClientList(clientList);
+//
+//        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result.subList(0, LIMIT), Object.class);
+//    }
+//
+//    @Override
+//    public RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands) {
+//        logger.info(redisRequest.toString());
+//
+//        // TODO command send to all cluster
+//        String clientList = commands.clientList();
+//
+//        List<ConnectedClient> result = ConnectedClientParser.parseClientList(clientList);
+//
+//        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result, Object.class);
+//    }
 }

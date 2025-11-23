@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -22,12 +25,14 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.armedis.config.ArmedisConfiguration;
-import com.github.armedis.redis.connection.pool.RedisConnectionPool;
 import com.github.armedis.redis.info.RedisInfoAggregator;
 import com.github.armedis.redis.info.RedisInfoVo;
 
+import io.lettuce.core.AbstractRedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
+import io.lettuce.core.codec.StringCodec;
 
 /**
  * Redis cluster node status info command result --> redis status
@@ -52,10 +57,19 @@ public class RedisStatInfoBucket {
     @Autowired
     private ArmedisConfiguration armedisConfiguration;
 
-    private ObjectMapper mapper = configMapper();
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Autowired
-    private RedisConnectionPool<String, String> redisConnectionPool;
+    private final LettuceConnectionFactory connectionFactory;
+
+    private ObjectMapper mapper = configMapper();
+
+    public RedisStatInfoBucket(ArmedisConfiguration armedisConfiguration, StringRedisTemplate stringRedisTemplate, LettuceConnectionFactory connectionFactory) {
+        this.armedisConfiguration = armedisConfiguration;
+        this.stringRedisTemplate = stringRedisTemplate;
+        this.connectionFactory = connectionFactory;
+    }
 
     public String getStats() {
         String stats = null;
@@ -106,7 +120,7 @@ public class RedisStatInfoBucket {
          */
         ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.systemDefault());
 
-        String clusterNodes = getClusterNodesCommandResult(redisConnectionPool);
+        String clusterNodes = getClusterNodesCommandResult();
         redisNodeInfoList = convertNodeInfoList(clusterNodes);
 
         RedisStatsInfo redisStatsInfo = new RedisStatsInfo(currentTime);
@@ -117,13 +131,7 @@ public class RedisStatInfoBucket {
         // statsInfo
         for (RedisClusterNodeInfo redisNodeInfo : redisNodeInfoList) {
             try {
-                StatefulRedisClusterConnection<String, String> connection = redisConnectionPool.getClusterConnection();
-                StatefulRedisConnection<String, String> nodeConnection = connection.getConnection(redisNodeInfo.id());
-
-                redisNodeIp = redisNodeInfo.ip();
-                // send info command
-                info = nodeConnection.sync().info();
-                redisConnectionPool.returnObject(connection);
+                info = getNodeInfo(redisNodeInfo);
 
                 // update stat info
                 RedisInfoVo redisInfo = RedisInfoVo.from(info, armedisConfiguration.isAddContentSection());
@@ -161,6 +169,26 @@ public class RedisStatInfoBucket {
         redisStatsInfoList.add(redisStatsInfo);
     }
 
+    // TODO 아래 코드 변경 필요.
+    private String getNodeInfo(RedisClusterNodeInfo redisNodeInfo) {
+        AbstractRedisClient client = (AbstractRedisClient) connectionFactory.getRequiredNativeClient();
+
+        if (client instanceof RedisClusterClient) {
+            RedisClusterClient clusterClient = (RedisClusterClient) client;
+            StatefulRedisClusterConnection<String, String> clusterConn = clusterClient.connect(StringCodec.UTF8);
+
+            try {
+                StatefulRedisConnection<String, String> nodeConn = clusterConn.getConnection(redisNodeInfo.id());
+
+                return nodeConn.sync().info();
+            }
+            finally {
+                clusterConn.close();
+            }
+        }
+        throw new IllegalStateException("Not a cluster client");
+    }
+
     /**
      * 
      * @param redisStatsInfo
@@ -173,18 +201,12 @@ public class RedisStatInfoBucket {
         }
     }
 
-    private String getClusterNodesCommandResult(RedisConnectionPool<String, String> redisConnectionPool) {
-        String nodesInfo = null;
-        try {
-            StatefulRedisClusterConnection<String, String> connection = redisConnectionPool.getClusterConnection();
-            nodesInfo = connection.sync().clusterNodes();
-            redisConnectionPool.returnObject(connection);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return nodesInfo;
+    // TODO 아래 코드 변경 필요.
+    private String getClusterNodesCommandResult() {
+        return stringRedisTemplate.execute((RedisCallback<String>) connection -> {
+            byte[] result = (byte[]) connection.execute("CLUSTER", "NODES".getBytes());
+            return new String(result);
+        });
     }
 
     private List<RedisClusterNodeInfo> convertNodeInfoList(String clusterNodes) {

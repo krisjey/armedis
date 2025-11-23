@@ -56,7 +56,15 @@ public class RedisCommandExecuteResultFactory {
         return builder.build();
     }
 
-    public static RedisCommandExecuteResult buildRedisCommandExecuteResult(Map<String, String> result) {
+//    public static RedisCommandExecuteResult buildRedisCommandExecuteResult(Map<String, String> result) {
+//
+//        RedisCommandExecuteResultBuilder builder = new RedisCommandExecuteResultBuilder(ResultType.MAP);
+//        builder = builder.setResult(result);
+//
+//        return builder.build();
+//    }
+    
+    public static RedisCommandExecuteResult buildRedisCommandExecuteResult(Map<Object, Object> result) {
 
         RedisCommandExecuteResultBuilder builder = new RedisCommandExecuteResultBuilder(ResultType.MAP);
         builder = builder.setResult(result);

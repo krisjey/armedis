@@ -22,7 +22,8 @@ public class RedisServerDetector {
 
     private RedisInstanceType redisInstanceType;
 
-    private String seedAddresses;
+    private String seedHost;
+    private Integer seedPort;
 
     private Set<RedisNode> seedInfo;
 
@@ -34,24 +35,16 @@ public class RedisServerDetector {
      * 
      * @param seedAddresses
      */
-    public RedisServerDetector(String seedAddresses) {
-        this.seedAddresses = requireNonNull(seedAddresses);
-        this.seedInfo = createRedisSeedInfo(this.seedAddresses);
+    public RedisServerDetector(String seedHost, Integer seedPort) {
+        this.seedHost = requireNonNull(seedHost);
+        this.seedPort = requireNonNull(seedPort);
+        this.seedInfo = createRedisSeedInfo(this.seedHost, this.seedPort);
     }
 
-    private Set<RedisNode> createRedisSeedInfo(String seedAddresses) {
+    private Set<RedisNode> createRedisSeedInfo(String seedHost, Integer seedPort) {
         Set<RedisNode> seedRedisNodes = new HashSet<RedisNode>();
-        String[] addresses = seedAddresses.split("[,]");
 
-        for (String address : addresses) {
-            if (address.contains(":")) {
-                String[] hostAndPort = address.split("[:]");
-                String host = hostAndPort[0];
-                String port = hostAndPort[1];
-
-                seedRedisNodes.add(new RedisNode(host, Integer.parseInt(port)));
-            }
-        }
+        seedRedisNodes.add(new RedisNode(seedHost, seedPort));
 
         return seedRedisNodes;
     }
@@ -59,8 +52,9 @@ public class RedisServerDetector {
     /**
      * Lookup redis server by seed<br/>
      * Destination is first connected server.
-     * @return 
-     * @throws UnsupportedOperationException 
+     * 
+     * @return
+     * @throws UnsupportedOperationException
      */
     public Set<RedisNode> lookupNodes() throws UnsupportedOperationException {
         // get seed connection
@@ -83,12 +77,14 @@ public class RedisServerDetector {
         return allServers;
     }
 
-    // FIXME standalone, cluster로 먼저 구분하고 standalone이면 (single, master-replica, sentinel 구분 필요.)
+    // FIXME standalone, cluster로 먼저 구분하고 standalone이면 (single, master-replica,
+    // sentinel 구분 필요.)
     /**
      * Detect redis server nodes by seed connection info
+     * 
      * @param redisSeed
      * @return redis server nodes
-     * @throws UnsupportedOperationException 
+     * @throws UnsupportedOperationException
      */
     private Set<RedisNode> detectRedisServerNodes(StatefulRedisConnection<String, String> redisSeedConnection)
             throws UnsupportedOperationException {
@@ -119,7 +115,7 @@ public class RedisServerDetector {
         logger.info("Redis node type [" + type + "]");
         redisInstanceType = RedisInstanceType.of(type);
 
-        nodeLookup = RedisLookupFactory.create(redisInstanceType, this.seedAddresses);
+        nodeLookup = RedisLookupFactory.create(redisInstanceType, this.seedHost, this.seedPort);
         nodes = nodeLookup.lookup(redisSeedConnection);
 
 //        if (nodeLookup == null) {
@@ -132,6 +128,7 @@ public class RedisServerDetector {
 
     /**
      * Get the first connected server info from the configured server list.
+     * 
      * @return
      */
     private StatefulRedisConnection<String, String> getSeedConnection() {

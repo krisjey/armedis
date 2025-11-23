@@ -1,9 +1,12 @@
 
 package com.github.armedis.redis.command.generic;
 
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import com.github.armedis.redis.command.AbstractRedisCommandRunner;
@@ -11,9 +14,6 @@ import com.github.armedis.redis.command.RedisCommandEnum;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.github.armedis.redis.command.RedisCommandExecuteResultFactory;
 import com.github.armedis.redis.command.RequestRedisCommandName;
-
-import io.lettuce.core.api.sync.RedisCommands;
-import io.lettuce.core.cluster.api.sync.RedisClusterCommands;
 
 @Component
 @Scope("prototype")
@@ -27,30 +27,44 @@ public class RedisExpireCommandRunner extends AbstractRedisCommandRunner {
 
     private RedisExpireRequest redisRequest;
 
-    public RedisExpireCommandRunner(RedisExpireRequest redisRequest) {
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    public RedisExpireCommandRunner(RedisExpireRequest redisRequest, RedisTemplate<String, Object> redisTemplate) {
         this.redisRequest = redisRequest;
+        this.redisTemplate = redisTemplate;
     }
 
+//    @Override
+//    public RedisCommandExecuteResult executeAndGet(RedisCommands<String, String> commands) {
+//
+//        logger.info(redisRequest.toString());
+//
+//        String key = this.redisRequest.getKey();
+//        Long seconds = this.redisRequest.getSeconds();
+//        Boolean result = commands.expire(key, seconds);
+//
+//        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
+//    }
+//
+//    @Override
+//    public RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands) {
+//        logger.info(redisRequest.toString());
+//
+//        String key = this.redisRequest.getKey();
+//        Long seconds = this.redisRequest.getSeconds();
+//        Boolean result = commands.expire(key, seconds);
+//
+//        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
+//    }
+
     @Override
-    public RedisCommandExecuteResult executeAndGet(RedisCommands<String, String> commands) {
-
+    public RedisCommandExecuteResult executeAndGet() {
         logger.info(redisRequest.toString());
-
         String key = this.redisRequest.getKey();
         Long seconds = this.redisRequest.getSeconds();
-        Boolean result = commands.expire(key, seconds);
 
+        Boolean result = redisTemplate.expire(key, seconds, TimeUnit.SECONDS);
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
     }
 
-    @Override
-    public RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands) {
-        logger.info(redisRequest.toString());
-
-        String key = this.redisRequest.getKey();
-        Long seconds = this.redisRequest.getSeconds();
-        Boolean result = commands.expire(key, seconds);
-
-        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
-    }
 }

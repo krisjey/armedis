@@ -1,77 +1,44 @@
 
 package com.github.armedis;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.event.annotation.BeforeTestClass;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
-import com.github.armedis.config.ArmedisConfiguration;
-
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.RedisFuture;
-import io.lettuce.core.RedisURI;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.async.RedisAsyncCommands;
-
-@ActiveProfiles("testbed")
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
 public class RedisServerModeTest {
     @Autowired
-    private ArmedisConfiguration armedisConfiguration;
+    private StringRedisTemplate stringRedisTemplate;
 
-    @BeforeTestClass
-    public static void setUpBeforeClass() throws Exception {
+    /**
+    * Redis INFO 명령을 실행하고 결과를 Properties 객체로 반환합니다.
+    */
+    public Properties getRedisInfo() {
+        return stringRedisTemplate.execute((RedisCallback<Properties>) connection -> connection.info());
     }
 
-//    @Disabled
     @Test
     public void test() throws InterruptedException, ExecutionException {
-        String seedHostConfig = armedisConfiguration.getRedisSeedAddress();
-        String seedHost = seedHostConfig.split(":")[0];
-        int seedPort = Integer.parseInt(seedHostConfig.split(":")[1]);
+        Properties infoResult = stringRedisTemplate.execute((RedisCallback<Properties>) connection -> connection.serverCommands().info());
 
-        RedisURI uri = RedisURI.create(seedHost, seedPort);
-        RedisClient redisClient = RedisClient.create(uri);
-        StatefulRedisConnection<String, String> connection = redisClient.connect();
-
-        System.out.println("Connected to Redis");
-
-        RedisAsyncCommands<String, String> asyncCommands = connection.async();
-        RedisFuture<String> info = asyncCommands.info();
-
-        System.out.println("1");
-        System.out.println("1");
-        System.out.println("== hello == ");
-        System.out.println(info.get());
-        System.out.println("1");
-        System.out.println("1");
-
-        String redisInfo = info.get();
-
-        // TYPE cluster, none cluster, master, slave
-        for (String item : redisInfo.split("\n")) {
-            System.out.println(item);
-            if (item.startsWith("cluster_enabled")) {
-                if (item.equals("cluster_enabled:0")) {
-                    // stand alone
-                    System.out.println("Stand alone mode");
-                }
-                else {
-                    // cluster
-                    System.out.println("Cluster nodes");
-                }
-            }
-        }
-
-//        connection.sync().set("kriskey", "Hello World");
-
-        connection.close();
-        redisClient.shutdown();
+        // all servers info
+        /*
+         * <pre>192.168.56.105:17001.io_threaded_reads_processed : 0
+        192.168.56.105:17001.sync_partial_ok : 0
+        192.168.56.105:17002.role : master</pre>
+         */
+        assertThat(infoResult).isNotNull();
+        infoResult.forEach((key, value) -> {
+            System.out.println(key + " : " + value);
+        });
     }
 
 }
