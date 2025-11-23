@@ -6,19 +6,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import com.github.armedis.http.service.request.RedisRequest;
 import com.github.armedis.redis.RedisInstanceType;
 import com.github.armedis.redis.RedisServerInfoMaker;
-import com.github.armedis.redis.connection.pool.RedisConnectionPool;
-
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.sync.RedisCommands;
-import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
-import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 
 @Component
 public class RedisCommandExecutor {

@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.test.context.ActiveProfiles;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,7 +22,6 @@ import com.github.armedis.http.service.AbstractRedisServerTest;
  * RedisTemplate Operations 테스트
  * String, Hash, Key Operations 등을 검증
  */
-@ActiveProfiles("testbed")
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
 public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
 
@@ -55,11 +53,12 @@ public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
         jsonValue.put("age", 30);
 
         // When
-        redisTemplate.opsForValue().set(testKey, jsonValue.asText());
+        redisTemplate.opsForValue().set(testKey, jsonValue.toString());
         String result = (String) redisTemplate.opsForValue().get(testKey);
 
         // Then
         assertThat(result).isNotNull();
+        System.out.println("!!!!!!!! " + String.valueOf(result));
         assertThat(result).isEqualTo(jsonValue.toString());
 
         System.out.println("SET/GET test passed: " + result);
@@ -107,7 +106,7 @@ public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
         assertThat(secondSet).isFalse();
 
         String result = (String) redisTemplate.opsForValue().get(testKey);
-        assertThat(result).isEqualTo(jsonValue2.toString());
+        assertThat(result).isEqualTo(jsonValue1.toString());
 
         System.out.println("SETNX test passed");
     }
@@ -120,12 +119,12 @@ public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
         userData.put("email", "user@example.com");
 
         // When
-        redisTemplate.opsForHash().put(testKey, hashKey, userData);
-        JsonNode result = (JsonNode) redisTemplate.opsForHash().get(testKey, hashKey);
+        redisTemplate.opsForHash().put(testKey, hashKey, userData.toString());
+        String result = (String) redisTemplate.opsForHash().get(testKey, hashKey);
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.get("email").asText()).isEqualTo("user@example.com");
+        assertThat(result).isEqualTo(userData.toString());
 
         System.out.println("HSET/HGET test passed: " + result);
     }
@@ -140,8 +139,8 @@ public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
         user2.put("name", "Bob");
 
         // When
-        redisTemplate.opsForHash().put(testKey, "user:1", user1);
-        redisTemplate.opsForHash().put(testKey, "user:2", user2);
+        redisTemplate.opsForHash().put(testKey, "user:1", user1.toString());
+        redisTemplate.opsForHash().put(testKey, "user:2", user2.toString());
 
         // Then
         assertThat(redisTemplate.opsForHash().size(testKey)).isEqualTo(2);

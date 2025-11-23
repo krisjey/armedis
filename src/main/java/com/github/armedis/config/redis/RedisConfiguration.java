@@ -1,11 +1,8 @@
 package com.github.armedis.config.redis;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.armedis.redis.RedisInstanceType;
-import com.github.armedis.redis.RedisNode;
-import com.github.armedis.redis.RedisServerInfoMaker;
-import com.github.armedis.redis.connection.RedisServerInfo;
+import java.time.Duration;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,11 +10,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import java.time.Duration;
-import java.util.Set;
+import com.github.armedis.redis.RedisInstanceType;
+import com.github.armedis.redis.RedisNode;
+import com.github.armedis.redis.RedisServerInfoMaker;
+import com.github.armedis.redis.connection.RedisServerInfo;
 
 /**
  * Redis Template 설정
