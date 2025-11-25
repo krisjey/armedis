@@ -3,7 +3,7 @@ package com.github.armedis.redis;
 
 import java.util.Objects;
 
-import com.github.armedis.redis.connection.RedisServerDetector.RedisNodeRole;
+import com.github.armedis.redis.connection.RedisNodeRole;
 
 public class RedisNode {
     private final String host;
@@ -45,6 +45,6 @@ public class RedisNode {
 
     @Override
     public String toString() {
-        return String.format("RedisNode{host='%s', port=%d, role=%s}", host, port, role);
+        return "RedisInstance [host=" + host + ", port=" + port + "]";
     }
 }

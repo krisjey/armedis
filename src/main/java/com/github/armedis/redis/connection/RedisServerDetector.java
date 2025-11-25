@@ -13,6 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.github.armedis.redis.RedisInstanceType;
+import com.github.armedis.redis.RedisNode;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
@@ -35,10 +36,12 @@ public class RedisServerDetector {
 
     private final String seedHost;
     private final Integer seedPort;
+    private final String password;
 
     private Set<RedisNode> allNodes;
     private Set<RedisNode> masterNodes;
     private Set<RedisNode> replicaNodes;
+    private Set<RedisNode> sentinelNodes;
     private RedisInstanceType instanceType;
 
     /**
@@ -47,12 +50,16 @@ public class RedisServerDetector {
      * @param seedHost Redis 서버 호스트 (예: 192.168.56.105)
      * @param seedPort Redis 서버 포트 (예: 17001)
      */
-    public RedisServerDetector(String seedHost, Integer seedPort) {
+    public RedisServerDetector(String seedHost, Integer seedPort, String password) {
         this.seedHost = Objects.requireNonNull(seedHost, "seedHost must not be null");
         this.seedPort = Objects.requireNonNull(seedPort, "seedPort must not be null");
+        this.password = password;
         this.allNodes = new LinkedHashSet<>();
         this.masterNodes = new LinkedHashSet<>();
         this.replicaNodes = new LinkedHashSet<>();
+        this.sentinelNodes = new LinkedHashSet<>();
+
+        detectRedisServerNodes();
     }
 
     /**
@@ -61,9 +68,9 @@ public class RedisServerDetector {
      * @return 탐지된 모든 Redis 노드 Set
      * @throws RedisDetectionException 연결 실패 또는 탐지 실패 시
      */
-    public Set<RedisNode> detectRedisServerNodes() {
+    private void detectRedisServerNodes() {
         try {
-            Map<String, String> info = executeInfoCommand(seedHost, seedPort);
+            Map<String, String> info = executeInfoCommand(seedHost, seedPort, password);
 
             if (isClusterMode(info)) {
                 this.instanceType = RedisInstanceType.CLUSTER;
@@ -81,8 +88,6 @@ public class RedisServerDetector {
                 this.instanceType = RedisInstanceType.STANDALONE;
                 detectSingleNode(info);
             }
-
-            return getAllNodes();
         }
         catch (RedisDetectionException e) {
             throw e;
@@ -97,13 +102,6 @@ public class RedisServerDetector {
      */
     public RedisInstanceType getRedisInstanceType() {
         return instanceType;
-    }
-
-    /**
-     * Redis 인스턴스 타입을 문자열로 반환한다.
-     */
-    public String getRedisInstanceTypeAsString() {
-        return instanceType != null ? instanceType.name() : null;
     }
 
     /**
@@ -127,7 +125,36 @@ public class RedisServerDetector {
         return Collections.unmodifiableSet(replicaNodes);
     }
 
-    private Map<String, String> executeInfoCommand(String host, int port) {
+    public Set<RedisNode> getSentinelNodes() {
+        return Collections.unmodifiableSet(sentinelNodes);
+    }
+
+    /**
+     * @return the seedHost
+     */
+    public String getSeedHost() {
+        return seedHost;
+    }
+
+    /**
+     * @return the seedPort
+     */
+    public Integer getSeedPort() {
+        return seedPort;
+    }
+
+    /**
+     * @return the seedHost
+     */
+    public String getSeedPassword() {
+        return password;
+    }
+
+    public boolean hasPassword() {
+        return password != null && !password.trim().isEmpty();
+    }
+
+    private Map<String, String> executeInfoCommand(String host, int port, String password) {
         RedisClient client = null;
         StatefulRedisConnection<String, String> connection = null;
 
@@ -135,6 +162,7 @@ public class RedisServerDetector {
             RedisURI uri = RedisURI.builder()
                     .withHost(host)
                     .withPort(port)
+                    .withPassword(password)
                     .withTimeout(CONNECTION_TIMEOUT)
                     .build();
 
@@ -158,7 +186,7 @@ public class RedisServerDetector {
         }
     }
 
-    private Map<String, String> executeInfoSection(String host, int port, String section) {
+    private Map<String, String> executeInfoSection(String host, int port, String section, String password) {
         RedisClient client = null;
         StatefulRedisConnection<String, String> connection = null;
 
@@ -166,6 +194,7 @@ public class RedisServerDetector {
             RedisURI uri = RedisURI.builder()
                     .withHost(host)
                     .withPort(port)
+                    .withPassword(password)
                     .withTimeout(CONNECTION_TIMEOUT)
                     .build();
 
@@ -189,7 +218,7 @@ public class RedisServerDetector {
         }
     }
 
-    private List<Map<String, String>> executeSentinelMasters(String host, int port) {
+    private List<Map<String, String>> executeSentinelMasters(String host, int port, String password) {
         RedisClient client = null;
         StatefulRedisConnection<String, String> connection = null;
 
@@ -197,6 +226,7 @@ public class RedisServerDetector {
             RedisURI uri = RedisURI.builder()
                     .withHost(host)
                     .withPort(port)
+                    .withPassword(password)
                     .withTimeout(CONNECTION_TIMEOUT)
                     .build();
 
@@ -225,7 +255,7 @@ public class RedisServerDetector {
         }
     }
 
-    private List<Map<String, String>> executeSentinelReplicas(String host, int port, String masterName) {
+    private List<Map<String, String>> executeSentinelReplicas(String host, int port, String masterName, String password) {
         RedisClient client = null;
         StatefulRedisConnection<String, String> connection = null;
 
@@ -233,6 +263,7 @@ public class RedisServerDetector {
             RedisURI uri = RedisURI.builder()
                     .withHost(host)
                     .withPort(port)
+                    .withPassword(password)
                     .withTimeout(CONNECTION_TIMEOUT)
                     .build();
 
@@ -254,7 +285,7 @@ public class RedisServerDetector {
         }
         catch (Exception e) {
             // REPLICAS 명령이 실패하면 SLAVES 명령 시도 (이전 버전 호환)
-            return executeSentinelSlaves(host, port, masterName);
+            return executeSentinelSlaves(host, port, masterName, password);
         }
         finally {
             closeQuietly(connection);
@@ -262,7 +293,7 @@ public class RedisServerDetector {
         }
     }
 
-    private List<Map<String, String>> executeSentinelSlaves(String host, int port, String masterName) {
+    private List<Map<String, String>> executeSentinelSentinels(String host, int port, String masterName, String password) {
         RedisClient client = null;
         StatefulRedisConnection<String, String> connection = null;
 
@@ -270,6 +301,47 @@ public class RedisServerDetector {
             RedisURI uri = RedisURI.builder()
                     .withHost(host)
                     .withPort(port)
+                    .withPassword(password)
+                    .withTimeout(CONNECTION_TIMEOUT)
+                    .build();
+
+            client = RedisClient.create(uri);
+            connection = client.connect();
+            connection.setTimeout(COMMAND_TIMEOUT);
+
+            RedisCommands<String, String> commands = connection.sync();
+
+            List<Object> rawResult = commands.dispatch(
+                    CommandType.SENTINEL,
+                    new ArrayOutput<>(StringCodec.UTF8),
+                    new CommandArgs<>(StringCodec.UTF8)
+                            .add("SENTINELS")
+                            .add(masterName));
+
+            return parseNestedArrayToMapList(rawResult);
+
+        }
+        catch (Exception e) {
+            throw new RedisDetectionException(
+                    String.format("Failed to execute SENTINEL SENTINELS at %s:%d for master %s",
+                            host, port, masterName),
+                    e);
+        }
+        finally {
+            closeQuietly(connection);
+            shutdownQuietly(client);
+        }
+    }
+
+    private List<Map<String, String>> executeSentinelSlaves(String host, int port, String masterName, String password) {
+        RedisClient client = null;
+        StatefulRedisConnection<String, String> connection = null;
+
+        try {
+            RedisURI uri = RedisURI.builder()
+                    .withHost(host)
+                    .withPort(port)
+                    .withPassword(password)
                     .withTimeout(CONNECTION_TIMEOUT)
                     .build();
 
@@ -301,7 +373,7 @@ public class RedisServerDetector {
         }
     }
 
-    private String executeClusterNodes(String host, int port) {
+    private String executeClusterNodes(String host, int port, String password) {
         RedisClient client = null;
         StatefulRedisConnection<String, String> connection = null;
 
@@ -309,6 +381,7 @@ public class RedisServerDetector {
             RedisURI uri = RedisURI.builder()
                     .withHost(host)
                     .withPort(port)
+                    .withPassword(password)
                     .withTimeout(CONNECTION_TIMEOUT)
                     .build();
 
@@ -377,7 +450,7 @@ public class RedisServerDetector {
     // ========== Cluster Mode Detection ==========
 
     private void detectClusterNodes() {
-        String clusterNodesOutput = executeClusterNodes(seedHost, seedPort);
+        String clusterNodesOutput = executeClusterNodes(seedHost, seedPort, password);
         parseClusterNodes(clusterNodesOutput);
     }
 
@@ -441,10 +514,10 @@ public class RedisServerDetector {
 
     private void detectSentinelNodes() {
         // seed가 Sentinel 노드인지 Redis 노드인지 확인
-        Map<String, String> info = executeInfoCommand(seedHost, seedPort);
+        Map<String, String> info = executeInfoCommand(seedHost, seedPort, password);
 
         if (isSentinelMode(info)) {
-            detectFromSentinel(seedHost, seedPort);
+            detectFromSentinel(seedHost, seedPort, password);
         }
         else {
             // seed가 Redis 노드인 경우, Sentinel 정보를 찾아야 함
@@ -452,8 +525,11 @@ public class RedisServerDetector {
         }
     }
 
-    private void detectFromSentinel(String sentinelHost, int sentinelPort) {
-        List<Map<String, String>> masters = executeSentinelMasters(sentinelHost, sentinelPort);
+    private void detectFromSentinel(String sentinelHost, int sentinelPort, String password) {
+        // 현재 접속한 Sentinel 노드 추가
+        addNode(sentinelHost, sentinelPort, RedisNodeRole.SENTINEL);
+
+        List<Map<String, String>> masters = executeSentinelMasters(sentinelHost, sentinelPort, password);
 
         for (Map<String, String> master : masters) {
             String masterName = master.get("name");
@@ -476,8 +552,7 @@ public class RedisServerDetector {
             addNode(masterHost, masterPort, RedisNodeRole.MASTER);
 
             // 해당 Master의 Replica 조회
-            List<Map<String, String>> replicas = executeSentinelReplicas(
-                    sentinelHost, sentinelPort, masterName);
+            List<Map<String, String>> replicas = executeSentinelReplicas(sentinelHost, sentinelPort, masterName, password);
 
             for (Map<String, String> replica : replicas) {
                 String replicaHost = replica.get("ip");
@@ -496,6 +571,28 @@ public class RedisServerDetector {
                 }
 
                 addNode(replicaHost, replicaPort, RedisNodeRole.REPLICA);
+            }
+
+            // 다른 Sentinel 노드들 조회
+            List<Map<String, String>> sentinels = executeSentinelSentinels(sentinelHost, sentinelPort, masterName, password);
+
+            for (Map<String, String> sentinel : sentinels) {
+                String sentinelIp = sentinel.get("ip");
+                String sentinelPortStr = sentinel.get("port");
+
+                if (sentinelIp == null || sentinelPortStr == null) {
+                    continue;
+                }
+
+                int sentinelNodePort;
+                try {
+                    sentinelNodePort = Integer.parseInt(sentinelPortStr);
+                }
+                catch (NumberFormatException e) {
+                    continue;
+                }
+
+                addNode(sentinelIp, sentinelNodePort, RedisNodeRole.SENTINEL);
             }
         }
     }
@@ -518,7 +615,7 @@ public class RedisServerDetector {
 
             if (masterHost != null && masterPortStr != null) {
                 int masterPort = Integer.parseInt(masterPortStr);
-                Map<String, String> masterInfo = executeInfoSection(masterHost, masterPort, "replication");
+                Map<String, String> masterInfo = executeInfoSection(masterHost, masterPort, "replication", password);
                 detectReplicaNodes(masterHost, masterPort, masterInfo);
             }
         }
@@ -561,12 +658,16 @@ public class RedisServerDetector {
 
     private void addNode(String host, int port, RedisNodeRole role) {
         RedisNode node = new RedisNode(host, port, role);
-        allNodes.add(node);
 
         if (role == RedisNodeRole.MASTER) {
+            allNodes.add(node);
             masterNodes.add(node);
         }
+        else if (role == RedisNodeRole.SENTINEL) {
+            sentinelNodes.add(node);
+        }
         else {
+            allNodes.add(node);
             replicaNodes.add(node);
         }
     }
@@ -618,61 +719,6 @@ public class RedisServerDetector {
             }
             catch (Exception ignored) {
             }
-        }
-    }
-
-    /**
-     * Redis 노드 역할
-     */
-    public enum RedisNodeRole {
-        MASTER,
-        REPLICA
-    }
-
-    /**
-     * Redis 노드 정보를 담는 VO 클래스
-     */
-    public static class RedisNode {
-        private final String host;
-        private final int port;
-        private final RedisNodeRole role;
-
-        public RedisNode(String host, int port, RedisNodeRole role) {
-            this.host = host;
-            this.port = port;
-            this.role = role;
-        }
-
-        public String getHost() {
-            return host;
-        }
-
-        public int getPort() {
-            return port;
-        }
-
-        public RedisNodeRole getRole() {
-            return role;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-            RedisNode redisNode = (RedisNode) o;
-            return port == redisNode.port && Objects.equals(host, redisNode.host);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(host, port);
-        }
-
-        @Override
-        public String toString() {
-            return String.format("RedisNode{host='%s', port=%d, role=%s}", host, port, role);
         }
     }
 

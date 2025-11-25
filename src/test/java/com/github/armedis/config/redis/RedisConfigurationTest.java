@@ -10,6 +10,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import com.github.armedis.ArmedisServer;
+import com.github.armedis.config.ArmedisConfiguration;
 import com.github.armedis.http.service.AbstractRedisServerTest;
 
 /**
@@ -20,7 +21,7 @@ import com.github.armedis.http.service.AbstractRedisServerTest;
 public class RedisConfigurationTest extends AbstractRedisServerTest {
 
     @Autowired
-    private RedisProperties redisProperties;
+    private ArmedisConfiguration armedisConfiguration;
 
     @Autowired
     private RedisConnectionFactory redisConnectionFactory;
@@ -31,11 +32,11 @@ public class RedisConfigurationTest extends AbstractRedisServerTest {
     @Test
     public void testRedisPropertiesLoaded() {
         // Redis Properties가 정상적으로 로드되었는지 확인
-        assertThat(redisProperties).isNotNull();
-        assertThat(redisProperties.getHost()).isNotNull();
-        assertThat(redisProperties.getPort()).isGreaterThan(0);
+        assertThat(armedisConfiguration).isNotNull();
+        assertThat(armedisConfiguration.getRedisSeedHost()).isNotNull();
+        assertThat(armedisConfiguration.getRedisSeedPort()).isGreaterThan(0);
 
-        System.out.println("Redis Properties: " + redisProperties);
+        System.out.println("Redis Properties: " + armedisConfiguration);
     }
 
     @Test

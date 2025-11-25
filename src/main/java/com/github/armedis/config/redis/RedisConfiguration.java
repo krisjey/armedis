@@ -12,6 +12,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import com.github.armedis.config.ArmedisConfiguration;
 import com.github.armedis.redis.RedisInstanceType;
 import com.github.armedis.redis.RedisNode;
 import com.github.armedis.redis.RedisServerInfoMaker;
@@ -27,7 +28,7 @@ public class RedisConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisConfiguration.class);
 
-    private final RedisProperties redisProperties;
+    private final ArmedisConfiguration armedisConfiguration;
     private final RedisServerInfoMaker redisServerInfoMaker;
 
     // Lettuce Pool 설정 (application.yml에서 주입)
@@ -46,16 +47,16 @@ public class RedisConfiguration {
     @Value("${spring.data.redis.lettuce.pool.time-between-eviction-runs:60s}")
     private Duration timeBetweenEvictionRuns;
 
-    public RedisConfiguration(RedisProperties redisProperties,
+    public RedisConfiguration(ArmedisConfiguration armedisConfiguration,
             RedisServerInfoMaker redisServerInfoMaker) {
-        this.redisProperties = redisProperties;
+        this.armedisConfiguration = armedisConfiguration;
         this.redisServerInfoMaker = redisServerInfoMaker;
     }
 
     @Bean
     public RedisServerDetector redisServerDetector() {
         // 실제 seed host/port 는 yml 에서 읽어오거나 @Value 로 주입
-        return new RedisServerDetector(redisProperties.getHost(), redisProperties.getPort());
+        return new RedisServerDetector(armedisConfiguration.getRedisSeedHost(), armedisConfiguration.getRedisSeedPort(), armedisConfiguration.getRedisSeedPassword());
     }
 
     /**
@@ -64,7 +65,7 @@ public class RedisConfiguration {
      */
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        logger.info("Initializing RedisConnectionFactory with seed: {}", redisProperties);
+        logger.info("Initializing RedisConnectionFactory with seed: {}", armedisConfiguration);
 
         try {
             // Redis 서버 정보 감지
@@ -76,12 +77,9 @@ public class RedisConfiguration {
             logger.info("Detected Redis nodes: {}", redisNodes.size());
 
             // ConnectionFactory 빌드
-            RedisConnectionFactory factory = new RedisConnectionFactoryBuilder(
-                    redisProperties,
-                    instanceType,
-                    redisNodes)
-                            .withPoolConfig(maxActive, maxIdle, minIdle, maxWait, timeBetweenEvictionRuns)
-                            .build();
+            RedisConnectionFactory factory = new RedisConnectionFactoryBuilder(redisServerDetector())
+                    .withPoolConfig(maxActive, maxIdle, minIdle, maxWait, timeBetweenEvictionRuns)
+                    .build();
 
             logger.info("RedisConnectionFactory created successfully for type: {}", instanceType);
             return factory;
@@ -89,7 +87,7 @@ public class RedisConfiguration {
         }
         catch (Exception e) {
             logger.error("Failed to create RedisConnectionFactory. Application will not start.", e);
-            throw new IllegalStateException("Cannot connect to Redis seed server: " + redisProperties, e);
+            throw new IllegalStateException("Cannot connect to Redis seed server: " + armedisConfiguration, e);
         }
     }
 

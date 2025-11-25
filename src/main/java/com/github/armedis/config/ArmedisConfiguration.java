@@ -19,6 +19,9 @@ public class ArmedisConfiguration {
 
     @Value("${config.redis.seed.port}")
     private Integer redisSeedPort;
+    
+    @Value("${config.redis.seed.password:}")
+    private String redisSeedPassword;
 
     @Value("${server.service.port}")
     private int servicePort;
@@ -61,6 +64,10 @@ public class ArmedisConfiguration {
 
     public int getRedisSeedPort() {
         return redisSeedPort;
+    }
+    
+    public String getRedisSeedPassword() {
+        return redisSeedPassword;
     }
 
     public int getServicePort() {

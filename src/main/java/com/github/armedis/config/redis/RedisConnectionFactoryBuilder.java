@@ -18,11 +18,13 @@ import org.springframework.data.redis.connection.lettuce.LettuceClientConfigurat
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
 
-import com.github.armedis.redis.RedisInstanceType;
 import com.github.armedis.redis.RedisNode;
+import com.github.armedis.redis.connection.RedisServerDetector;
 
 import io.lettuce.core.ReadFrom;
+import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
+import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 
@@ -33,9 +35,7 @@ public class RedisConnectionFactoryBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisConnectionFactoryBuilder.class);
 
-    private final RedisProperties properties;
-    private final RedisInstanceType instanceType;
-    private final Set<RedisNode> redisNodes;
+    private RedisServerDetector redisServerDetector;
 
     // Lettuce Pool 설정 (application.yml에서 주입받을 값들)
     private int maxActive = 8;
@@ -44,12 +44,8 @@ public class RedisConnectionFactoryBuilder {
     private Duration maxWait = Duration.ofMillis(2000);
     private Duration timeBetweenEvictionRuns = Duration.ofSeconds(60);
 
-    public RedisConnectionFactoryBuilder(RedisProperties properties,
-            RedisInstanceType instanceType,
-            Set<RedisNode> redisNodes) {
-        this.properties = properties;
-        this.instanceType = instanceType;
-        this.redisNodes = redisNodes;
+    public RedisConnectionFactoryBuilder(RedisServerDetector redisServerDetector) {
+        this.redisServerDetector = redisServerDetector;
     }
 
     /**
@@ -69,9 +65,9 @@ public class RedisConnectionFactoryBuilder {
      * Redis 서버 타입에 따라 적절한 ConnectionFactory 생성
      */
     public RedisConnectionFactory build() {
-        logger.info("Building RedisConnectionFactory for type: {}", instanceType);
+        logger.info("Building RedisConnectionFactory for type: {}", this.redisServerDetector.getRedisInstanceType());
 
-        switch (instanceType) {
+        switch (this.redisServerDetector.getRedisInstanceType()) {
             case STANDALONE:
                 return buildStandaloneConnectionFactory();
 
@@ -85,7 +81,7 @@ public class RedisConnectionFactoryBuilder {
                 return buildClusterConnectionFactory();
 
             default:
-                throw new IllegalStateException("Unsupported Redis instance type: " + instanceType);
+                throw new IllegalStateException("Unsupported Redis instance type: " + this.redisServerDetector.getRedisInstanceType());
         }
     }
 
@@ -96,11 +92,11 @@ public class RedisConnectionFactoryBuilder {
         logger.info("Creating Standalone Redis ConnectionFactory");
 
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
-        config.setHostName(properties.getHost());
-        config.setPort(properties.getPort());
+        config.setHostName(redisServerDetector.getSeedHost());
+        config.setPort(redisServerDetector.getSeedPort());
 
-        if (properties.hasPassword()) {
-            config.setPassword(RedisPassword.of(properties.getPassword()));
+        if (redisServerDetector.hasPassword()) {
+            config.setPassword(RedisPassword.of(redisServerDetector.getSeedPassword()));
         }
 
         LettuceConnectionFactory factory = new LettuceConnectionFactory(
@@ -115,20 +111,18 @@ public class RedisConnectionFactoryBuilder {
      * Replication (Master-Slave) 모드 ConnectionFactory 생성
      */
     private RedisConnectionFactory buildReplicationConnectionFactory() {
-        logger.info("Creating Replication Redis ConnectionFactory with {} nodes", redisNodes.size());
+        logger.info("Creating Replication Redis ConnectionFactory with {} nodes", this.redisServerDetector.getAllNodes());
 
         // Master 노드 찾기
-        RedisNode masterNode = redisNodes.stream()
-                .filter(node -> node.getRedisNodeType() == com.github.armedis.redis.RedisNodeType.MASTER)
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No master node found in replication setup"));
+        Set<RedisNode> masterNodes = this.redisServerDetector.getMasterNodes();
+        RedisNode master = masterNodes.iterator().next();
 
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
-        config.setHostName(masterNode.getHost());
-        config.setPort(masterNode.getPort());
+        config.setHostName(master.getHost());
+        config.setPort(master.getPort());
 
-        if (properties.hasPassword()) {
-            config.setPassword(RedisPassword.of(properties.getPassword()));
+        if (this.redisServerDetector.hasPassword()) {
+            config.setPassword(RedisPassword.of(this.redisServerDetector.getSeedPassword()));
         }
 
         // Read-from-replica 설정을 위한 Client Configuration
@@ -187,6 +181,7 @@ public class RedisConnectionFactoryBuilder {
      * Cluster 모드 ConnectionFactory 생성
      */
     private RedisConnectionFactory buildClusterConnectionFactory() {
+        Set<RedisNode> redisNodes = this.redisServerDetector.getAllNodes();
         logger.info("Creating Cluster Redis ConnectionFactory with {} nodes", redisNodes.size());
 
         RedisClusterConfiguration clusterConfig = new RedisClusterConfiguration();
@@ -200,8 +195,8 @@ public class RedisConnectionFactoryBuilder {
                             node.getPort()));
         }
 
-        if (properties.hasPassword()) {
-            clusterConfig.setPassword(RedisPassword.of(properties.getPassword()));
+        if (this.redisServerDetector.hasPassword()) {
+            clusterConfig.setPassword(RedisPassword.of(this.redisServerDetector.getSeedPassword()));
         }
 
         // Cluster 전용 Client Configuration
@@ -265,8 +260,8 @@ public class RedisConnectionFactoryBuilder {
                     .redis(sentinelNode.getHost(), sentinelNode.getPort())
                     .build();
 
-            io.lettuce.core.RedisClient client = io.lettuce.core.RedisClient.create(redisURI);
-            io.lettuce.core.api.StatefulRedisConnection<String, String> connection = client.connect();
+            RedisClient client = RedisClient.create(redisURI);
+            StatefulRedisConnection<String, String> connection = client.connect();
 
             // INFO Sentinel 명령 실행
             String info = connection.sync().info("Sentinel");
