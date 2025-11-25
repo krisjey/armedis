@@ -20,19 +20,19 @@ public class RedisServerInfoMaker {
 
     private RedisServerInfo redisServerInfo;
 
+    private RedisServerDetector redisServerDetector;
+
     @Autowired
-    public RedisServerInfoMaker(ArmedisConfiguration armedisConfiguration) {
+    public RedisServerInfoMaker(ArmedisConfiguration armedisConfiguration, RedisServerDetector redisServerDetector) {
         this.armedisConfiguration = armedisConfiguration;
+        this.redisServerDetector = redisServerDetector;
     }
 
     public RedisServerInfo getRedisServerInfo() {
         if (this.redisServerInfo == null) {
-            RedisServerDetector redisServerDetector = new RedisServerDetector(armedisConfiguration.getRedisSeedHost(),
-                    armedisConfiguration.getRedisSeedPort());
-
             Set<RedisNode> redisNodes = null;
             try {
-                redisNodes = redisServerDetector.lookupNodes();
+                redisNodes = redisServerDetector.getAllNodes();
             }
             catch (UnsupportedOperationException e) {
                 logger.info("Does not support impl.");

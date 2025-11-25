@@ -15,6 +15,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import com.github.armedis.redis.RedisInstanceType;
 import com.github.armedis.redis.RedisNode;
 import com.github.armedis.redis.RedisServerInfoMaker;
+import com.github.armedis.redis.connection.RedisServerDetector;
 import com.github.armedis.redis.connection.RedisServerInfo;
 
 /**
@@ -49,6 +50,12 @@ public class RedisConfiguration {
             RedisServerInfoMaker redisServerInfoMaker) {
         this.redisProperties = redisProperties;
         this.redisServerInfoMaker = redisServerInfoMaker;
+    }
+
+    @Bean
+    public RedisServerDetector redisServerDetector() {
+        // 실제 seed host/port 는 yml 에서 읽어오거나 @Value 로 주입
+        return new RedisServerDetector(redisProperties.getHost(), redisProperties.getPort());
     }
 
     /**
