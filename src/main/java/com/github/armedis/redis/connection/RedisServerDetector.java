@@ -196,7 +196,6 @@ public class RedisServerDetector {
                     cmdArgs.add(arg);
                 }
 
-                @SuppressWarnings("unchecked")
                 List<Object> rawResult = commands.dispatch(
                         CommandType.SENTINEL,
                         new ArrayOutput<>(StringCodec.UTF8),
