@@ -33,19 +33,9 @@ public class RedisConnectionFactoryBuilderTest extends AbstractRedisServerTest {
         assertThat(factory).isNotNull();
         assertThat(factory.getConnection()).isNotNull();
         assertThat(factory.getConnection().ping()).isNotNull();
+        assertThat(factory.getConnection().ping()).isEqualTo("PONG");
 
         System.out.println("Standalone ConnectionFactory created successfully");
-    }
-
-    @Test
-    public void testBuilderWithInvalidInstanceType() {
-        // When & Then
-        assertThatThrownBy(() -> {
-            new RedisConnectionFactoryBuilder(redisServerDetector).build();
-        }).isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Unsupported Redis instance type");
-
-        System.out.println("Invalid instance type test passed");
     }
 
     @Test

@@ -1,9 +1,15 @@
 
 package com.github.armedis.redis.command.management;
 
+import java.util.Optional;
+import java.util.Properties;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +18,7 @@ import com.github.armedis.redis.command.RedisCommandEnum;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.github.armedis.redis.command.RedisCommandExecuteResultFactory;
 import com.github.armedis.redis.command.RequestRedisCommandName;
+import com.linecorp.armeria.common.HttpMethod;
 
 @Component
 @Scope("prototype")
@@ -37,16 +44,29 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
 
         String key = this.redisRequest.getKey();
 
-//        if (redisRequest.getRequestMethod().equals(HttpMethod.GET)) {
-//            redisTemplate.execute((RedisConnection connection) -> {
-//              connection.serverCommands().getConfig(key).get(key);
-//              return "OK";
-//          });
-//            return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(redisTemplate.serverCommands().configGet(key));
-//        }
-//        else {
-//            Optional<String> value = this.redisRequest.getValue();
-//            return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(commands.configSet(key, value.get()));
+        if (redisRequest.getRequestMethod().equals(HttpMethod.GET)) {
+            Object result = redisTemplate.execute((RedisConnection connection) -> {
+                return connection.serverCommands().getConfig(key).get(key);
+            });
+            return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(String.valueOf(result));
+        }
+        else {
+            Optional<String> value = this.redisRequest.getValue();
+            return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(commands.configSet(key, value.get()));
+        }
+
+//        Properties config = redisTemplate.execute(
+//                new RedisCallback<Properties>() {
+//                    @Override
+//                    public Properties doInRedis(RedisConnection connection) throws DataAccessException {
+//                        return connection.serverCommands().getConfig(key);
+//                    }
+//                });
+//
+//        // 결과 출력
+//        if (config != null) {
+//            // 특정 값 직접 접근
+//            String maxmemory = config.getProperty("maxmemory");
 //        }
 
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(true);
