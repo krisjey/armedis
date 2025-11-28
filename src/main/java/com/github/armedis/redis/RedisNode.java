@@ -45,6 +45,6 @@ public class RedisNode {
 
     @Override
     public String toString() {
-        return "RedisInstance [host=" + host + ", port=" + port + "]";
+        return "RedisNode [host=" + host + ", port=" + port + ", role=" + role + "]";
     }
 }

@@ -27,7 +27,7 @@ public class RedisCommandExecuteResultBuilder {
     private ResultType resultType;
 
     private Class clazz;
-    private Object objectResult;
+//    private Object objectResult;
 
     public RedisCommandExecuteResultBuilder(ResultType resultType) {
         this.resultType = resultType;

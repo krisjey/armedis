@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import com.github.armedis.redis.RedisServerInfoMaker;
 import com.github.armedis.redis.command.AbstractRedisCommandRunner;
 import com.github.armedis.redis.command.RedisCommandEnum;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
@@ -27,12 +26,9 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
 
     private RedisTemplate<String, Object> redisTemplate;
 
-    private RedisServerInfoMaker redisServerInfoMaker;
-
-    public RedisConfigCommandRunner(RedisConfigRequest redisRequest, RedisTemplate<String, Object> redisTemplate, RedisServerInfoMaker redisServerInfoMaker) {
+    public RedisConfigCommandRunner(RedisConfigRequest redisRequest, RedisTemplate<String, Object> redisTemplate) {
         this.redisRequest = redisRequest;
         this.redisTemplate = redisTemplate;
-        this.redisServerInfoMaker = redisServerInfoMaker;
     }
 
     @Override
@@ -52,7 +48,7 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
 //            Optional<String> value = this.redisRequest.getValue();
 //            return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(commands.configSet(key, value.get()));
 //        }
-        
+
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(true);
     }
 

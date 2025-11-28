@@ -4,7 +4,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
@@ -143,12 +142,7 @@ public class RedisConnectionFactoryBuilder {
     private RedisConnectionFactory buildSentinelConnectionFactory() {
         logger.info("Creating Sentinel Redis ConnectionFactory");
 
-        // Sentinel 노드 정보 수집
-        Set<String> sentinelNodes = redisNodes.stream()
-                .map(node -> node.getHost() + ":" + node.getPort())
-                .collect(Collectors.toSet());
-
-        if (sentinelNodes.isEmpty()) {
+        if (this.redisServerDetector.getSentinelNodes().isEmpty()) {
             throw new IllegalStateException("No sentinel nodes found");
         }
 
@@ -161,12 +155,12 @@ public class RedisConnectionFactoryBuilder {
                 .master(masterName);
 
         // Sentinel 노드들 추가
-        for (RedisNode node : redisNodes) {
+        for (RedisNode node : this.redisServerDetector.getSentinelNodes()) {
             sentinelConfig.sentinel(node.getHost(), node.getPort());
         }
 
-        if (properties.hasPassword()) {
-            sentinelConfig.setPassword(RedisPassword.of(properties.getPassword()));
+        if (this.redisServerDetector.hasPassword()) {
+            sentinelConfig.setPassword(RedisPassword.of(this.redisServerDetector.getSeedPassword()));
         }
 
         LettuceConnectionFactory factory = new LettuceConnectionFactory(
@@ -232,7 +226,7 @@ public class RedisConnectionFactoryBuilder {
      * Connection Pool 설정 생성
      */
     private GenericObjectPoolConfig buildPoolConfig() {
-        GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
+        GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig<>();
         poolConfig.setMaxTotal(maxActive);
         poolConfig.setMaxIdle(maxIdle);
         poolConfig.setMinIdle(minIdle);
@@ -251,7 +245,7 @@ public class RedisConnectionFactoryBuilder {
      */
     private String detectSentinelMasterName() {
         // 첫 번째 Sentinel 노드에 연결
-        RedisNode sentinelNode = redisNodes.stream()
+        RedisNode sentinelNode = this.redisServerDetector.getSentinelNodes().stream()
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("No sentinel node available"));
 

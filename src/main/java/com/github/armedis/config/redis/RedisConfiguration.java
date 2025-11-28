@@ -13,11 +13,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import com.github.armedis.config.ArmedisConfiguration;
-import com.github.armedis.redis.RedisInstanceType;
 import com.github.armedis.redis.RedisNode;
-import com.github.armedis.redis.RedisServerInfoMaker;
 import com.github.armedis.redis.connection.RedisServerDetector;
-import com.github.armedis.redis.connection.RedisServerInfo;
 
 /**
  * Redis Template 설정
@@ -29,7 +26,7 @@ public class RedisConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(RedisConfiguration.class);
 
     private final ArmedisConfiguration armedisConfiguration;
-    private final RedisServerInfoMaker redisServerInfoMaker;
+    private final RedisServerDetector redisServerDetector;
 
     // Lettuce Pool 설정 (application.yml에서 주입)
     @Value("${spring.data.redis.lettuce.pool.max-active:8}")
@@ -47,16 +44,9 @@ public class RedisConfiguration {
     @Value("${spring.data.redis.lettuce.pool.time-between-eviction-runs:60s}")
     private Duration timeBetweenEvictionRuns;
 
-    public RedisConfiguration(ArmedisConfiguration armedisConfiguration,
-            RedisServerInfoMaker redisServerInfoMaker) {
+    public RedisConfiguration(ArmedisConfiguration armedisConfiguration, RedisServerDetector redisServerDetector) {
         this.armedisConfiguration = armedisConfiguration;
-        this.redisServerInfoMaker = redisServerInfoMaker;
-    }
-
-    @Bean
-    public RedisServerDetector redisServerDetector() {
-        // 실제 seed host/port 는 yml 에서 읽어오거나 @Value 로 주입
-        return new RedisServerDetector(armedisConfiguration.getRedisSeedHost(), armedisConfiguration.getRedisSeedPort(), armedisConfiguration.getRedisSeedPassword());
+        this.redisServerDetector = redisServerDetector;
     }
 
     /**
@@ -69,19 +59,18 @@ public class RedisConfiguration {
 
         try {
             // Redis 서버 정보 감지
-            RedisServerInfo serverInfo = redisServerInfoMaker.getRedisServerInfo();
-            RedisInstanceType instanceType = serverInfo.getRedisInstanceType();
-            Set<RedisNode> redisNodes = serverInfo.getRedisNodes();
+//            RedisInstanceType instanceType = serverInfo.getRedisInstanceType();
+            Set<RedisNode> redisNodes = redisServerDetector.getAllNodes();
 
-            logger.info("Detected Redis instance type: {}", instanceType);
-            logger.info("Detected Redis nodes: {}", redisNodes.size());
+            logger.info("Detected Redis instance type: {}", redisServerDetector.getRedisInstanceType());
+            logger.info("Detected Redis nodes: {}, {}", redisNodes.size(), redisServerDetector.getAllNodes());
 
             // ConnectionFactory 빌드
-            RedisConnectionFactory factory = new RedisConnectionFactoryBuilder(redisServerDetector())
+            RedisConnectionFactory factory = new RedisConnectionFactoryBuilder(this.redisServerDetector)
                     .withPoolConfig(maxActive, maxIdle, minIdle, maxWait, timeBetweenEvictionRuns)
                     .build();
 
-            logger.info("RedisConnectionFactory created successfully for type: {}", instanceType);
+            logger.info("RedisConnectionFactory created successfully for type: {}", redisServerDetector.getRedisInstanceType());
             return factory;
 
         }
