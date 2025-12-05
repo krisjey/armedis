@@ -1,7 +1,7 @@
 
 package com.github.armedis.redis.command.management;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -10,11 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
-import com.github.armedis.http.service.management.configs.AllowedConfigCommands;
+import com.github.armedis.redis.RedisInstanceType;
 import com.github.armedis.redis.RedisNode;
 import com.github.armedis.redis.command.AbstractRedisCommandRunner;
 import com.github.armedis.redis.command.RedisCommandEnum;
@@ -23,6 +23,9 @@ import com.github.armedis.redis.command.RedisCommandExecuteResultFactory;
 import com.github.armedis.redis.command.RequestRedisCommandName;
 import com.github.armedis.redis.connection.RedisServerDetector;
 import com.linecorp.armeria.common.HttpMethod;
+
+import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
+import io.lettuce.core.cluster.api.sync.RedisClusterCommands;
 
 @Component
 @Scope("prototype")
@@ -37,18 +40,15 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
 
     private RedisTemplate<String, Object> redisTemplate;
 
+    @Autowired
     private RedisServerDetector redisServerDetector;
 
-    private final LettuceRedisNodeCommandExecutor executor;
+//    private final LettuceRedisNodeCommandExecutor executor;
 
-    @Autowired
-    private StringRedisTemplate stringRedisTemplate;
-
-    public RedisConfigCommandRunner(RedisConfigRequest redisRequest, RedisTemplate<String, Object> redisTemplate, RedisServerDetector redisServerDetector, LettuceRedisNodeCommandExecutor executor) {
-        this.redisServerDetector = redisServerDetector;
+    public RedisConfigCommandRunner(RedisConfigRequest redisRequest, RedisTemplate<String, Object> redisTemplate) {
         this.redisRequest = redisRequest;
         this.redisTemplate = redisTemplate;
-        this.executor = executor;
+//        this.executor = executor;
     }
 
 // 정상 동작 코드.
@@ -79,32 +79,78 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
 //        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
 //    }
 
+    private Map<Object, Object> broadcastConfigToAllNodes(String key, String value) {
+        Map<Object, Object> result = new HashMap<>();
+        Set<RedisNode> nodes = redisServerDetector.getAllNodes();
+
+        redisTemplate.execute((RedisConnection connection) -> {
+            Object nativeConnection = connection.getNativeConnection();
+
+            if (nativeConnection instanceof StatefulRedisClusterConnection) {
+
+                @SuppressWarnings({ "unchecked", "resource" })
+                StatefulRedisClusterConnection<byte[], byte[]> clusterConnection = (StatefulRedisClusterConnection<byte[], byte[]>) nativeConnection;
+
+                for (RedisNode node : nodes) {
+                    String nodeId = node.getHost() + ":" + node.getPort();
+                    try {
+                        RedisClusterCommands<byte[], byte[]> commands = clusterConnection.getConnection(node.getHost(), node.getPort()).sync();
+
+                        commands.configSet(key, value);
+
+                        result.put(nodeId, "true");
+                        logger.info("CONFIG SET {} = {} on {}", key, value, nodeId);
+                    }
+                    catch (Exception e) {
+                        result.put(nodeId, "false: " + e.getMessage());
+                        logger.error("Failed CONFIG SET on {}: {}", nodeId, e.getMessage());
+                    }
+                }
+            }
+            return null;
+        });
+
+        return result;
+    }
+
     @Override
     public RedisCommandExecuteResult executeAndGet() {
         // 업데이트 시 내부 값 업데이트
         // AllowedConfigCommands.get(key).setCurrentValueFromDB(updatedValue.get(key));
         // SET 명령수행시 롤백 처리 : 롤백을 위해 이전 값 저장
-        
-        Set<RedisNode> nodes = redisServerDetector.getAllNodes();
-        if (redisRequest.getRequestMethod().equals(HttpMethod.GET)) {
-            Map<RedisNode, Map<String, String>> map = executor.executeOnEach(redisServerDetector.getAllNodes(), commands -> {
-                List<String> raw = commands.configGet(key);
-                return toConfigMap(raw);
-            });
+        // GET 명령 수행시 노드들의 값이 다르면 (+) 기호 표시.
 
-            // TODO map<string, string>으로 변환. key, value
-            return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
+        logger.info(redisRequest.toString());
+
+        String key = this.redisRequest.getKey();
+        Map<Object, Object> result = new HashMap<>();
+        RedisInstanceType instanceType = redisServerDetector.getRedisInstanceType();
+
+        if (redisRequest.getRequestMethod().equals(HttpMethod.GET)) {
+            // GET은 단일 노드 조회로 충분
+            Object tempResult = redisTemplate.execute((RedisConnection connection) -> {
+                return connection.serverCommands().getConfig(key).get(key);
+            });
+            result.put(key, String.valueOf(tempResult));
         }
         else {
-            logger.info(redisRequest.toString());
-            String key = this.redisRequest.getKey();
             Optional<String> value = this.redisRequest.getValue();
 
-            Map<RedisNode, Map<String, String>> map = executor.executeOnEach(nodes, commands -> {
-                commands.configSet(key, value.get());
-            });
-            return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
+            if (instanceType == RedisInstanceType.CLUSTER) {
+                // 클러스터: 모든 노드에 CONFIG SET 브로드캐스트
+                result = broadcastConfigToAllNodes(key, value.get());
+            }
+            else {
+                // Standalone/Sentinel: 단일 실행
+                redisTemplate.execute((RedisConnection connection) -> {
+                    connection.serverCommands().setConfig(key, value.get());
+                    return null;
+                });
+                result.put(key, "true");
+            }
         }
+
+        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
     }
 
 //    public RedisCommandExecuteResult executeAndGet() {

@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.github.armedis.redis.RedisNode;
@@ -18,6 +19,7 @@ import io.lettuce.core.api.sync.RedisCommands;
 /**
  * Execute command to each RedisNode
  */
+// TODO 사용하지 않는 코드 삭제 필요.
 @Component
 public class LettuceRedisNodeCommandExecutor {
 
@@ -25,7 +27,10 @@ public class LettuceRedisNodeCommandExecutor {
     private final Duration commandTimeout;
     private final String password;
 
-    public LettuceRedisNodeCommandExecutor(Duration connectionTimeout, Duration commandTimeout, String password) {
+    public LettuceRedisNodeCommandExecutor(
+            @Value("${spring.data.redis.connect-timeout}") Duration connectionTimeout,
+            @Value("${spring.data.redis.timeout}") Duration commandTimeout,
+            @Value("${spring.data.redis.password:}") String password) {
         this.connectionTimeout = connectionTimeout;
         this.commandTimeout = commandTimeout;
         this.password = password;

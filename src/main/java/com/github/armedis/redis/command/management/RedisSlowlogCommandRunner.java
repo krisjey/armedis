@@ -1,6 +1,7 @@
 
 package com.github.armedis.redis.command.management;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -41,7 +42,7 @@ public class RedisSlowlogCommandRunner extends AbstractRedisCommandRunner {
         logger.info(redisRequest.toString());
         Integer size = redisRequest.getSize().orElse(10);
 
-        var result = this.redisTemplate.execute((RedisCallback<List<Object>>) connection -> {
+        List<Object> result = this.redisTemplate.execute((RedisCallback<List<Object>>) connection -> {
             Object nativeConnection = connection.getNativeConnection();
             if (nativeConnection instanceof RedisCommands) {
                 @SuppressWarnings("unchecked")
@@ -51,6 +52,9 @@ public class RedisSlowlogCommandRunner extends AbstractRedisCommandRunner {
             return null;
         });
 
+        if (result == null) {
+            result = new ArrayList<Object>();
+        }
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result, Object.class);
     }
 
