@@ -34,8 +34,8 @@ public class RedisClientListCommandRunner extends AbstractRedisCommandRunner {
         this.redisTemplate = redisTemplate;
     }
 
-    // TODO Caused by: io.lettuce.core.RedisCommandExecutionException: ERR This instance has cluster support disabled 
-    
+    // TODO Caused by: io.lettuce.core.RedisCommandExecutionException: ERR This instance has cluster support disabled
+
     @Override
     public RedisCommandExecuteResult executeAndGet() {
         logger.info(redisRequest.toString());
@@ -45,7 +45,7 @@ public class RedisClientListCommandRunner extends AbstractRedisCommandRunner {
 
 //        List<ConnectedClient> result = ConnectedClientParser.parseClientList(clientList);
 
-        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(clientList.subList(0, LIMIT), RedisClientInfo.class);
+        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(clientList.subList(0, Math.min(clientList.size(), LIMIT)), RedisClientInfo.class);
     }
 
 //    @Override
