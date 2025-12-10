@@ -10,15 +10,20 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PreDestroy;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import com.github.armedis.redis.RedisNode;
 import com.github.armedis.redis.connection.RedisServerDetector;
+
+import io.lettuce.core.ReadFrom;
 
 @Component
 public class NodeConfigChecker {
@@ -100,13 +105,36 @@ public class NodeConfigChecker {
         }
     }
 
+    /**
+     * Connection Pool 설정 생성
+     */
+    private GenericObjectPoolConfig buildPoolConfig() {
+        GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig<>();
+        poolConfig.setMaxTotal(maxActive);
+        poolConfig.setMaxIdle(maxIdle);
+        poolConfig.setMinIdle(minIdle);
+        poolConfig.setMaxWait(maxWait);
+        poolConfig.setTimeBetweenEvictionRuns(timeBetweenEvictionRuns);
+        poolConfig.setTestOnBorrow(true);
+        poolConfig.setTestOnReturn(true);
+        poolConfig.setTestWhileIdle(true);
+
+        return poolConfig;
+    }
+
     private RedisTemplate<String, String> createTemplate(RedisNode node) {
         String key = node.getHost() + ":" + node.getPort();
         return nodeTemplates.computeIfAbsent(key, k -> {
+            // Read-from-replica 설정을 위한 Client Configuration
+            LettuceClientConfiguration clientConfig = LettucePoolingClientConfiguration.builder()
+                    .poolConfig(buildPoolConfig())
+                    .readFrom(ReadFrom.REPLICA_PREFERRED) // Replica 우선 읽기
+                    .build();
+            
             RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(node.getHost(), node.getPort());
             LettuceConnectionFactory factory = new LettuceConnectionFactory(config, clientConfig);
             factory.afterPropertiesSet();
-            
+
             RedisTemplate<String, String> template = new RedisTemplate<>();
             template.setConnectionFactory(factory);
             template.afterPropertiesSet();
