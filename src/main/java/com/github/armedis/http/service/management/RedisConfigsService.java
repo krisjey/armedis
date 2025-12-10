@@ -61,6 +61,8 @@ public class RedisConfigsService extends BaseService {
                     ObjectNode loopResult = commandResult.toObjectNode();
 
                     configCommand.setCurrentValueFromDB(configCommand.parseValue(loopResult.get(RedisCommandExecuteResult.RESULT_KEY)));
+
+                    System.out.println(configCommand.getKey() + " " + configCommand.parseValue(loopResult.get(RedisCommandExecuteResult.RESULT_KEY)));
                 }
 
                 AllowedConfigCommands.initialized();

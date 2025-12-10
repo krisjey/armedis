@@ -4,6 +4,7 @@ package com.github.armedis.redis.command.management;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -129,7 +130,8 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
         if (redisRequest.getRequestMethod().equals(HttpMethod.GET)) {
             // GET은 단일 노드 조회로 충분
             Object tempResult = redisTemplate.execute((RedisConnection connection) -> {
-                return connection.serverCommands().getConfig(key).get(key);
+                Properties prop = connection.serverCommands().getConfig(key);
+                return prop.get(key);
             });
             result.put(key, String.valueOf(tempResult));
         }
