@@ -54,9 +54,17 @@ cluster nodes
 
  -Dspring.profiles.active=single
 
-아래 코드는 Redis Proxy 서버 코드의 일부분이야.
-인스턴스가 실행될 때 Target redis 서버의 구성을 알 수 있고 실행된 후에는 redis 서버의 구성이 변하지 않아.
 
+```
+            Object tempResult = redisTemplate.execute((RedisConnection connection) -> { 
+                Properties prop = connection.serverCommands().getConfig(key); 
+                return prop.get(key); 
+            });
+```
+위 코드는 Redis Proxy 서버 코드의 일부분이야.
+
+인스턴스가 실행될 때 Target redis 서버의 구성을 알 수 있고 실행된 후에는 redis 서버의 구성이 변하지 않아.
+그러므로 로직은 노드 목록을 받아 모든 노드에 명령을 전송하도록 구성.
 config set 명령으로 업데이트 시 내부 값 업데이트 아래 코드 사용.
 ```
  AllowedConfigCommands.get(key).setCurrentValueFromDB(updatedValue.get(key));
@@ -66,18 +74,6 @@ SET 명령수행시 롤백 처리 : 롤백을 위해 이전 값 저장
   - config set 명령 수행시 하나의 노드라도 적용이 안된다면 이미 적용한 다른 노드의 값도 원래값으로 원복처리.
 GET 명령 수행시 노드들의 값이 다르면 (+) 기호 표시.
   - config get 명령 수행시 대상 노드들의 값 중 하나라도 다르다면 응답 값 맨 뒤에 (+) 문자열 추가 처리.
-
-
-```
-            Object tempResult = redisTemplate.execute((RedisConnection connection) -> { 
-                Properties prop = connection.serverCommands().getConfig(key); 
-                return prop.get(key); 
-            });
-```
-위와 같은 코드를 썼더니 아래와 같은 응답이 왔어. 
-```
-{192.168.56.105:17002.maxmemory=0, 192.168.56.105:17003.maxmemory=0, 192.168.56.105:17001.maxmemory=0}
-```
 
 위와 같이 redisTemplate에서 connection을 가져와서 호출하는 구조를 유지하면서 구성된 모든 서버에 접속해서 모든 값을 조회한 뒤 결과 값이 같으면 그냥 리턴하고 다르면 값 맨 뒤에 "(+)" 문자열을 추가한 결과를 돌려주도록 만들어줘.
 redisServerDetector.getAllNodes()를 사용하면 현재 구성된 redis 서버의 모든 노드 정보를 조회할 수 있어.
