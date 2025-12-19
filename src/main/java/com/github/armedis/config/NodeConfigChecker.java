@@ -1,7 +1,7 @@
 package com.github.armedis.config;
 
+import java.time.Duration;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -66,6 +66,70 @@ public class NodeConfigChecker {
         return values.size() > 1 ? result + "(+)" : result;
     }
 
+    public boolean setConfigValue(String configKey, String configValue) {
+        Set<RedisNode> currentNodes = redisServerDetector.getAllNodes();
+        syncNodeTemplates(currentNodes);
+
+        // 1. 백업: 각 노드의 현재 값 저장
+        Map<String, String> backupValues = new ConcurrentHashMap<>();
+        for (RedisNode node : currentNodes) {
+            String nodeKey = toKey(node);
+            RedisTemplate<String, String> template = nodeTemplates.get(nodeKey);
+            try {
+                String currentValue = template.execute((RedisConnection conn) -> {
+                    Properties prop = conn.serverCommands().getConfig(configKey);
+                    return (String) prop.get(configKey);
+                });
+                backupValues.put(nodeKey, currentValue);
+            }
+            catch (Exception e) {
+                // 백업 실패 시 즉시 중단
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        // 2. 설정 변경 시도
+        Set<String> successNodes = new HashSet<>();
+        for (RedisNode node : currentNodes) {
+            String nodeKey = toKey(node);
+            RedisTemplate<String, String> template = nodeTemplates.get(nodeKey);
+            try {
+                template.execute((RedisConnection conn) -> {
+                    conn.serverCommands().setConfig(configKey, configValue);
+                    return null;
+                });
+                successNodes.add(nodeKey);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                // 3. 실패 시 롤백
+                rollback(configKey, backupValues, successNodes);
+                return false;
+            }
+        }
+
+        // 4. 모든 노드 성공
+        return true;
+    }
+
+    private void rollback(String configKey, Map<String, String> backupValues, Set<String> successNodes) {
+        for (String nodeKey : successNodes) {
+            RedisTemplate<String, String> template = nodeTemplates.get(nodeKey);
+            String originalValue = backupValues.get(nodeKey);
+            try {
+                template.execute((RedisConnection conn) -> {
+                    conn.serverCommands().setConfig(configKey, originalValue);
+                    return null;
+                });
+            }
+            catch (Exception e) {
+                // 롤백 실패 시 로깅만 (이미 실패 상태)
+                System.err.println("Rollback failed for node: " + nodeKey);
+            }
+        }
+    }
+
     private void syncNodeTemplates(Set<RedisNode> currentNodes) {
         Set<String> currentKeys = currentNodes.stream()
                 .map(this::toKey)
@@ -108,13 +172,13 @@ public class NodeConfigChecker {
     /**
      * Connection Pool 설정 생성
      */
+    @SuppressWarnings("rawtypes")
     private GenericObjectPoolConfig buildPoolConfig() {
         GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig<>();
-        poolConfig.setMaxTotal(maxActive);
-        poolConfig.setMaxIdle(maxIdle);
-        poolConfig.setMinIdle(minIdle);
-        poolConfig.setMaxWait(maxWait);
-        poolConfig.setTimeBetweenEvictionRuns(timeBetweenEvictionRuns);
+        poolConfig.setMaxTotal(1);
+        poolConfig.setMaxIdle(1);
+        poolConfig.setMinIdle(1);
+        poolConfig.setMaxWait(Duration.ofMillis(1500));
         poolConfig.setTestOnBorrow(true);
         poolConfig.setTestOnReturn(true);
         poolConfig.setTestWhileIdle(true);
@@ -122,24 +186,21 @@ public class NodeConfigChecker {
         return poolConfig;
     }
 
+    @SuppressWarnings("unchecked")
     private RedisTemplate<String, String> createTemplate(RedisNode node) {
-        String key = node.getHost() + ":" + node.getPort();
-        return nodeTemplates.computeIfAbsent(key, k -> {
-            // Read-from-replica 설정을 위한 Client Configuration
-            LettuceClientConfiguration clientConfig = LettucePoolingClientConfiguration.builder()
-                    .poolConfig(buildPoolConfig())
-                    .readFrom(ReadFrom.REPLICA_PREFERRED) // Replica 우선 읽기
-                    .build();
-            
-            RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(node.getHost(), node.getPort());
-            LettuceConnectionFactory factory = new LettuceConnectionFactory(config, clientConfig);
-            factory.afterPropertiesSet();
+        LettuceClientConfiguration clientConfig = LettucePoolingClientConfiguration.builder()
+                .poolConfig(buildPoolConfig())
+                .readFrom(ReadFrom.REPLICA_PREFERRED)
+                .build();
 
-            RedisTemplate<String, String> template = new RedisTemplate<>();
-            template.setConnectionFactory(factory);
-            template.afterPropertiesSet();
-            return template;
-        });
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(node.getHost(), node.getPort());
+        LettuceConnectionFactory factory = new LettuceConnectionFactory(config, clientConfig);
+        factory.afterPropertiesSet();
+
+        RedisTemplate<String, String> template = new RedisTemplate<>();
+        template.setConnectionFactory(factory);
+        template.afterPropertiesSet();
+        return template;
     }
 
     @PreDestroy
