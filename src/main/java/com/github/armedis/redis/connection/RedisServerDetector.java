@@ -32,8 +32,8 @@ import io.lettuce.core.protocol.CommandType;
  * 구성 노드 정보를 조회한다.
  */
 public class RedisServerDetector {
-    private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(5);
-    private static final Duration COMMAND_TIMEOUT = Duration.ofSeconds(3);
+    private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(3);
+    private static final Duration COMMAND_TIMEOUT = Duration.ofSeconds(1);
 
     private static final Pattern SLAVE_KEY_PATTERN = Pattern.compile("slave(\\d+)");
     private static final Pattern SLAVE_INFO_PATTERN = Pattern.compile("ip=([^,]+),port=(\\d+)");
@@ -46,6 +46,7 @@ public class RedisServerDetector {
     private final Set<RedisNode> masterNodes = new LinkedHashSet<>();
     private final Set<RedisNode> replicaNodes = new LinkedHashSet<>();
     private final Set<RedisNode> sentinelNodes = new LinkedHashSet<>();
+
     private RedisInstanceType instanceType;
 
     public RedisServerDetector(String seedHost, Integer seedPort, String password) {
