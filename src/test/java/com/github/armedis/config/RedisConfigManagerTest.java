@@ -23,9 +23,9 @@ import com.github.armedis.redis.connection.RedisServerDetector;
  * 
  */
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
-public class NodeConfigCheckerTest extends AbstractRedisServerTest {
+public class RedisConfigManagerTest extends AbstractRedisServerTest {
     @Autowired
-    private NodeConfigChecker nodeConfigChecker;
+    private RedisConfigManager redisConfigManager;
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -54,10 +54,10 @@ public class NodeConfigCheckerTest extends AbstractRedisServerTest {
             });
         }
 
-        String slowlogTime = nodeConfigChecker.getConfigValue("slowlog-log-slower-than");
+        String slowlogTime = redisConfigManager.getConfigValue("slowlog-log-slower-than");
 
         for (int i = 0; i < 100; i++) {
-            nodeConfigChecker.getConfigValue("slowlog-log-slower-than");
+            redisConfigManager.getConfigValue("slowlog-log-slower-than");
         }
         assertThat(slowlogTime).isNotNull();
 
@@ -70,16 +70,16 @@ public class NodeConfigCheckerTest extends AbstractRedisServerTest {
         }
         System.out.println("------------" + slowlogTime + " ------------ " + value);
 
-        boolean setResult = nodeConfigChecker.setConfigValue("slowlog-log-slower-than", value);
+        boolean setResult = redisConfigManager.setConfigValue("slowlog-log-slower-than", value);
         assertThat(setResult).isTrue();
     }
 
     @Test
     void testSetTimeout() {
-        boolean result = nodeConfigChecker.setConfigValue("timeout", "0");
+        boolean result = redisConfigManager.setConfigValue("timeout", "0");
 
         for (int i = 0; i < 100; i++) {
-            nodeConfigChecker.getConfigValue("timeout");
+            redisConfigManager.getConfigValue("timeout");
         }
         assertThat(result).isTrue();
     }

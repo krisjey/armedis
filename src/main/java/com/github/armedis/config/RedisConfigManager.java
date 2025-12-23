@@ -26,12 +26,12 @@ import com.github.armedis.redis.connection.RedisServerDetector;
 import io.lettuce.core.ReadFrom;
 
 @Component
-public class NodeConfigChecker {
+public class RedisConfigManager {
 
     private final RedisServerDetector redisServerDetector;
     private final Map<String, RedisTemplate<String, String>> redisTemplateByNodes = new ConcurrentHashMap<>();
 
-    public NodeConfigChecker(RedisServerDetector redisServerDetector) {
+    public RedisConfigManager(RedisServerDetector redisServerDetector) {
         this.redisServerDetector = redisServerDetector;
     }
 
