@@ -48,5 +48,7 @@ class RedisConfigsServiceTest extends AbstractRedisServerTest {
                 .as("Check result field in result json")
                 .node("configKeys").isPresent()
                 .node("configKeys").isArray();
+        
+        // TODO currentValue exist
     }
 }
