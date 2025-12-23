@@ -5,7 +5,8 @@ package com.github.armedis.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Disabled;
+import java.util.Properties;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,11 +36,14 @@ public class NodeConfigCheckerTest extends AbstractRedisServerTest {
     @Test
     void testGetTimeout() {
         // slowlog-log-slower-than
-        String oldValue = stringRedisTemplate.execute((RedisConnection connection) -> {
-            // CONFIG SET <key> <value>
-            Object raw = connection.execute("CONFIG", "GET".getBytes(), "slowlog-log-slower-than".getBytes());
-            return raw == null ? null : raw.toString(); // 보통 "OK"
+        Object oldValue = stringRedisTemplate.execute((RedisConnection connection) -> {
+            Properties props = connection.serverCommands().getConfig("slowlog-log-slower-than");
+            String key = (String) props.stringPropertyNames().toArray()[0];
+            return props.get(key);
         });
+        
+        String value = (oldValue == null) ? null : String.valueOf(oldValue);
+//        long slowlogLogSlowerThan = (value == null) ? -1L : Long.parseLong(value);
 
         // 단일 노드가 아니면
         if (!redisServerDetector.getRedisInstanceType().equals(RedisInstanceType.STANDALONE)) {
@@ -64,13 +68,12 @@ public class NodeConfigCheckerTest extends AbstractRedisServerTest {
         else {
 
         }
-        System.out.println("------------" + slowlogTime + " ------------ " + oldValue);
+        System.out.println("------------" + slowlogTime + " ------------ " + value);
 
-        boolean setResult = nodeConfigChecker.setConfigValue("slowlog-log-slower-than", oldValue);
+        boolean setResult = nodeConfigChecker.setConfigValue("slowlog-log-slower-than", value);
         assertThat(setResult).isTrue();
     }
 
-    @Disabled
     @Test
     void testSetTimeout() {
         boolean result = nodeConfigChecker.setConfigValue("timeout", "0");
