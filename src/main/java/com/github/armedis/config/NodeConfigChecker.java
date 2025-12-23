@@ -29,7 +29,7 @@ import io.lettuce.core.ReadFrom;
 public class NodeConfigChecker {
 
     private final RedisServerDetector redisServerDetector;
-    private final Map<String, RedisTemplate<String, String>> nodeTemplates = new ConcurrentHashMap<>();
+    private final Map<String, RedisTemplate<String, String>> redisTemplateByNodes = new ConcurrentHashMap<>();
 
     public NodeConfigChecker(RedisServerDetector redisServerDetector) {
         this.redisServerDetector = redisServerDetector;
@@ -44,7 +44,7 @@ public class NodeConfigChecker {
         Set<String> values = new HashSet<>();
         for (RedisNode node : currentNodes) {
             String nodeKey = toKey(node);
-            RedisTemplate<String, String> template = nodeTemplates.get(nodeKey);
+            RedisTemplate<String, String> template = redisTemplateByNodes.get(nodeKey);
             try {
                 String value = template.execute((RedisConnection conn) -> {
                     Properties prop = conn.serverCommands().getConfig(configKey);
@@ -74,7 +74,7 @@ public class NodeConfigChecker {
         Map<String, String> backupValues = new ConcurrentHashMap<>();
         for (RedisNode node : currentNodes) {
             String nodeKey = toKey(node);
-            RedisTemplate<String, String> template = nodeTemplates.get(nodeKey);
+            RedisTemplate<String, String> template = redisTemplateByNodes.get(nodeKey);
             try {
                 String currentValue = template.execute((RedisConnection conn) -> {
                     Properties prop = conn.serverCommands().getConfig(configKey);
@@ -93,7 +93,7 @@ public class NodeConfigChecker {
         Set<String> successNodes = new HashSet<>();
         for (RedisNode node : currentNodes) {
             String nodeKey = toKey(node);
-            RedisTemplate<String, String> template = nodeTemplates.get(nodeKey);
+            RedisTemplate<String, String> template = redisTemplateByNodes.get(nodeKey);
             try {
                 template.execute((RedisConnection conn) -> {
                     conn.serverCommands().setConfig(configKey, configValue);
@@ -115,7 +115,7 @@ public class NodeConfigChecker {
 
     private void rollback(String configKey, Map<String, String> backupValues, Set<String> successNodes) {
         for (String nodeKey : successNodes) {
-            RedisTemplate<String, String> template = nodeTemplates.get(nodeKey);
+            RedisTemplate<String, String> template = redisTemplateByNodes.get(nodeKey);
             String originalValue = backupValues.get(nodeKey);
             try {
                 template.execute((RedisConnection conn) -> {
@@ -136,9 +136,9 @@ public class NodeConfigChecker {
                 .collect(Collectors.toSet());
 
         // 제거된 노드의 Pool 정리
-        nodeTemplates.keySet().removeIf(key -> {
+        redisTemplateByNodes.keySet().removeIf(key -> {
             if (!currentKeys.contains(key)) {
-                destroyTemplate(nodeTemplates.get(key));
+                destroyTemplate(redisTemplateByNodes.get(key));
                 return true;
             }
             return false;
@@ -146,7 +146,7 @@ public class NodeConfigChecker {
 
         // 신규 노드의 Pool 생성
         for (RedisNode node : currentNodes) {
-            nodeTemplates.computeIfAbsent(toKey(node), k -> createTemplate(node));
+            redisTemplateByNodes.computeIfAbsent(toKey(node), k -> createTemplate(node));
         }
     }
 
@@ -155,7 +155,7 @@ public class NodeConfigChecker {
     }
 
     private void removeTemplate(String key) {
-        RedisTemplate<String, String> template = nodeTemplates.remove(key);
+        RedisTemplate<String, String> template = redisTemplateByNodes.remove(key);
         if (template != null) {
             destroyTemplate(template);
         }
@@ -205,7 +205,7 @@ public class NodeConfigChecker {
 
     @PreDestroy
     public void cleanup() {
-        nodeTemplates.values().forEach(this::destroyTemplate);
-        nodeTemplates.clear();
+        redisTemplateByNodes.values().forEach(this::destroyTemplate);
+        redisTemplateByNodes.clear();
     }
 }
