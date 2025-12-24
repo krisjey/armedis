@@ -14,6 +14,7 @@ import com.github.armedis.redis.RedisNode;
 
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisURI;
 import io.lettuce.core.SocketOptions;
 import io.lettuce.core.api.StatefulRedisConnection;
 
@@ -34,8 +35,12 @@ public class RedisConnector implements AutoCloseable {
 
         if (connection == null) {
             logger.info(redisNode.toString() + " create new connection");
-            this.redisNode.getUri().setTimeout(Duration.ofSeconds(2));
-            client = RedisClient.create(this.redisNode.getUri());
+            RedisURI redisURI = RedisURI.Builder
+                    .redis(redisNode.getHost(), redisNode.getPort())
+                    .withTimeout(Duration.ofMillis(500))
+                    .build();
+
+            this.client = RedisClient.create(redisURI);
 
             this.client.setOptions(ClientOptions.builder()
                     .autoReconnect(true)

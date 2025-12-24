@@ -3,5 +3,5 @@ config:
   redis:
     seed:
       host: 192.168.56.105
-      port: 17001
+      port: 8500  # 8500, 8501, 8502, 26379, 26380, 26381
       password: foobar   # optional

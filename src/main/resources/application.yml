@@ -4,7 +4,7 @@ config:
     seed:
       host: 192.168.56.105
       port: 17001
-      password: foobar   # optional
+#      password: foobar   # optional
 
 spring:
   application:
@@ -14,6 +14,8 @@ spring:
       host: ${config.redis.seed.host}  # Armedis가 seed 기반으로 해석해서 사용
       port: ${config.redis.seed.port}  # Armedis가 seed 기반으로 해석해서 사용
       password: ${config.redis.seed.password:}   # optional
+      connect-timeout: 2s            # connectionTimeout
+      timeout: 60s                   # commandTimeout (operations)
       lettuce:
         pool:
           enabled: true

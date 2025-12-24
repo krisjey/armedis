@@ -39,7 +39,7 @@ public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult 
     @Override
     public String toResponseString() {
         ObjectNode result = createObjectNode();
-        return result.textValue();
+        return result.toString();
     }
 
     @Override

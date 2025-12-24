@@ -12,10 +12,9 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import com.github.armedis.redis.RedisInstanceType;
+import com.github.armedis.config.ArmedisConfiguration;
 import com.github.armedis.redis.RedisNode;
-import com.github.armedis.redis.RedisServerInfoMaker;
-import com.github.armedis.redis.connection.RedisServerInfo;
+import com.github.armedis.redis.connection.RedisServerDetector;
 
 /**
  * Redis Template 설정
@@ -26,8 +25,8 @@ public class RedisConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisConfiguration.class);
 
-    private final RedisProperties redisProperties;
-    private final RedisServerInfoMaker redisServerInfoMaker;
+    private final ArmedisConfiguration armedisConfiguration;
+    private final RedisServerDetector redisServerDetector;
 
     // Lettuce Pool 설정 (application.yml에서 주입)
     @Value("${spring.data.redis.lettuce.pool.max-active:8}")
@@ -45,10 +44,9 @@ public class RedisConfiguration {
     @Value("${spring.data.redis.lettuce.pool.time-between-eviction-runs:60s}")
     private Duration timeBetweenEvictionRuns;
 
-    public RedisConfiguration(RedisProperties redisProperties,
-            RedisServerInfoMaker redisServerInfoMaker) {
-        this.redisProperties = redisProperties;
-        this.redisServerInfoMaker = redisServerInfoMaker;
+    public RedisConfiguration(ArmedisConfiguration armedisConfiguration, RedisServerDetector redisServerDetector) {
+        this.armedisConfiguration = armedisConfiguration;
+        this.redisServerDetector = redisServerDetector;
     }
 
     /**
@@ -57,32 +55,28 @@ public class RedisConfiguration {
      */
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        logger.info("Initializing RedisConnectionFactory with seed: {}", redisProperties);
+        logger.info("Initializing RedisConnectionFactory with seed: {}", armedisConfiguration);
 
         try {
             // Redis 서버 정보 감지
-            RedisServerInfo serverInfo = redisServerInfoMaker.getRedisServerInfo();
-            RedisInstanceType instanceType = serverInfo.getRedisInstanceType();
-            Set<RedisNode> redisNodes = serverInfo.getRedisNodes();
+//            RedisInstanceType instanceType = serverInfo.getRedisInstanceType();
+            Set<RedisNode> redisNodes = redisServerDetector.getAllNodes();
 
-            logger.info("Detected Redis instance type: {}", instanceType);
-            logger.info("Detected Redis nodes: {}", redisNodes.size());
+            logger.info("Detected Redis instance type: {}", redisServerDetector.getRedisInstanceType());
+            logger.info("Detected Redis nodes: {}, {}", redisNodes.size(), redisServerDetector.getAllNodes());
 
             // ConnectionFactory 빌드
-            RedisConnectionFactory factory = new RedisConnectionFactoryBuilder(
-                    redisProperties,
-                    instanceType,
-                    redisNodes)
-                            .withPoolConfig(maxActive, maxIdle, minIdle, maxWait, timeBetweenEvictionRuns)
-                            .build();
+            RedisConnectionFactory factory = new RedisConnectionFactoryBuilder(this.redisServerDetector)
+                    .withPoolConfig(maxActive, maxIdle, minIdle, maxWait, timeBetweenEvictionRuns)
+                    .build();
 
-            logger.info("RedisConnectionFactory created successfully for type: {}", instanceType);
+            logger.info("RedisConnectionFactory created successfully for type: {}", redisServerDetector.getRedisInstanceType());
             return factory;
 
         }
         catch (Exception e) {
             logger.error("Failed to create RedisConnectionFactory. Application will not start.", e);
-            throw new IllegalStateException("Cannot connect to Redis seed server: " + redisProperties, e);
+            throw new IllegalStateException("Cannot connect to Redis seed server: " + armedisConfiguration, e);
         }
     }
 

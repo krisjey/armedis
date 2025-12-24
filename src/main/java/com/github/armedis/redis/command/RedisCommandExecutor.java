@@ -10,26 +10,23 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import com.github.armedis.http.service.request.RedisRequest;
-import com.github.armedis.redis.RedisInstanceType;
-import com.github.armedis.redis.RedisServerInfoMaker;
+import com.github.armedis.redis.connection.RedisServerDetector;
 
 @Component
 public class RedisCommandExecutor {
     private final Logger logger = LoggerFactory.getLogger(RedisCommandExecutor.class);
 
-//    private RedisConnectionPool<String, String> redisConnectionPool;
     private RedisTemplate<String, Object> redisTemplate;
-
-    // TODO 서버 분기 제거, 분기 필요 없음.
-    private RedisInstanceType redisServerInfo;
 
     private BeanFactory beanFactory;
 
+    private RedisServerDetector redisServerDetector;
+
     @Autowired
-    public RedisCommandExecutor(RedisTemplate<String, Object> redisTemplate, RedisServerInfoMaker redisServerInfoMaker, BeanFactory beanFactory) {
+    public RedisCommandExecutor(RedisTemplate<String, Object> redisTemplate, RedisServerDetector redisServerDetector, BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
         this.redisTemplate = redisTemplate;
-        this.redisServerInfo = redisServerInfoMaker.getRedisServerInfo().getRedisInstanceType();
+        this.redisServerDetector = redisServerDetector;
     }
 
     public RedisCommandExecuteResult execute(RedisRequest redisRequest) throws Exception {
@@ -45,60 +42,16 @@ public class RedisCommandExecutor {
         }
 
         if (commandRunner instanceof RedisCommandRunner) {
-            // do nothing.
             logger.debug(commandRunner.getClass().getSimpleName() + " class found!");
         }
         else {
-            throw new NotImplementedException("Connection pool not implemented yet " + redisServerInfo.toString());
+            throw new NotImplementedException("Connection pool not implemented yet " + this.redisServerDetector.getRedisInstanceType());
         }
 
-        switch (this.redisServerInfo) {
-            case STANDALONE:
-                // Bean lookup and execute on cluster server.
-                return executeNonClusterCommand((RedisCommandRunner) commandRunner);
-
-            case SENTINEL:
-                // Bean lookup and execute on cluster server.
-                return executeNonClusterCommand((RedisCommandRunner) commandRunner);
-
-            case CLUSTER:
-                // Bean lookup and execute on cluster server.
-                return executeClusterCommand((RedisCommandRunner) commandRunner);
-
-            default:
-                throw new NotImplementedException("Connection pool not implemented yet " + redisServerInfo.toString());
-        }
+        return executeCommand((RedisCommandRunner) commandRunner);
     }
 
-    private RedisCommandExecuteResult executeNonClusterCommand(RedisCommandRunner commandRunner) throws Exception {
-//        StatefulRedisConnection<String, String> connection = this.redisConnectionPool.getNonClusterConnection();
-//        RedisCommands<String, String> commands = connection.sync();
-//
-//        RedisCommandExecuteResult result = commandRunner.executeAndGet(commands);
-//
-//        this.redisConnectionPool.returnObject(connection);
-
-        RedisCommandExecuteResult result = commandRunner.executeAndGet();
-
-        logger.info("Command execute with redisRequest " + commandRunner.toString());
-
-        return result;
-    }
-
-    private RedisCommandExecuteResult executeClusterCommand(RedisCommandRunner commandRunner) throws Exception {
-        // cluster is not null
-        // send all cluster
-        // send master
-        // send slave
-
-//        StatefulRedisClusterConnection<String, String> connection = this.redisConnectionPool.getClusterConnection();
-//
-//        RedisAdvancedClusterCommands<String, String> commands = connection.sync();
-//
-//        RedisCommandExecuteResult result = commandRunner.executeAndGet(commands);
-//
-//        this.redisConnectionPool.returnObject(connection);
-
+    private RedisCommandExecuteResult executeCommand(RedisCommandRunner commandRunner) throws Exception {
         RedisCommandExecuteResult result = commandRunner.executeAndGet();
 
         logger.info("Command execute with redisRequest " + commandRunner.toString());
