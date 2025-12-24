@@ -11,9 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.test.context.ActiveProfiles;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.armedis.ArmedisServer;
@@ -23,15 +21,14 @@ import com.github.armedis.http.service.AbstractRedisServerTest;
  * RedisTemplate Operations 테스트
  * String, Hash, Key Operations 등을 검증
  */
-@ActiveProfiles("testbed")
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
 public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
 
     @Autowired
-    private RedisTemplate<String, JsonNode> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    
+
     private static final String TEST_KEY_PREFIX = "test:";
     private String testKey;
 
@@ -55,14 +52,14 @@ public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
         jsonValue.put("age", 30);
 
         // When
-        redisTemplate.opsForValue().set(testKey, jsonValue);
-        JsonNode result = redisTemplate.opsForValue().get(testKey);
+        redisTemplate.opsForValue().set(testKey, jsonValue.toString());
+        String result = (String) redisTemplate.opsForValue().get(testKey);
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.get("name").asText()).isEqualTo("John Doe");
-        assertThat(result.get("age").asInt()).isEqualTo(30);
-        
+        System.out.println("!!!!!!!! " + String.valueOf(result));
+        assertThat(result).isEqualTo(jsonValue.toString());
+
         System.out.println("SET/GET test passed: " + result);
     }
 
@@ -73,20 +70,20 @@ public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
         jsonValue.put("message", "This will expire");
 
         // When
-        redisTemplate.opsForValue().set(testKey, jsonValue, 2, TimeUnit.SECONDS);
-        
+        redisTemplate.opsForValue().set(testKey, jsonValue.toString(), 2, TimeUnit.SECONDS);
+
         // Then - 즉시 조회 시 존재해야 함
-        JsonNode result = redisTemplate.opsForValue().get(testKey);
+        String result = (String) redisTemplate.opsForValue().get(testKey);
         assertThat(result).isNotNull();
-        assertThat(result.get("message").asText()).isEqualTo("This will expire");
+        assertThat(result).isEqualTo(jsonValue.toString());
 
         // Wait for expiration
         Thread.sleep(3000);
 
         // Then - 만료 후 조회 시 null이어야 함
-        JsonNode expiredResult = redisTemplate.opsForValue().get(testKey);
+        String expiredResult = (String) redisTemplate.opsForValue().get(testKey);
         assertThat(expiredResult).isNull();
-        
+
         System.out.println("SET with EXPIRE test passed");
     }
 
@@ -100,16 +97,16 @@ public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
         jsonValue2.put("value", "second");
 
         // When
-        Boolean firstSet = redisTemplate.opsForValue().setIfAbsent(testKey, jsonValue1);
-        Boolean secondSet = redisTemplate.opsForValue().setIfAbsent(testKey, jsonValue2);
+        Boolean firstSet = redisTemplate.opsForValue().setIfAbsent(testKey, jsonValue1.toString());
+        Boolean secondSet = redisTemplate.opsForValue().setIfAbsent(testKey, jsonValue2.toString());
 
         // Then
         assertThat(firstSet).isTrue();
         assertThat(secondSet).isFalse();
 
-        JsonNode result = redisTemplate.opsForValue().get(testKey);
-        assertThat(result.get("value").asText()).isEqualTo("first");
-        
+        String result = (String) redisTemplate.opsForValue().get(testKey);
+        assertThat(result).isEqualTo(jsonValue1.toString());
+
         System.out.println("SETNX test passed");
     }
 
@@ -121,13 +118,13 @@ public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
         userData.put("email", "user@example.com");
 
         // When
-        redisTemplate.opsForHash().put(testKey, hashKey, userData);
-        JsonNode result = (JsonNode) redisTemplate.opsForHash().get(testKey, hashKey);
+        redisTemplate.opsForHash().put(testKey, hashKey, userData.toString());
+        String result = (String) redisTemplate.opsForHash().get(testKey, hashKey);
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.get("email").asText()).isEqualTo("user@example.com");
-        
+        assertThat(result).isEqualTo(userData.toString());
+
         System.out.println("HSET/HGET test passed: " + result);
     }
 
@@ -141,14 +138,14 @@ public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
         user2.put("name", "Bob");
 
         // When
-        redisTemplate.opsForHash().put(testKey, "user:1", user1);
-        redisTemplate.opsForHash().put(testKey, "user:2", user2);
+        redisTemplate.opsForHash().put(testKey, "user:1", user1.toString());
+        redisTemplate.opsForHash().put(testKey, "user:2", user2.toString());
 
         // Then
         assertThat(redisTemplate.opsForHash().size(testKey)).isEqualTo(2);
         assertThat(redisTemplate.opsForHash().hasKey(testKey, "user:1")).isTrue();
         assertThat(redisTemplate.opsForHash().hasKey(testKey, "user:2")).isTrue();
-        
+
         System.out.println("HGETALL test passed, hash size: " + redisTemplate.opsForHash().size(testKey));
     }
 
@@ -157,7 +154,7 @@ public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
         // Given
         ObjectNode jsonValue = objectMapper.createObjectNode();
         jsonValue.put("temp", "data");
-        redisTemplate.opsForValue().set(testKey, jsonValue);
+        redisTemplate.opsForValue().set(testKey, jsonValue.toString());
 
         // When
         Boolean deleteResult = redisTemplate.delete(testKey);
@@ -165,7 +162,7 @@ public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
         // Then
         assertThat(deleteResult).isTrue();
         assertThat(redisTemplate.hasKey(testKey)).isFalse();
-        
+
         System.out.println("DELETE test passed");
     }
 
@@ -174,7 +171,7 @@ public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
         // Given
         ObjectNode jsonValue = objectMapper.createObjectNode();
         jsonValue.put("data", "will expire");
-        redisTemplate.opsForValue().set(testKey, jsonValue);
+        redisTemplate.opsForValue().set(testKey, jsonValue.toString());
 
         // When
         Boolean expireResult = redisTemplate.expire(testKey, 10, TimeUnit.SECONDS);
@@ -183,7 +180,7 @@ public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
         assertThat(expireResult).isTrue();
         Long ttl = redisTemplate.getExpire(testKey, TimeUnit.SECONDS);
         assertThat(ttl).isGreaterThan(0).isLessThanOrEqualTo(10);
-        
+
         System.out.println("EXPIRE test passed, TTL: " + ttl + " seconds");
     }
 
@@ -194,12 +191,12 @@ public class RedisTemplateOperationsTest extends AbstractRedisServerTest {
         jsonValue.put("exists", true);
 
         // When
-        redisTemplate.opsForValue().set(testKey, jsonValue);
+        redisTemplate.opsForValue().set(testKey, jsonValue.toString());
 
         // Then
         assertThat(redisTemplate.hasKey(testKey)).isTrue();
         assertThat(redisTemplate.hasKey(testKey + ":nonexistent")).isFalse();
-        
+
         System.out.println("EXISTS test passed");
     }
 }

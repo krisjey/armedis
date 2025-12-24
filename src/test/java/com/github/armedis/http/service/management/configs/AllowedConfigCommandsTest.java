@@ -3,18 +3,27 @@
  */
 package com.github.armedis.http.service.management.configs;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Collection;
+import java.util.NoSuchElementException;
+
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.util.NoSuchElementException;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.armedis.http.service.management.configs.AllowedConfigCommands.ConfigCommand;
 
 class AllowedConfigCommandsTest {
 
@@ -23,7 +32,7 @@ class AllowedConfigCommandsTest {
     @Test
     @DisplayName("모든 config commands 조회")
     void testGetAllCommands() {
-        var commands = AllowedConfigCommands.all();
+        Collection<ConfigCommand> commands = AllowedConfigCommands.all();
 
         assertNotNull(commands);
         assertThat(commands.size()).isGreaterThan(10);
@@ -32,7 +41,7 @@ class AllowedConfigCommandsTest {
     @Test
     @DisplayName("존재하는 config key 조회")
     void testGetExistingCommand() {
-        var cmd = AllowedConfigCommands.get("maxmemory");
+        ConfigCommand cmd = AllowedConfigCommands.get("maxmemory");
 
         assertNotNull(cmd);
         assertEquals("maxmemory", cmd.getKey());
@@ -43,9 +52,9 @@ class AllowedConfigCommandsTest {
     @Test
     @DisplayName("대소문자 구분 없이 config key 조회")
     void testGetCommandCaseInsensitive() {
-        var cmd1 = AllowedConfigCommands.get("MAXMEMORY");
-        var cmd2 = AllowedConfigCommands.get("maxMemory");
-        var cmd3 = AllowedConfigCommands.get("maxmemory");
+        ConfigCommand cmd1 = AllowedConfigCommands.get("MAXMEMORY");
+        ConfigCommand cmd2 = AllowedConfigCommands.get("maxMemory");
+        ConfigCommand cmd3 = AllowedConfigCommands.get("maxmemory");
 
         assertNotNull(cmd1);
         assertNotNull(cmd2);
@@ -71,7 +80,7 @@ class AllowedConfigCommandsTest {
     @Test
     @DisplayName("MEMORYUNIT 타입 validation - 유효한 값")
     void testMemoryUnitValidation() {
-        var cmd = AllowedConfigCommands.get("maxmemory");
+        ConfigCommand cmd = AllowedConfigCommands.get("maxmemory");
 
         assertTrue(cmd.isValid("1024"));
         assertTrue(cmd.isValid("1k"));
@@ -84,7 +93,7 @@ class AllowedConfigCommandsTest {
     @Test
     @DisplayName("MEMORYUNIT 타입 validation - 무효한 값")
     void testMemoryUnitInvalidValidation() {
-        var cmd = AllowedConfigCommands.get("maxmemory");
+        ConfigCommand cmd = AllowedConfigCommands.get("maxmemory");
 
         assertFalse(cmd.isValid("abc"));
         assertFalse(cmd.isValid("1x"));
@@ -94,7 +103,7 @@ class AllowedConfigCommandsTest {
     @Test
     @DisplayName("MEMORYUNIT 타입 normalization")
     void testMemoryUnitNormalization() {
-        var cmd = AllowedConfigCommands.get("maxmemory");
+        ConfigCommand cmd = AllowedConfigCommands.get("maxmemory");
 
         cmd.setCurrentValue("1GB");
         assertEquals("1gb", cmd.getCurrentValue());
@@ -106,7 +115,7 @@ class AllowedConfigCommandsTest {
     @Test
     @DisplayName("INTEGER 타입 validation")
     void testIntegerValidation() {
-        var cmd = AllowedConfigCommands.get("maxclients");
+        ConfigCommand cmd = AllowedConfigCommands.get("maxclients");
 
         assertTrue(cmd.isValid("100"));
         assertTrue(cmd.isValid("0"));
@@ -118,7 +127,7 @@ class AllowedConfigCommandsTest {
     @Test
     @DisplayName("DROPDOWN 타입 validation - 유효한 값")
     void testDropdownValidation() {
-        var cmd = AllowedConfigCommands.get("maxmemory-policy");
+        ConfigCommand cmd = AllowedConfigCommands.get("maxmemory-policy");
 
         assertTrue(cmd.isValid("noeviction"));
         assertTrue(cmd.isValid("allkeys-lru"));
@@ -128,7 +137,7 @@ class AllowedConfigCommandsTest {
     @Test
     @DisplayName("DROPDOWN 타입 validation - 무효한 값")
     void testDropdownInvalidValidation() {
-        var cmd = AllowedConfigCommands.get("maxmemory-policy");
+        ConfigCommand cmd = AllowedConfigCommands.get("maxmemory-policy");
 
         assertFalse(cmd.isValid("invalid-policy"));
         assertFalse(cmd.isValid(""));
@@ -137,7 +146,7 @@ class AllowedConfigCommandsTest {
     @Test
     @DisplayName("DROPDOWN 타입 무효한 값 설정 시 예외 발생")
     void testDropdownInvalidValueThrowsException() {
-        var cmd = AllowedConfigCommands.get("loglevel");
+        ConfigCommand cmd = AllowedConfigCommands.get("loglevel");
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> cmd.setCurrentValue("invalid-level"));
@@ -149,7 +158,7 @@ class AllowedConfigCommandsTest {
     @Test
     @DisplayName("DROPDOWN options 포함 여부")
     void testDropdownHasOptions() {
-        var cmd = AllowedConfigCommands.get("appendfsync");
+        ConfigCommand cmd = AllowedConfigCommands.get("appendfsync");
 
         assertNotNull(cmd.getOptions());
         assertEquals(3, cmd.getOptions().size());
@@ -161,7 +170,7 @@ class AllowedConfigCommandsTest {
     @Test
     @DisplayName("non-DROPDOWN 타입은 options가 null")
     void testNonDropdownHasNoOptions() {
-        var cmd = AllowedConfigCommands.get("maxmemory");
+        ConfigCommand cmd = AllowedConfigCommands.get("maxmemory");
 
         assertNull(cmd.getOptions());
     }
@@ -169,7 +178,8 @@ class AllowedConfigCommandsTest {
     @Test
     @DisplayName("currentValue 설정 및 조회")
     void testSetAndGetCurrentValue() {
-        var cmd = AllowedConfigCommands.get("timeout");
+
+        ConfigCommand cmd = AllowedConfigCommands.get("timeout");
 
         // TODO 현재 값 확인. 두번 호출되고 첫 번째는 "" 두 번째는 "0"
         System.out.println(cmd.getKey() + "[" + cmd.getCurrentValue() + "]");
@@ -187,7 +197,7 @@ class AllowedConfigCommandsTest {
     @Test
     @DisplayName("null 값 설정 시 예외 발생")
     void testSetNullValueThrowsException() {
-        var cmd = AllowedConfigCommands.get("maxclients");
+        ConfigCommand cmd = AllowedConfigCommands.get("maxclients");
 
         assertThrows(IllegalArgumentException.class, () -> cmd.setCurrentValue(null));
     }
@@ -266,23 +276,23 @@ class AllowedConfigCommandsTest {
     @Test
     @DisplayName("DataType enum to string 변환")
     void testDataTypeToString() {
-        var cmd1 = AllowedConfigCommands.get("maxmemory");
+        ConfigCommand cmd1 = AllowedConfigCommands.get("maxmemory");
         assertEquals("memoryunit", cmd1.getDataType());
 
-        var cmd2 = AllowedConfigCommands.get("maxclients");
+        ConfigCommand cmd2 = AllowedConfigCommands.get("maxclients");
         assertEquals("integer", cmd2.getDataType());
 
-        var cmd3 = AllowedConfigCommands.get("save");
+        ConfigCommand cmd3 = AllowedConfigCommands.get("save");
         assertEquals("string", cmd3.getDataType());
 
-        var cmd4 = AllowedConfigCommands.get("loglevel");
+        ConfigCommand cmd4 = AllowedConfigCommands.get("loglevel");
         assertEquals("dropdown", cmd4.getDataType());
     }
 
     @Test
     @DisplayName("thread-safety: 동시에 currentValue 변경")
     void testThreadSafety() throws InterruptedException {
-        var cmd = AllowedConfigCommands.get("maxclients");
+        ConfigCommand cmd = AllowedConfigCommands.get("maxclients");
 
         Thread t1 = new Thread(() -> {
             for (int i = 0; i < 100; i++) {

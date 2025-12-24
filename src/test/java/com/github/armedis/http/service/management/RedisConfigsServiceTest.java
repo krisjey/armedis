@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.test.context.ActiveProfiles;
 
 import com.github.armedis.ArmedisServer;
 import com.github.armedis.http.service.AbstractRedisServerTest;
@@ -20,7 +19,6 @@ import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.common.RequestHeaders;
 
-@ActiveProfiles("testbed")
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
 class RedisConfigsServiceTest extends AbstractRedisServerTest {
 
@@ -50,5 +48,7 @@ class RedisConfigsServiceTest extends AbstractRedisServerTest {
                 .as("Check result field in result json")
                 .node("configKeys").isPresent()
                 .node("configKeys").isArray();
+        
+        // TODO currentValue exist
     }
 }

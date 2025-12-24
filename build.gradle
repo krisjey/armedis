@@ -67,7 +67,22 @@ eclipse {
         downloadSources = true
 
         file.whenMerged { classpath -> classpath.entries.sort() }
+        
+        // 캐시 클리어를 위한 설정
+        file.withXml {
+            def node = it.asNode()
+            node.appendNode('classpathentry', [kind: 'con', path: 'org.eclipse.jdt.launching.JRE_CONTAINER'])
+        }
     }
+}
+
+// 인코딩 관련 시스템 속성 설정
+compileJava {
+    options.encoding = 'UTF-8'
+}
+
+compileTestJava {
+    options.encoding = 'UTF-8'
 }
 
 group = 'com.github.armedis'

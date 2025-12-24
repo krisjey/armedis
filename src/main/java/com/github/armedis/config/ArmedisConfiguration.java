@@ -20,6 +20,9 @@ public class ArmedisConfiguration {
     @Value("${config.redis.seed.port}")
     private Integer redisSeedPort;
 
+    @Value("${config.redis.seed.password:}")
+    private String redisSeedPassword;
+
     @Value("${server.service.port}")
     private int servicePort;
 
@@ -32,7 +35,7 @@ public class ArmedisConfiguration {
     @Value("${server.config.stat.enabled}")
     private boolean statEnabled;
 
-    @Value("${server.config.stat.logging.enableed}")
+    @Value("${server.config.stat.logging.enabled}")
     private boolean loggingEnabled;
 
     @Value("${server.management.loginId}")
@@ -41,12 +44,30 @@ public class ArmedisConfiguration {
     @Value("${server.management.loginPassword}")
     private String loginPassword;
 
+    @Value("${server.config.service.access.logging.enabled}")
+    private boolean accessloggingEnabled;
+
+    @Value("${server.config.service.http.logging.enabled}")
+    private boolean httplogEnabled;
+
+    public boolean getAccessLoggingEnabled() {
+        return accessloggingEnabled;
+    }
+
+    public boolean getHttpLoggingEnabled() {
+        return httplogEnabled;
+    }
+
     public String getRedisSeedHost() {
         return redisSeedHost;
     }
 
     public int getRedisSeedPort() {
         return redisSeedPort;
+    }
+
+    public String getRedisSeedPassword() {
+        return redisSeedPassword;
     }
 
     public int getServicePort() {

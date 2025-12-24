@@ -7,9 +7,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -19,11 +20,15 @@ import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.linecorp.armeria.common.AggregatedHttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 
-@ActiveProfiles("testbed")
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
 public class RedisGetServiceTest extends AbstractRedisServerTest {
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
     @Test
     void testSetAndGetCommand() throws JsonParseException, JsonMappingException, IOException {
+        stringRedisTemplate.opsForValue().set(StringServiceTestSuite.TEST_KEY, StringServiceTestSuite.TEST_VALUE);
+
         AggregatedHttpResponse response = null;
         String responseString = null;
 

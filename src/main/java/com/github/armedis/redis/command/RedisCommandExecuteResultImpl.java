@@ -18,12 +18,12 @@ public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult 
     private float floatResult;
     private long longResult;
     private double doubleResult;
-    private Map<String, String> mapResult;
+    private Map<Object, Object> mapResult;
     private List<?> listResult;
     private ResultType resultType;
     private Class clazz;
 
-    public RedisCommandExecuteResultImpl(ResultType resultType, boolean boolResult, int intResult, String stringResult, float floatResult, long longResult, double doubleResult, Map<String, String> mapResult, List<?> listResult, Class clazz) {
+    public RedisCommandExecuteResultImpl(ResultType resultType, boolean boolResult, int intResult, String stringResult, float floatResult, long longResult, double doubleResult, Map<Object, Object> mapResult, List<?> listResult, Class clazz) {
         this.resultType = resultType;
         this.boolResult = boolResult;
         this.intResult = intResult;
@@ -39,7 +39,7 @@ public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult 
     @Override
     public String toResponseString() {
         ObjectNode result = createObjectNode();
-        return result.textValue();
+        return result.toString();
     }
 
     @Override

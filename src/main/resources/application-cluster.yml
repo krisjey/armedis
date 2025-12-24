@@ -1,0 +1,7 @@
+# Armedis Configuration
+config:
+  redis:
+    seed:
+      host: 192.168.56.105
+      port: 17001
+      password: foobar   # optional

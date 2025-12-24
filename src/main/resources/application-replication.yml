@@ -1,0 +1,7 @@
+# Armedis Configuration
+config:
+  redis:
+    seed:
+      host: 192.168.56.105
+      port: 8101  # 8000, 8101, 8102
+      password: foobar   # optional

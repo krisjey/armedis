@@ -56,12 +56,12 @@
 
         <Logger name="com.linecorp.armeria.server.logging.LoggingService" level="info"/>
         <Logger name="com.linecorp.armeria.server.HttpServerHandler" level="error"/>
-        <Logger name="com.linecorp.armeria.server.Routers" level="debug"/>
-        <Logger name="org.springframework.boot.autoconfigure" level="debug"/>
-        <Logger name="org.springframework.beans" level="debug"/>
-        <Logger name="com.linecorp.armeria" level="debug"/>
+        <Logger name="com.linecorp.armeria.server.Routers" level="info"/>
+        <Logger name="org.springframework.boot.autoconfigure" level="info"/>
+        <Logger name="org.springframework.beans" level="info"/>
+        <Logger name="com.linecorp.armeria" level="info"/>
 
-        <Logger name="io.netty" level="debug"/>
+        <Logger name="io.netty" level="info"/>
         <Logger name="io.netty.handler.codec" level="info"/>
         <Logger name="org.apache.zookeeper" level="info"/>
 
