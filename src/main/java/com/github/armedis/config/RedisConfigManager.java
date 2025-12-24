@@ -35,6 +35,11 @@ public class RedisConfigManager {
         this.redisServerDetector = redisServerDetector;
     }
 
+    /**
+     * GET 명령 수행시 노드들의 값이 다르면 (+) 기호 표시.
+     * @param configKey
+     * @return
+     */
     public String getConfigValue(String configKey) {
         Set<RedisNode> currentNodes = redisServerDetector.getAllNodes();
 
@@ -66,6 +71,12 @@ public class RedisConfigManager {
         return values.size() > 1 ? result + "(+)" : result;
     }
 
+    /**
+     *  SET 명령수행시 롤백 처리 : 롤백을 위해 이전 값 저장
+     * @param configKey
+     * @param configValue
+     * @return redis command success flag
+     */
     public boolean setConfigValue(String configKey, String configValue) {
         Set<RedisNode> currentNodes = redisServerDetector.getAllNodes();
         syncNodeTemplates(currentNodes);
