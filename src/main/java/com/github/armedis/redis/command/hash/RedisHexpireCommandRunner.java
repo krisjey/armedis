@@ -45,29 +45,4 @@ public class RedisHexpireCommandRunner extends AbstractRedisCommandRunner {
 
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
     }
-
-//    @Override
-//    public RedisCommandExecuteResult executeAndGet(RedisCommands<String, String> commands) {
-//
-//        logger.info(redisRequest.toString());
-//
-//        String key = this.redisRequest.getKey();
-//        String field = this.redisRequest.getField();
-//        Long seconds = this.redisRequest.getSeconds();
-//        List<Long> result = commands.hexpire(key, seconds, field);
-//
-//        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result, Long.class);
-//    }
-//
-//    @Override
-//    public RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands) {
-//        logger.info(redisRequest.toString());
-//
-//        String key = this.redisRequest.getKey();
-//        String field = this.redisRequest.getField();
-//        Long seconds = this.redisRequest.getSeconds();
-//        List<Long> result = commands.hexpire(key, seconds, field);
-//
-//        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result, Long.class);
-//    }
 }

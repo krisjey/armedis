@@ -41,27 +41,4 @@ public class RedisHgetCommandRunner extends AbstractRedisCommandRunner {
 
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
     }
-
-//    @Override
-//    public RedisCommandExecuteResult executeAndGet(RedisCommands<String, String> commands) {
-//
-//        logger.info(redisRequest.toString());
-//
-//        String key = this.redisRequest.getKey();
-//        String field = this.redisRequest.getField();
-//        String result = commands.hget(key, field);
-//
-//        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
-//    }
-//
-//    @Override
-//    public RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands) {
-//        logger.info(redisRequest.toString());
-//
-//        String key = this.redisRequest.getKey();
-//        String field = this.redisRequest.getField();
-//        String result = commands.hget(key, field);
-//
-//        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
-//    }
 }

@@ -57,24 +57,4 @@ public class RedisSlowlogCommandRunner extends AbstractRedisCommandRunner {
         }
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result, Object.class);
     }
-
-//    @Override
-//    public RedisCommandExecuteResult executeAndGet(RedisCommands<String, String> commands) {
-//        logger.info(redisRequest.toString());
-//        Integer size = redisRequest.getSize().orElse(10);
-//
-//        var result = commands.slowlogGet(size);
-//
-//        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result, Object.class);
-//    }
-//
-//    @Override
-//    public RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands) {
-//        logger.info(redisRequest.toString());
-//        Integer size = redisRequest.getSize().orElse(10);
-//
-//        var result = commands.slowlogGet(size);
-//
-//        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result, Object.class);
-//    }
 }

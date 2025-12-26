@@ -30,27 +30,6 @@ public class RedisTtlCommandRunner extends AbstractRedisCommandRunner {
         this.redisRequest = redisRequest;
         this.redisTemplate = redisTemplate;
     }
-
-//    @Override
-//    public RedisCommandExecuteResult executeAndGet(RedisCommands<String, String> commands) {
-//
-//        logger.info(redisRequest.toString());
-//
-//        String key = this.redisRequest.getKey();
-//        Long result = commands.ttl(key);
-//
-//        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
-//    }
-//
-//    @Override
-//    public RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands) {
-//        logger.info(redisRequest.toString());
-//
-//        String key = this.redisRequest.getKey();
-//        Long result = commands.ttl(key);
-//
-//        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
-//    }
     
     @Override
     public RedisCommandExecuteResult executeAndGet() {
