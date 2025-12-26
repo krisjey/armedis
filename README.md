@@ -1,5 +1,6 @@
 # armedis
-An HTTP2/gRPC interface for Redis, Support Redis stand-alone/cluster mode.
+- An HTTP2/gRPC interface for Redis, Support Redis stand-alone/cluster mode.
+## Support for Redis monitoring.
 
 # currently not implemented
 # In progress.
@@ -7,8 +8,11 @@ An HTTP2/gRPC interface for Redis, Support Redis stand-alone/cluster mode.
 # Load map
 ## Redis Http interface, Support redis cluster, stand alone mode.
 
-
-
+# How to test
+- gradlew -Dspring.profiles.active=single cleanTest test
+- gradlew -Dspring.profiles.active=replication cleanTest test
+- gradlew -Dspring.profiles.active=cluster cleanTest test
+- gradlew -Dspring.profiles.active=sentinel cleanTest test
 
 <!--
 java -DSERVICE_PORT=8080 -Dservice.instanceCount=1 -Dlogging.config=./logback-spring.xml -jar armedis-1.0.0-SNAPSHOT.jar
