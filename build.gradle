@@ -58,6 +58,8 @@ tasks.named('processResources') {
 
 tasks.named('test') {
     useJUnitPlatform()
+    // Gradle 실행 JVM의 -Dspring.profiles.active 값을 Test JVM으로 전달
+    systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "")
 }
 
 eclipse {
