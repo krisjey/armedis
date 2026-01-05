@@ -34,29 +34,6 @@ public class RedisExpireCommandRunner extends AbstractRedisCommandRunner {
         this.redisTemplate = redisTemplate;
     }
 
-//    @Override
-//    public RedisCommandExecuteResult executeAndGet(RedisCommands<String, String> commands) {
-//
-//        logger.info(redisRequest.toString());
-//
-//        String key = this.redisRequest.getKey();
-//        Long seconds = this.redisRequest.getSeconds();
-//        Boolean result = commands.expire(key, seconds);
-//
-//        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
-//    }
-//
-//    @Override
-//    public RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands) {
-//        logger.info(redisRequest.toString());
-//
-//        String key = this.redisRequest.getKey();
-//        Long seconds = this.redisRequest.getSeconds();
-//        Boolean result = commands.expire(key, seconds);
-//
-//        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
-//    }
-
     @Override
     public RedisCommandExecuteResult executeAndGet() {
         logger.info(redisRequest.toString());
@@ -66,5 +43,4 @@ public class RedisExpireCommandRunner extends AbstractRedisCommandRunner {
         Boolean result = redisTemplate.expire(key, seconds, TimeUnit.SECONDS);
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
     }
-
 }

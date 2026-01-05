@@ -15,7 +15,7 @@
 - gradlew -Dspring.profiles.active=sentinel cleanTest test
 
 <!--
-java -DSERVICE_PORT=8080 -Dservice.instanceCount=1 -Dlogging.config=./logback-spring.xml -jar armedis-1.0.0-SNAPSHOT.jar
+java -Dlogging.config=./logback-spring.xml -jar armedis-1.0.0-SNAPSHOT.jar
 
 
 / config

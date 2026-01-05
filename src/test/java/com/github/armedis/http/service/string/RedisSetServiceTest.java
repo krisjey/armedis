@@ -1,7 +1,7 @@
 
 package com.github.armedis.http.service.string;
 
-import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -57,7 +57,7 @@ public class RedisSetServiceTest extends AbstractRedisServerTest {
         assertThatJson(responseString)
                 .as("Check result field in result json")
                 .node(RedisCommandExecuteResult.RESULT_KEY).isPresent()
-                .node(RedisCommandExecuteResult.RESULT_KEY).isEqualTo("OK");
+                .isEqualTo("OK");
 
         String value = stringRedisTemplate.opsForValue().get(StringServiceTestSuite.TEST_KEY);
         assertThat(value).isEqualTo(StringServiceTestSuite.TEST_VALUE);

@@ -203,5 +203,5 @@ dependencies {
     testImplementation "org.junit.platform:junit-platform-suite"
 
     // json unit
-    testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:2.3.0'
+    testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:5.1.0'
 }

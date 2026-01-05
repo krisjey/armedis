@@ -3,7 +3,7 @@
  */
 package com.github.armedis.http.service.management;
 
-import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
@@ -48,7 +48,7 @@ class RedisLoginServiceTest extends AbstractRedisServerTest {
         assertThatJson(responseString)
                 .as("Check result field in result json")
                 .node(RedisCommandExecuteResult.RESULT_KEY).isPresent()
-                .node(RedisCommandExecuteResult.RESULT_KEY).isEqualTo("Fail");
+                .isEqualTo("Fail");
     }
 
     @Test
@@ -76,7 +76,7 @@ class RedisLoginServiceTest extends AbstractRedisServerTest {
         assertThatJson(responseString)
                 .as("Check result field in result json")
                 .node(RedisCommandExecuteResult.RESULT_KEY).isPresent()
-                .node(RedisCommandExecuteResult.RESULT_KEY).isEqualTo("Fail");
+                .isEqualTo("Fail");
     }
 
     @Test
@@ -104,6 +104,6 @@ class RedisLoginServiceTest extends AbstractRedisServerTest {
         assertThatJson(responseString)
                 .as("Check result field in result json")
                 .node(RedisCommandExecuteResult.RESULT_KEY).isPresent()
-                .node(RedisCommandExecuteResult.RESULT_KEY).isEqualTo("OK");
+                .isEqualTo("OK");
     }
 }

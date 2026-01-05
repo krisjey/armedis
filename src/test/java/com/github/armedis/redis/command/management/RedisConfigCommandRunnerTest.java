@@ -3,7 +3,7 @@
  */
 package com.github.armedis.redis.command.management;
 
-import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
@@ -57,7 +57,7 @@ class RedisConfigCommandRunnerTest {
         assertThatJson(resultString)
         .as("Check result field in result json")
         .node(RedisCommandExecuteResult.RESULT_KEY).isPresent()
-        .node("result.maxmemory").isPresent();
+        .node("maxmemory").isPresent();
     }
 
 }
