@@ -2,6 +2,7 @@
 package com.github.armedis.redis.command.hash;
 
 import java.time.Duration;
+import java.util.Collection;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -39,9 +40,17 @@ public class RedisHexpireCommandRunner extends AbstractRedisCommandRunner {
         logger.info(redisRequest.toString());
 
         String key = this.redisRequest.getKey();
-        String field = this.redisRequest.getField();
+        List<String> field = this.redisRequest.getField();
         Long seconds = this.redisRequest.getSeconds();
-        boolean result = this.redisTemplate.opsForHash().expire(key, Duration.ofSeconds(seconds), List.of(field)).allChanged();
+
+        // TODO option value 처리 추가 필요.
+        /*
+        NX -- For each specified field, set expiration only when the field has no expiration.
+        XX -- For each specified field, set expiration only when the field has an existing expiration.
+        GT -- For each specified field, set expiration only when the new expiration is greater than current one.
+        LT -- For each specified field, set expiration only when the new expiration is less than current one.
+         */
+        boolean result = this.redisTemplate.opsForHash().expire(key, Duration.ofSeconds(seconds), (Collection) field).allChanged();
 
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
     }

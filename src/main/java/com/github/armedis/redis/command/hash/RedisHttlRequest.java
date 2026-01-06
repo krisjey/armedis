@@ -1,13 +1,15 @@
 
 package com.github.armedis.redis.command.hash;
 
+import java.util.List;
+
 import com.github.armedis.http.service.request.RedisRequest;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.server.annotation.Param;
 
 public class RedisHttlRequest extends RedisRequest {
     @Param("field")
-    protected String field;
+    private List<String> field;
 
     public RedisHttlRequest(AggregatedHttpRequest httpRequest) {
         super(httpRequest);
@@ -17,14 +19,14 @@ public class RedisHttlRequest extends RedisRequest {
     /**
      * @return the field
      */
-    public String getField() {
+    public List<String> getField() {
         return field;
     }
 
     /**
      * @param field the field to set
      */
-    public void setField(String field) {
+    public void setField(List<String> field) {
         this.field = field;
     }
 }
