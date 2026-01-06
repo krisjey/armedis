@@ -175,6 +175,7 @@ public class ArmedisServerConfiguration {
         // Disable worker thread shutdown timeout() configuration. default false.
         // if set keepAliveTimeMillis value then auto enable.
         BlockingTaskExecutorBuilder blockingTaskExecutorBuilder = BlockingTaskExecutor.builder();
+        blockingTaskExecutorBuilder.threadNamePrefix("Armedis-blocking-executor");
         blockingTaskExecutorBuilder.numThreads(500);
         blockingTaskExecutorBuilder.build();
 

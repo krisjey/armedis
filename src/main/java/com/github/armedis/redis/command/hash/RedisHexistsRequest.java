@@ -7,7 +7,7 @@ import com.linecorp.armeria.server.annotation.Param;
 
 public class RedisHexistsRequest extends RedisRequest {
     @Param("field")
-    protected String field;
+    private String field;
 
     public RedisHexistsRequest(AggregatedHttpRequest httpRequest) {
         super(httpRequest);

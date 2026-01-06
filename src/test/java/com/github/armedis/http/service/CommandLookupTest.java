@@ -24,6 +24,7 @@ public class CommandLookupTest extends AbstractRedisServerTest {
         for (String redisCommand : redisCommands) {
             assertThat(redisCommand).isNotNull();
             assertThat(redisCommand).endsWith("CommandRunner");
+            System.out.println(redisCommand);
         }
     }
 }

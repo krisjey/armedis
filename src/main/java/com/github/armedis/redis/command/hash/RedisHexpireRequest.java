@@ -1,16 +1,22 @@
 
 package com.github.armedis.redis.command.hash;
 
+import java.util.List;
+import java.util.Optional;
+
 import com.github.armedis.http.service.request.RedisRequest;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.server.annotation.Param;
 
 public class RedisHexpireRequest extends RedisRequest {
     @Param("field")
-    protected String field;
+    private List<String> field;
 
     @Param("seconds")
-    protected Long seconds;
+    private Long seconds;
+
+    @Param("option")
+    private Optional<String> option;
 
     public RedisHexpireRequest(AggregatedHttpRequest httpRequest) {
         super(httpRequest);
@@ -20,14 +26,14 @@ public class RedisHexpireRequest extends RedisRequest {
     /**
      * @return the field
      */
-    public String getField() {
+    public List<String> getField() {
         return field;
     }
 
     /**
      * @param field the field to set
      */
-    public void setField(String field) {
+    public void setField(List<String> field) {
         this.field = field;
     }
 
@@ -45,4 +51,17 @@ public class RedisHexpireRequest extends RedisRequest {
         this.seconds = seconds;
     }
 
+    /**
+     * @return the option
+     */
+    public Optional<String> getOption() {
+        return option;
+    }
+
+    /**
+     * @param option the option to set
+     */
+    public void setOption(Optional<String> option) {
+        this.option = option;
+    }
 }

@@ -23,7 +23,10 @@ import org.springframework.stereotype.Component;
 import com.github.armedis.redis.RedisNode;
 import com.github.armedis.redis.connection.RedisServerDetector;
 
+import io.lettuce.core.ClientOptions;
 import io.lettuce.core.ReadFrom;
+import io.lettuce.core.SocketOptions;
+import io.lettuce.core.TimeoutOptions;
 
 @Component
 public class RedisConfigManager {
@@ -191,7 +194,7 @@ public class RedisConfigManager {
         poolConfig.setMinIdle(1);
         poolConfig.setMaxWait(Duration.ofMillis(1500));
         poolConfig.setTestOnBorrow(true);
-        poolConfig.setTestOnReturn(true);
+        poolConfig.setTestOnReturn(false);
         poolConfig.setTestWhileIdle(true);
 
         return poolConfig;
@@ -199,9 +202,24 @@ public class RedisConfigManager {
 
     @SuppressWarnings("unchecked")
     private RedisTemplate<String, String> createTemplate(RedisNode node) {
+     // 1) Lettuce reconnect/timeout 동작 정의
+        ClientOptions clientOptions = ClientOptions.builder()
+                .autoReconnect(true) // 핵심: 자동 재연결
+                // Admin 성격이면 보통 "즉시 실패"가 운영상 예측 가능
+                .disconnectedBehavior(ClientOptions.DisconnectedBehavior.REJECT_COMMANDS)
+                // 커넥션 타임아웃/커맨드 타임아웃을 명확히 (무한 대기 방지)
+                .timeoutOptions(TimeoutOptions.enabled())
+                .socketOptions(SocketOptions.builder()
+                        .connectTimeout(Duration.ofMillis(1500))
+                        .build())
+                .build();
+        
         LettuceClientConfiguration clientConfig = LettucePoolingClientConfiguration.builder()
                 .poolConfig(buildPoolConfig())
-                .readFrom(ReadFrom.REPLICA_PREFERRED)
+                .clientOptions(clientOptions)
+//                .readFrom(ReadFrom.UPSTREAM) // master
+                .commandTimeout(Duration.ofMillis(1500))   // 필요 시 조정
+                .shutdownTimeout(Duration.ofMillis(100))   // Admin이면 짧게
                 .build();
 
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(node.getHost(), node.getPort());

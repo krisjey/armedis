@@ -1,49 +1,54 @@
-/**
- * 
- */
-package com.github.armedis.http.service.management;
+
+package com.github.armedis.http.service.generic;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.armedis.ArmedisServer;
 import com.github.armedis.http.service.AbstractRedisServerTest;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.linecorp.armeria.common.AggregatedHttpResponse;
+import com.linecorp.armeria.common.HttpData;
 import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.common.RequestHeaders;
 
-/**
- * 
- */
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
-class RedisClientListServiceTest extends AbstractRedisServerTest {
+public class RedisExpireServiceTest extends AbstractRedisServerTest {
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Test
-    void test() throws JsonMappingException, JsonProcessingException {
+    void testExpireCommand() throws JsonParseException, JsonMappingException, IOException {
+        // set data for test
+        stringRedisTemplate.opsForValue().set(GenericServiceTestSuite.TEST_KEY, GenericServiceTestSuite.TEST_VALUE);
+
         String responseString = null;
 
         RequestHeaders headers = RequestHeaders.builder()
-                .method(HttpMethod.GET)
-                .path("/v1/management/clientlist/10")
-                .contentType(MediaType.FORM_DATA) // MediaType.FORM_DATA "application/x-www-form-urlencoded"
+                .method(HttpMethod.POST)
+                .path("/v1/expire/" + GenericServiceTestSuite.TEST_KEY)
+                .contentType(MediaType.FORM_DATA) // = "application/x-www-form-urlencoded"
                 .build();
 
-        HttpRequest request = HttpRequest.of(headers);
+        // expire 300
+        String formBody = "seconds=300";
+
+        HttpRequest request = HttpRequest.of(headers, HttpData.ofUtf8(formBody));
 
         AggregatedHttpResponse response = client.execute(request).aggregate().join();
-
-        System.out.println(MediaType.FORM_DATA);
-        System.out.println(MediaType.PLAIN_TEXT_UTF_8);
 
         assertThat(response.status()).isEqualTo(HttpStatus.OK);
 
@@ -51,13 +56,14 @@ class RedisClientListServiceTest extends AbstractRedisServerTest {
 
         assertThat(responseString).isNotNull();
 
-//        JsonNode resultJson = mapper.readTree(responseString);
-
         assertThatJson(responseString)
                 .as("Check result field in result json")
                 .node(RedisCommandExecuteResult.RESULT_KEY).isPresent()
-                .isArray();
+                .isEqualTo(Boolean.TRUE);
 
+        String value = stringRedisTemplate.opsForValue().get(GenericServiceTestSuite.TEST_KEY);
+        assertThat(value).isEqualTo(GenericServiceTestSuite.TEST_VALUE);
+
+        stringRedisTemplate.persist(GenericServiceTestSuite.TEST_KEY);
     }
-
 }

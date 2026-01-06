@@ -1,5 +1,5 @@
 
-package com.github.armedis.http.service.string;
+package com.github.armedis.http.service.hash;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,23 +26,27 @@ import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.common.RequestHeaders;
 
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
-public class RedisSetServiceTest extends AbstractRedisServerTest {
+public class RedisHexpireServiceTest extends AbstractRedisServerTest {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
     @Test
-    void testSetCommand() throws JsonParseException, JsonMappingException, IOException {
-        // TODO data 응답 크기 제한 필요.
+    void testHexpireCommand() throws JsonParseException, JsonMappingException, IOException {
+        // set data for test
+        stringRedisTemplate.opsForHash().put(HashServiceTestSuite.TEST_KEY, HashServiceTestSuite.TEST_FIELD1, HashServiceTestSuite.TEST_VALUE);
+        stringRedisTemplate.opsForHash().put(HashServiceTestSuite.TEST_KEY, HashServiceTestSuite.TEST_FIELD2, HashServiceTestSuite.TEST_VALUE);
+        stringRedisTemplate.opsForHash().put(HashServiceTestSuite.TEST_KEY, HashServiceTestSuite.TEST_FIELD3, HashServiceTestSuite.TEST_VALUE);
 
         String responseString = null;
 
         RequestHeaders headers = RequestHeaders.builder()
                 .method(HttpMethod.POST)
-                .path("/v1/set/" + StringServiceTestSuite.TEST_KEY)
+                .path("/v1/hexpire/" + HashServiceTestSuite.TEST_KEY)
                 .contentType(MediaType.FORM_DATA) // = "application/x-www-form-urlencoded"
                 .build();
 
-        String formBody = "value=" + StringServiceTestSuite.TEST_VALUE;
+        // expire 300
+        String formBody = "seconds=10&field=" + HashServiceTestSuite.TEST_FIELD1 + "&field=" + HashServiceTestSuite.TEST_FIELD2;
 
         HttpRequest request = HttpRequest.of(headers, HttpData.ofUtf8(formBody));
 
@@ -57,10 +61,6 @@ public class RedisSetServiceTest extends AbstractRedisServerTest {
         assertThatJson(responseString)
                 .as("Check result field in result json")
                 .node(RedisCommandExecuteResult.RESULT_KEY).isPresent()
-                .isEqualTo("OK");
-
-        String value = stringRedisTemplate.opsForValue().get(StringServiceTestSuite.TEST_KEY);
-        assertThat(value).isEqualTo(StringServiceTestSuite.TEST_VALUE);
-
+                .isEqualTo(Boolean.TRUE);
     }
 }
