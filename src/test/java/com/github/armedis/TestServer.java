@@ -10,6 +10,7 @@ import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
+import com.linecorp.armeria.common.MediaTypeNames;
 import com.linecorp.armeria.server.Server;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.annotation.Consumes;
@@ -46,7 +47,7 @@ public class TestServer {
             @Get
             @Post
             @Path("/v1/gets")
-            @Consumes("application/json")
+            @Consumes(MediaTypeNames.JSON)
             public HttpResponse greetGetWithKey(AggregatedHttpRequest httpRequest) {
                 logger.info("prefix [" + httpRequest.contentUtf8() + "]");
                 return HttpResponse.of(HttpStatus.OK, MediaType.JSON_UTF_8, "{\"key\":\"%s\"}", httpRequest.path());
@@ -55,7 +56,7 @@ public class TestServer {
             @Get
             @Post
             @Path("/v1/gets/{key}")
-            @Consumes("application/json")
+            @Consumes(MediaTypeNames.JSON)
             public HttpResponse greetPost(AggregatedHttpRequest httpRequest, @Param("key") String name) {
                 logger.info(name + " with key " + httpRequest.path());
                 return HttpResponse.of(HttpStatus.OK, MediaType.JSON_UTF_8, "{\"request param in path\":\"%s\"}", name);

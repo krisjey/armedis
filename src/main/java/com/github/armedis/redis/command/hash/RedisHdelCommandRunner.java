@@ -1,6 +1,8 @@
 
 package com.github.armedis.redis.command.hash;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -36,8 +38,10 @@ public class RedisHdelCommandRunner extends AbstractRedisCommandRunner {
         logger.info(redisRequest.toString());
 
         String key = this.redisRequest.getKey();
-        String field = this.redisRequest.getField();
-        Long result = redisTemplate.opsForHash().delete(key, field);
+//        String field = this.redisRequest.getField();
+        List<String> fields = this.redisRequest.getField();
+
+        Long result = redisTemplate.opsForHash().delete(key, fields.toArray());
 
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
     }

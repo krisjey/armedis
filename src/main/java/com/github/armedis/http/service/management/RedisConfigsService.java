@@ -15,6 +15,7 @@ import com.github.armedis.http.service.management.configs.AllowedConfigCommands.
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.github.armedis.redis.command.management.RedisConfigRequest;
 import com.linecorp.armeria.common.HttpResponse;
+import com.linecorp.armeria.common.MediaTypeNames;
 import com.linecorp.armeria.server.annotation.Consumes;
 import com.linecorp.armeria.server.annotation.Get;
 import com.linecorp.armeria.server.annotation.Path;
@@ -37,7 +38,7 @@ public class RedisConfigsService extends BaseService {
 
     @Get
     @Path(COMMAND_URL_WITH_KEY)
-    @Consumes("application/x-www-form-urlencoded")
+    @Consumes(MediaTypeNames.FORM_DATA)
     public HttpResponse getUrlencodedWithKey(RedisConfigRequest redisRequest) {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 

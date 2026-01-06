@@ -1,20 +1,24 @@
-/**
- * 
- */
-package com.github.armedis.http.service.management;
+
+package com.github.armedis.http.service.hash;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.armedis.ArmedisServer;
 import com.github.armedis.http.service.AbstractRedisServerTest;
+import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.linecorp.armeria.common.AggregatedHttpResponse;
+import com.linecorp.armeria.common.HttpData;
 import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.HttpStatus;
@@ -22,23 +26,27 @@ import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.common.RequestHeaders;
 
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
-class RedisConfigsServiceTest extends AbstractRedisServerTest {
+public class RedisHexistsServiceTest extends AbstractRedisServerTest {
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
+    // TODO GET/POST/PUT 모두 테스트 필요.
     @Test
-    void testConfigsGet() {
-        // TODO data 응답 크기 제한 필요.
+    void testHexistsCommand() throws JsonParseException, JsonMappingException, IOException {
+        // set data for test
+        stringRedisTemplate.opsForHash().put(HashServiceTestSuite.TEST_KEY, HashServiceTestSuite.TEST_FIELD3, HashServiceTestSuite.TEST_VALUE);
 
         String responseString = null;
 
         RequestHeaders headers = RequestHeaders.builder()
                 .method(HttpMethod.GET)
-                .path("/v1/management/settings/configs")
+                .path("/v1/hexists/" + HashServiceTestSuite.TEST_KEY)
                 .contentType(MediaType.FORM_DATA) // = "application/x-www-form-urlencoded"
                 .build();
 
-        HttpRequest request = HttpRequest.of(headers);
+        String formBody = "field=" + HashServiceTestSuite.TEST_FIELD3;
+
+        HttpRequest request = HttpRequest.of(headers, HttpData.ofUtf8(formBody));
 
         AggregatedHttpResponse response = client.execute(request).aggregate().join();
 
@@ -49,32 +57,8 @@ class RedisConfigsServiceTest extends AbstractRedisServerTest {
         assertThat(responseString).isNotNull();
 
         assertThatJson(responseString)
-                .node("configKeys")
-                .isArray();
-
-        assertThatJson(responseString)
-                .node("configKeys[0].key")
-                .isPresent();
-
-        assertThatJson(responseString)
-                .inPath("$.configKeys[*].key")
-                .isArray()
-                .contains("timeout", "maxmemory");
-
-        logger.info(responseString);
-
-        assertThatJson(responseString)
-                .inPath("$.configKeys[?(@.key=='maxmemory')].currentValue")
-                .isArray();
-
-        assertThatJson(responseString)
-                .inPath("$.configKeys[?(@['key'] == 'timeout')]")
-                .isArray()
-                .hasSize(1);
-
-//        assertThatJson(responseString)
-//                .inPath("$.configKeys[?(@['key'] == 'timeout')].currentValue")
-//                .isArray()
-//                .containsExactly("\"0\"");
+                .as("Check result field in result json")
+                .node(RedisCommandExecuteResult.RESULT_KEY).isPresent()
+                .isEqualTo(Boolean.TRUE);
     }
 }

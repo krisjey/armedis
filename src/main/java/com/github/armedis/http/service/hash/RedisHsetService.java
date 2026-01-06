@@ -13,6 +13,7 @@ import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.github.armedis.redis.command.hash.RedisHsetRequest;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
+import com.linecorp.armeria.common.MediaTypeNames;
 import com.linecorp.armeria.server.annotation.Consumes;
 import com.linecorp.armeria.server.annotation.Get;
 import com.linecorp.armeria.server.annotation.Param;
@@ -45,10 +46,13 @@ public class RedisHsetService extends BaseService {
      */
     @Post
     @Path(COMMAND_URL)
-    @Consumes("application/x-www-form-urlencoded")
+    @Consumes(MediaTypeNames.FORM_DATA)
     public HttpResponse urlencodedWithoutKey(RedisHsetRequest redisRequest) {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
+        // TODO hmset 처럼 동작하도록 작업 필요.
+        // map[field1]=value,map[field2]=value 
+        
         // execute redis command by http request params.
         RedisCommandExecuteResult result = null;
         try {
@@ -71,7 +75,7 @@ public class RedisHsetService extends BaseService {
     @Put
     @Post
     @Path(COMMAND_URL_WITH_KEY)
-    @Consumes("application/x-www-form-urlencoded")
+    @Consumes(MediaTypeNames.FORM_DATA)
     public HttpResponse urlencodedWithKey(RedisHsetRequest redisRequest) {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
@@ -103,7 +107,7 @@ public class RedisHsetService extends BaseService {
     @Put
     @Post
     @Path(COMMAND_URL)
-    @Consumes("application/json")
+    @Consumes(MediaTypeNames.JSON)
     public HttpResponse jsonWithoutKey(AggregatedHttpRequest httpRequest) {
         JsonNode jsonBody = getAsJsonBody(httpRequest);
 
@@ -139,7 +143,7 @@ public class RedisHsetService extends BaseService {
     @Put
     @Post
     @Path(COMMAND_URL_WITH_KEY)
-    @Consumes("application/json")
+    @Consumes(MediaTypeNames.JSON)
     public HttpResponse jsonWithKey(AggregatedHttpRequest httpRequest, @Param("key") String key) {
         JsonNode jsonBody = getAsJsonBody(httpRequest);
 

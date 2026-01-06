@@ -13,6 +13,7 @@ import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.github.armedis.redis.command.hash.RedisHexpireRequest;
 import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
+import com.linecorp.armeria.common.MediaTypeNames;
 import com.linecorp.armeria.server.annotation.Consumes;
 import com.linecorp.armeria.server.annotation.Param;
 import com.linecorp.armeria.server.annotation.Path;
@@ -48,7 +49,7 @@ public class RedisHexpireService extends BaseService {
     @Put
     @Post
     @Path(COMMAND_URL)
-    @Consumes("application/x-www-form-urlencoded")
+    @Consumes(MediaTypeNames.FORM_DATA)
     public HttpResponse urlencodedWithoutKey(RedisHexpireRequest redisRequest) {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
@@ -73,7 +74,7 @@ public class RedisHexpireService extends BaseService {
     @Put
     @Post
     @Path(COMMAND_URL_WITH_KEY)
-    @Consumes("application/x-www-form-urlencoded")
+    @Consumes(MediaTypeNames.FORM_DATA)
     public HttpResponse urlencodedWithKey(RedisHexpireRequest redisRequest) {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
@@ -101,7 +102,7 @@ public class RedisHexpireService extends BaseService {
     @Put
     @Post
     @Path(COMMAND_URL)
-    @Consumes("application/json")
+    @Consumes(MediaTypeNames.JSON)
     public HttpResponse jsonWithoutKey(AggregatedHttpRequest httpRequest) {
         JsonNode jsonBody = getAsJsonBody(httpRequest);
 
@@ -133,7 +134,7 @@ public class RedisHexpireService extends BaseService {
     @Put
     @Post
     @Path(COMMAND_URL_WITH_KEY)
-    @Consumes("application/json")
+    @Consumes(MediaTypeNames.JSON)
     public HttpResponse jsonWithKey(AggregatedHttpRequest httpRequest, @Param("key") String key) {
         JsonNode jsonBody = getAsJsonBody(httpRequest);
 

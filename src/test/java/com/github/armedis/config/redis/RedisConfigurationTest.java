@@ -19,10 +19,6 @@ import com.github.armedis.http.service.AbstractRedisServerTest;
  */
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
 public class RedisConfigurationTest extends AbstractRedisServerTest {
-
-    @Autowired
-    private ArmedisConfiguration armedisConfiguration;
-
     @Autowired
     private RedisConnectionFactory redisConnectionFactory;
 
