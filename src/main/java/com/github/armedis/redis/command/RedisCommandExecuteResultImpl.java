@@ -21,9 +21,9 @@ public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult 
     private Map<Object, Object> mapResult;
     private List<?> listResult;
     private ResultType resultType;
-    private Class clazz;
+    private Class<?> clazz;
 
-    public RedisCommandExecuteResultImpl(ResultType resultType, boolean boolResult, int intResult, String stringResult, float floatResult, long longResult, double doubleResult, Map<Object, Object> mapResult, List<?> listResult, Class clazz) {
+    public RedisCommandExecuteResultImpl(ResultType resultType, boolean boolResult, int intResult, String stringResult, float floatResult, long longResult, double doubleResult, Map<Object, Object> mapResult, List<?> listResult, Class<?> clazz) {
         this.resultType = resultType;
         this.boolResult = boolResult;
         this.intResult = intResult;
@@ -49,6 +49,14 @@ public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult 
 
     private ObjectNode createObjectNode() {
         ObjectNode result = mapper.createObjectNode();
+        
+//        if (listResult != null) {
+//            ArrayNode node = mapper.convertValue(listResult, ArrayNode.class);
+//            if (node != null) {
+//                System.out.println(node.toString());
+//            }
+//        }
+
         switch (resultType) {
             case BOOLEAN:
                 result.put(RedisCommandExecuteResult.RESULT_KEY, boolResult);

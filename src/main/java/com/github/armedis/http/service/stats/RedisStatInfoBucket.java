@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -38,7 +37,6 @@ import io.lettuce.core.codec.StringCodec;
  * Redis cluster node status info command result --> redis status
  */
 @Component
-@Configuration
 @EnableScheduling
 public class RedisStatInfoBucket {
     /*
@@ -135,7 +133,7 @@ public class RedisStatInfoBucket {
 
                 // update stat info
                 RedisInfoVo redisInfo = RedisInfoVo.from(info, armedisConfiguration.isAddContentSection());
-
+                redisNodeIp = redisNodeInfo.ip();
                 redisInfo.getServer().setHost(redisNodeIp);
                 redisInfo.getServer().setTcpPort(redisNodeInfo.listenPort());
 
@@ -151,8 +149,7 @@ public class RedisStatInfoBucket {
         }
 
         // Calculate sum using Collector pattern
-        RedisInfoVo sumRedisInfoVo = RedisInfoAggregator.aggregate(
-                redisStatsInfo.getRedisInfoList().values());
+        RedisInfoVo sumRedisInfoVo = RedisInfoAggregator.aggregate(redisStatsInfo.getRedisInfoList().values());
 
         // Set host information from last processed node
         if (redisNodeIp != null) {
@@ -162,14 +159,14 @@ public class RedisStatInfoBucket {
         redisStatsInfo.put("sum", sumRedisInfoVo);
         logger.debug("TOTAL OPS " + sumRedisInfoVo.getStats().getInstantaneousOpsPerSec());
 
-        if (redisStatsInfoList.isAtFullCapacity()) {
-            redisStatsInfoList.remove();
-        }
+//        if (redisStatsInfoList.isAtFullCapacity()) {
+//            redisStatsInfoList.remove();
+//        }
 
         redisStatsInfoList.add(redisStatsInfo);
     }
 
-    // TODO 아래 코드 변경 필요.
+    // TODO 아래 코드 변경 필요. 단일 노드 INFO 명령 호출
     private String getNodeInfo(RedisClusterNodeInfo redisNodeInfo) {
         AbstractRedisClient client = (AbstractRedisClient) connectionFactory.getRequiredNativeClient();
 
@@ -214,11 +211,13 @@ public class RedisStatInfoBucket {
         List<String> nodeInfoStrings = IOUtils.readLines(new StringReader(clusterNodes));
 
         for (String nodeInfoString : nodeInfoStrings) {
-            RedisClusterNodeInfo nodeInfo = RedisClusterNodeInfoConverter.convert(nodeInfoString);
-
-            redisNodeInfo.add(nodeInfo);
+            redisNodeInfo.add(RedisClusterNodeInfo.of(nodeInfoString));
         }
 
         return redisNodeInfo;
+    }
+
+    public CircularFifoQueue<RedisStatsInfo> getRedisStatsInfoList() {
+        return this.redisStatsInfoList;
     }
 }

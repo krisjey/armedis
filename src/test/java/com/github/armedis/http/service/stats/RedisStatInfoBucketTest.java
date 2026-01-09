@@ -32,7 +32,7 @@ class RedisStatInfoBucketTest {
         List<String> nodeInfoStrings = IOUtils.readLines(new StringReader(nodes));
 
         for (String nodeInfoString : nodeInfoStrings) {
-            RedisClusterNodeInfo nodeInfo = RedisClusterNodeInfoConverter.convert(nodeInfoString);
+            RedisClusterNodeInfo nodeInfo = RedisClusterNodeInfo.of(nodeInfoString);
             redisNodeInfo.add(nodeInfo);
             System.out.println(nodeInfo);
         }

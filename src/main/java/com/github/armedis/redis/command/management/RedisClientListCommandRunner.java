@@ -38,9 +38,10 @@ public class RedisClientListCommandRunner extends AbstractRedisCommandRunner {
     public RedisCommandExecuteResult executeAndGet() {
         logger.info(redisRequest.toString());
 
+        // TODO 기존 값 또는 VO 변경 필요.
         // TODO command send to all cluster
         List<RedisClientInfo> clientList = this.redisTemplate.getClientList();
 
-        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(clientList.subList(0, Math.min(clientList.size(), LIMIT)), RedisClientInfo.class);
+        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(clientList.subList(0, Math.min(clientList.size(), LIMIT)), Object.class);
     }
 }

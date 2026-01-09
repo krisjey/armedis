@@ -24,7 +24,6 @@ import com.github.armedis.redis.RedisNode;
 import com.github.armedis.redis.connection.RedisServerDetector;
 
 import io.lettuce.core.ClientOptions;
-import io.lettuce.core.ReadFrom;
 import io.lettuce.core.SocketOptions;
 import io.lettuce.core.TimeoutOptions;
 
@@ -210,16 +209,15 @@ public class RedisConfigManager {
                 // 커넥션 타임아웃/커맨드 타임아웃을 명확히 (무한 대기 방지)
                 .timeoutOptions(TimeoutOptions.enabled())
                 .socketOptions(SocketOptions.builder()
-                        .connectTimeout(Duration.ofMillis(1500))
+                        .connectTimeout(Duration.ofMillis(200))
                         .build())
                 .build();
         
         LettuceClientConfiguration clientConfig = LettucePoolingClientConfiguration.builder()
                 .poolConfig(buildPoolConfig())
                 .clientOptions(clientOptions)
-//                .readFrom(ReadFrom.UPSTREAM) // master
-                .commandTimeout(Duration.ofMillis(1500))   // 필요 시 조정
-                .shutdownTimeout(Duration.ofMillis(100))   // Admin이면 짧게
+                .commandTimeout(Duration.ofMillis(200))   // 필요 시 조정
+                .shutdownTimeout(Duration.ofMillis(500))   // Admin이면 짧게
                 .build();
 
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(node.getHost(), node.getPort());

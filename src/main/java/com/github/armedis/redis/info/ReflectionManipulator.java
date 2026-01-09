@@ -1,123 +1,115 @@
-/**
- * 
- */
 package com.github.armedis.redis.info;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.CaseFormat;
 
-/**
- * 
- */
 public class ReflectionManipulator {
     private static final Logger logger = LoggerFactory.getLogger(ReflectionManipulator.class);
 
-    /**
-     * Private method to set field values using reflection
-     * 
-     * @param objects
-     * @param fieldName
-     * @param value
-     */
-    public static void setFieldValue(Object objects, String fieldName, String value) {
-        Class<? extends Object> clazz = objects.getClass();
+    private static final ConcurrentHashMap<String, Optional<Field>> FIELD_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Optional<Method>> METHOD_CACHE = new ConcurrentHashMap<>();
+
+    public static void setFieldValue(Object target, String fieldName, String value) {
+        Optional<Field> optionalField = getFieldFromCache(target.getClass(), fieldName);
+
+        if (optionalField.isEmpty()) {
+            logger.debug("Field not found: {}.{}", target.getClass().getSimpleName(), fieldName);
+            return;
+        }
 
         try {
-            // FIXME Errorstats # Errorstats errorstat_ERR:count=3602
-            if (clazz.getSimpleName().equals("Errorstats")) {
-                value = StringUtils.remove(value, "count=");
-            }
+            Field field = optionalField.get();
+            Class<?> type = field.getType();
 
-            if (objects instanceof StatsBaseVo) {
-                if (((StatsBaseVo) objects).operationKeyList().containsKey(fieldName)) {
-                    // do nothing.
-                }
-                else {
-                    logger.debug(clazz.getSimpleName() + " does not have  " + fieldName);
-                    return;
-                }
+            if (type == int.class) {
+                field.setInt(target, NumberUtils.toInt(value));
             }
-
-            Field field = clazz.getDeclaredField(fieldName);
-
-            field.setAccessible(true);
-
-            if (field.getType() == int.class) {
-                field.setInt(objects, NumberUtils.toInt(value));
+            else if (type == long.class) {
+                field.setLong(target, NumberUtils.toLong(value));
             }
-            else if (field.getType() == long.class) {
-                field.setLong(objects, NumberUtils.toLong(value));
+            else if (type == double.class) {
+                field.setDouble(target, NumberUtils.toDouble(value));
             }
-            else if (field.getType() == double.class) {
-                field.setDouble(objects, NumberUtils.toDouble(value));
-            }
-            else if (field.getType() == float.class) {
-                field.setFloat(objects, NumberUtils.toFloat(value));
+            else if (type == float.class) {
+                field.setFloat(target, NumberUtils.toFloat(value));
             }
             else {
-                field.set(objects, value);
+                field.set(target, value);
             }
         }
-        catch (NoSuchFieldException | IllegalAccessException | NumberFormatException | SecurityException e) {
-            logger.error("Can not found decleared field in " + clazz.getSimpleName() + " "
-                    + fieldName + " " + value, e);
+        catch (IllegalAccessException e) {
+            logger.error("Failed to set field: {}.{}", target.getClass().getSimpleName(), fieldName, e);
         }
     }
 
-    /**
-     * Private method to set field values using reflection
-     * 
-     * @param objects
-     * @param fieldName
-     * @param value
-     */
     @SuppressWarnings("unchecked")
-    public static <T> T getFieldValue(Object objects, String fieldName) {
-        Object result = null;
+    public static <T> T getFieldValue(Object target, String fieldName) {
+        Optional<Field> optionalField = getFieldFromCache(target.getClass(), fieldName);
+
+        if (optionalField.isEmpty()) {
+            logger.debug("Field not found: {}.{}", target.getClass().getSimpleName(), fieldName);
+            return null;
+        }
+
         try {
-            Field field = objects.getClass().getDeclaredField(fieldName);
-            result = field.get(objects);
-            Class<?> declaredType = field.getType();
-
-            if (result != null && !declaredType.isInstance(result)) {
-                throw new ClassCastException("Expected " + declaredType.getName() + " but got " + result.getClass().getName());
-            }
+            return (T) optionalField.get().get(target);
         }
-        catch (NoSuchFieldException | IllegalAccessException e) {
-            logger.error("Can not found decleared field in " + objects.getClass().getSimpleName() + " "
-                    + fieldName, e);
+        catch (IllegalAccessException e) {
+            logger.error("Failed to get field: {}.{}", target.getClass().getSimpleName(), fieldName, e);
+            return null;
         }
-
-        return (T) result;
     }
 
-    /**
-     * Private method to set field values using reflection
-     * 
-     * @param objects
-     * @param fieldName
-     * @param value
-     */
-    public static Object getMethodInvokeResult(Object objects, String fieldName) {
-        String methodName = "get" + CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, fieldName);
-        Object result = null;
-        try {
-            Method method = objects.getClass().getDeclaredMethod(methodName);
-            result = method.invoke(objects);
-        }
-        catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-            logger.error("Can not found decleared field in " + objects.getClass().getSimpleName() + " "
-                    + fieldName, e);
+    public static Object getMethodInvokeResult(Object target, String fieldName) {
+        Class<?> clazz = target.getClass();
+        String cacheKey = clazz.getName() + "#get" + fieldName;
+
+        Optional<Method> optionalMethod = METHOD_CACHE.computeIfAbsent(cacheKey, k -> {
+            String methodName = "get" + CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, fieldName);
+            try {
+                Method m = clazz.getDeclaredMethod(methodName);
+                m.setAccessible(true);
+                return Optional.of(m);
+            }
+            catch (NoSuchMethodException e) {
+                return Optional.empty();
+            }
+        });
+
+        if (optionalMethod.isEmpty()) {
+            logger.debug("Method not found: {}.get{}", clazz.getSimpleName(), fieldName);
+            return null;
         }
 
-        return result;
+        try {
+            return optionalMethod.get().invoke(target);
+        }
+        catch (Exception e) {
+            logger.error("Failed to invoke method: {}.get{}", clazz.getSimpleName(), fieldName, e);
+            return null;
+        }
+    }
+
+    private static Optional<Field> getFieldFromCache(Class<?> clazz, String fieldName) {
+        String cacheKey = clazz.getName() + "#" + fieldName;
+
+        return FIELD_CACHE.computeIfAbsent(cacheKey, k -> {
+            try {
+                Field f = clazz.getDeclaredField(fieldName);
+                f.setAccessible(true);
+                return Optional.of(f);
+            }
+            catch (NoSuchFieldException e) {
+                return Optional.empty();
+            }
+        });
     }
 }

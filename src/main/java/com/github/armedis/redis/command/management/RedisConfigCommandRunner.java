@@ -47,14 +47,14 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
         Map<Object, Object> result = new HashMap<>();
 
         if (redisRequest.getRequestMethod().equals(HttpMethod.GET)) {
-            String tempResult = redisConfigManager.getConfigValue(key);
+            String tempResult = this.redisConfigManager.getConfigValue(key);
             result.put(key, String.valueOf(tempResult));
             return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
         }
         else {
             Optional<String> value = this.redisRequest.getValue();
 
-            redisConfigManager.setConfigValue(key, value.get());
+            this.redisConfigManager.setConfigValue(key, value.get());
 
             // 업데이트 시 내부 값 업데이트
             AllowedConfigCommands.get(key).setCurrentValueFromDB(value.get());
@@ -63,6 +63,5 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
             // connection.sync().configSet("", "");
             return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult("OK");
         }
-
     }
 }

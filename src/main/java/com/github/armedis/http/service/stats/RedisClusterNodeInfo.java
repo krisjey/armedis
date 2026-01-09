@@ -2,6 +2,8 @@ package com.github.armedis.http.service.stats;
 
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * VO of redis cluster nodes command result.
  * id, ip, listenPort, clusterBusPort, flags, masterId, pingSend, pongRecv,
@@ -31,7 +33,7 @@ public class RedisClusterNodeInfo {
     /**
      * @param id the id to
      */
-    public void clusterId(String id) {
+    public void id(String id) {
         this.id = id;
     }
 
@@ -191,7 +193,7 @@ public class RedisClusterNodeInfo {
 
     @Override
     public String toString() {
-        return "RedisNodeInfo [id=" + id + ", ip=" + ip + ", listenPort=" + listenPort + ", clusterBusPort="
+        return "RedisClusterNodeInfo [id=" + id + ", ip=" + ip + ", listenPort=" + listenPort + ", clusterBusPort="
                 + clusterBusPort + ", flags=" + flags + ", masterId=" + masterId + ", pingSend=" + pingSend
                 + ", pongRecv=" + pongRecv + ", configEpoch=" + configEpoch + ", linkState=" + linkState
                 + ", shardSlotStart=" + shardSlotStart + ", shardSlotEnd=" + shardSlotEnd + "]";
@@ -217,5 +219,31 @@ public class RedisClusterNodeInfo {
                 && Objects.equals(linkState, other.linkState) && listenPort == other.listenPort
                 && Objects.equals(masterId, other.masterId) && pingSend == other.pingSend && pongRecv == other.pongRecv
                 && shardSlotEnd == other.shardSlotEnd && shardSlotStart == other.shardSlotStart;
+    }
+    
+    public static RedisClusterNodeInfo of(String nodeInfoString) {
+        // nodeInfoString(12, 10) ==> id, ip, listenPort, clusterBusPort,
+        // flags,masterId,
+        // pingSend, pongRecv, configEpoch, linkState, shardSlotStart,
+        // shardSlotEnd
+        String[] nodeInfoArray = StringUtils.split(nodeInfoString, " :@");
+
+        RedisClusterNodeInfo nodeInfo = new RedisClusterNodeInfo();
+        nodeInfo.id(nodeInfoArray[0]);
+        nodeInfo.ip(nodeInfoArray[1]);
+        nodeInfo.listenPort(Integer.parseInt(nodeInfoArray[2]));
+        nodeInfo.clusterBusPort(Integer.parseInt(nodeInfoArray[3]));
+        nodeInfo.flags(nodeInfoArray[4]);
+        nodeInfo.masterId(nodeInfoArray[5]);
+        nodeInfo.pingSend(Long.parseLong(nodeInfoArray[6]));
+        nodeInfo.pongRecv(Long.parseLong(nodeInfoArray[7]));
+        nodeInfo.configEpoch(Integer.parseInt(nodeInfoArray[8]));
+        nodeInfo.linkState(nodeInfoArray[9]);
+        if (nodeInfoArray.length > 10) {
+            nodeInfo.shardSlotStart(Integer.parseInt(StringUtils.split(nodeInfoArray[10], "-")[0]));
+            nodeInfo.shardSlotEnd(Integer.parseInt(StringUtils.split(nodeInfoArray[10], "-")[1]));
+        }
+
+        return nodeInfo;
     }
 }

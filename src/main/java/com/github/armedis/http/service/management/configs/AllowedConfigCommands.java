@@ -332,7 +332,7 @@ public final class AllowedConfigCommands {
                         .normalizer(memoryUnitNormalizer())
                         .build());
 
-        List<String> policyOpts = List.of("noeviction", "allkeys-lru", "volatile-lru", "volatile-random");
+        List<String> policyOpts = List.of("noeviction", "allkeys-lru", "volatile-lru", "volatile-random", "allkeys-random", "volatile-ttl");
         m.put("maxmemory-policy",
                 ConfigCommand.builder("maxmemory-policy")
                         .category(Category.Memory)
