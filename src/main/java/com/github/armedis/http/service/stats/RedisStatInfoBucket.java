@@ -133,9 +133,9 @@ public class RedisStatInfoBucket {
 
                 // update stat info
                 RedisInfoVo redisInfo = RedisInfoVo.from(info, armedisConfiguration.isAddContentSection());
-                redisNodeIp = redisNodeInfo.ip();
+                redisNodeIp = redisNodeInfo.getIp();
                 redisInfo.getServer().setHost(redisNodeIp);
-                redisInfo.getServer().setTcpPort(redisNodeInfo.listenPort());
+                redisInfo.getServer().setTcpPort(redisNodeInfo.getListenPort());
 
                 printStatPollingLog(redisStatsInfo, redisNodeInfo, redisInfo);
 
@@ -175,7 +175,7 @@ public class RedisStatInfoBucket {
             StatefulRedisClusterConnection<String, String> clusterConn = clusterClient.connect(StringCodec.UTF8);
 
             try {
-                StatefulRedisConnection<String, String> nodeConn = clusterConn.getConnection(redisNodeInfo.id());
+                StatefulRedisConnection<String, String> nodeConn = clusterConn.getConnection(redisNodeInfo.getId());
 
                 return nodeConn.sync().info();
             }
@@ -194,7 +194,7 @@ public class RedisStatInfoBucket {
      */
     private void printStatPollingLog(RedisStatsInfo redisStatsInfo, RedisClusterNodeInfo redisNodeInfo, RedisInfoVo redisInfo) {
         if (armedisConfiguration.isLoggingEnabled()) {
-            logger.info("{}:{} {} {}", redisInfo.getServer().getHost(), redisInfo.getServer().getTcpPort(), redisNodeInfo.id(), redisInfo.toJsonString());
+            logger.info("{}:{} {} {}", redisInfo.getServer().getHost(), redisInfo.getServer().getTcpPort(), redisNodeInfo.getId(), redisInfo.toJsonString());
         }
     }
 

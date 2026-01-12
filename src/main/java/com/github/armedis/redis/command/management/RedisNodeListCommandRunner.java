@@ -76,25 +76,25 @@ public class RedisNodeListCommandRunner extends AbstractRedisCommandRunner {
                 RedisStatsInfo redisStatInfo = bucket.getRedisStatsInfoList().element();
                 String runId = redisStatInfo.getRedisInfoList().values().stream().findFirst().get().getServer().getRunId();
                 RedisClusterNodeInfo nodeInfo = new RedisClusterNodeInfo();
-                nodeInfo.id(runId);
-                nodeInfo.ip(node.getHost());
-                nodeInfo.listenPort(node.getPort());
-                nodeInfo.clusterBusPort(node.getPort());
-                nodeInfo.flags(node.getRole().name());
-                nodeInfo.masterId(runId);
-                nodeInfo.pingSend(System.currentTimeMillis());
-                nodeInfo.pongRecv(System.currentTimeMillis());
-                nodeInfo.configEpoch(0);
-                nodeInfo.linkState("connected");
-                nodeInfo.shardSlotStart(0);
-                nodeInfo.shardSlotEnd(16383);
+                nodeInfo.setId(runId);
+                nodeInfo.setIp(node.getHost());
+                nodeInfo.setListenPort(node.getPort());
+                nodeInfo.setClusterBusPort(node.getPort());
+                nodeInfo.setFlags(node.getRole().name());
+                nodeInfo.setMasterId(runId);
+                nodeInfo.setPingSend(System.currentTimeMillis());
+                nodeInfo.setPongRecv(System.currentTimeMillis());
+                nodeInfo.setConfigEpoch(0);
+                nodeInfo.setLinkState("connected");
+                nodeInfo.setShardSlotStart(0);
+                nodeInfo.setShardSlotEnd(16383);
 
                 redisNodeInfo.add(nodeInfo);
             }
         }
 
-        TypeReference<List<RedisClusterNodeInfo>> typeRef = new TypeReference<>() {
-        };
+//        TypeReference<List<RedisClusterNodeInfo>> typeRef = new TypeReference<>() {
+//        };
         return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(redisNodeInfo, Object.class);
     }
 }

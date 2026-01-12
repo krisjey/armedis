@@ -24,7 +24,7 @@ class RedisStatInfoBucketTest {
         List<RedisClusterNodeInfo> redisNodeInfo = parseNodeInfo(nodes);
 
         assertThat(redisNodeInfo).isNotEmpty();
-        assertThat(redisNodeInfo.get(0).ip()).isEqualTo("192.168.56.105");
+        assertThat(redisNodeInfo.get(0).getIp()).isEqualTo("192.168.56.105");
     }
 
     private List<RedisClusterNodeInfo> parseNodeInfo(String nodes) {
