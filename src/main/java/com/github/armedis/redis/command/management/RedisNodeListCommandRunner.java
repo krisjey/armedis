@@ -15,7 +15,6 @@ import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.armedis.http.service.stats.RedisClusterNodeInfo;
 import com.github.armedis.http.service.stats.RedisStatInfoBucket;
 import com.github.armedis.http.service.stats.RedisStatsInfo;
@@ -33,7 +32,6 @@ import com.github.armedis.redis.connection.RedisServerDetector;
 @RequestRedisCommandName(RedisCommandEnum.NODES)
 public class RedisNodeListCommandRunner extends AbstractRedisCommandRunner {
     private final Logger logger = LoggerFactory.getLogger(RedisNodeListCommandRunner.class);
-    private static final Integer LIMIT = 10;
 
     @SuppressWarnings("unused")
     private static final boolean classLoaded = detectAnnotation(RedisNodeListCommandRunner.class);

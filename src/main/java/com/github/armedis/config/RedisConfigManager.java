@@ -30,6 +30,7 @@ import io.lettuce.core.TimeoutOptions;
 @Component
 public class RedisConfigManager {
 
+    // TODO Multi node commander
     private final RedisServerDetector redisServerDetector;
     private final Map<String, RedisTemplate<String, String>> redisTemplateByNodes = new ConcurrentHashMap<>();
 
