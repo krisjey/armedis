@@ -17,6 +17,7 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -54,11 +55,7 @@ public class RedisConfigManager {
             String nodeKey = toKey(node);
             RedisTemplate<String, String> template = redisTemplateByNodes.get(nodeKey);
             try {
-                String value = template.execute((RedisConnection conn) -> {
-                    Properties prop = conn.serverCommands().getConfig(configKey);
-                    return (String) prop.get(configKey);
-                });
-                values.add(value);
+                values.add(template.execute(getConfigCallback(configKey)));
             }
             catch (RedisConnectionFailureException e) {
                 // 연결 실패 시 해당 Pool 제거 → 다음 호출 시 재생성
@@ -90,11 +87,7 @@ public class RedisConfigManager {
             String nodeKey = toKey(node);
             RedisTemplate<String, String> template = redisTemplateByNodes.get(nodeKey);
             try {
-                String currentValue = template.execute((RedisConnection conn) -> {
-                    Properties prop = conn.serverCommands().getConfig(configKey);
-                    return (String) prop.get(configKey);
-                });
-                backupValues.put(nodeKey, currentValue);
+                backupValues.put(nodeKey, template.execute(getConfigCallback(configKey)));
             }
             catch (Exception e) {
                 // 백업 실패 시 즉시 중단
@@ -229,6 +222,13 @@ public class RedisConfigManager {
         template.setConnectionFactory(factory);
         template.afterPropertiesSet();
         return template;
+    }
+    
+    private RedisCallback<String> getConfigCallback(String configKey) {
+        return conn -> {
+            Properties prop = conn.serverCommands().getConfig(configKey);
+            return (String) prop.get(configKey);
+        };
     }
 
     @PreDestroy

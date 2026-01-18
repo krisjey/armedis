@@ -5,6 +5,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.io.IOUtils;
@@ -24,6 +25,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.armedis.config.ArmedisConfiguration;
+import com.github.armedis.redis.RedisNode;
+import com.github.armedis.redis.connection.RedisServerDetector;
 import com.github.armedis.redis.info.RedisInfoAggregator;
 import com.github.armedis.redis.info.RedisInfoVo;
 
@@ -50,10 +53,12 @@ public class RedisStatInfoBucket {
 
     private CircularFifoQueue<RedisStatsInfo> redisStatsInfoList = new CircularFifoQueue<>(10);
 
-    private List<RedisClusterNodeInfo> redisNodeInfoList;
+    private Set<RedisNode> redisNodeInfoList;
 
     @Autowired
     private ArmedisConfiguration armedisConfiguration;
+    
+    private final RedisServerDetector redisServerDetector;
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -63,10 +68,11 @@ public class RedisStatInfoBucket {
 
     private ObjectMapper mapper = configMapper();
 
-    public RedisStatInfoBucket(ArmedisConfiguration armedisConfiguration, StringRedisTemplate stringRedisTemplate, LettuceConnectionFactory connectionFactory) {
+    public RedisStatInfoBucket(ArmedisConfiguration armedisConfiguration, StringRedisTemplate stringRedisTemplate, LettuceConnectionFactory connectionFactory, RedisServerDetector redisServerDetector) {
         this.armedisConfiguration = armedisConfiguration;
         this.stringRedisTemplate = stringRedisTemplate;
         this.connectionFactory = connectionFactory;
+        this.redisServerDetector = redisServerDetector;
     }
 
     public String getStats() {
@@ -118,8 +124,7 @@ public class RedisStatInfoBucket {
          */
         ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.systemDefault());
 
-        String clusterNodes = getClusterNodesCommandResult();
-        redisNodeInfoList = convertNodeInfoList(clusterNodes);
+        redisNodeInfoList = redisServerDetector.getAllNodes();
 
         RedisStatsInfo redisStatsInfo = new RedisStatsInfo(currentTime);
 
@@ -127,7 +132,7 @@ public class RedisStatInfoBucket {
         String redisNodeIp = null;
 
         // statsInfo
-        for (RedisClusterNodeInfo redisNodeInfo : redisNodeInfoList) {
+        for (RedisNode redisNodeInfo : redisNodeInfoList) {
             try {
                 info = getNodeInfo(redisNodeInfo);
 
@@ -198,13 +203,13 @@ public class RedisStatInfoBucket {
         }
     }
 
-    // TODO 아래 코드 변경 필요.
-    private String getClusterNodesCommandResult() {
-        return stringRedisTemplate.execute((RedisCallback<String>) connection -> {
-            byte[] result = (byte[]) connection.execute("CLUSTER", "NODES".getBytes());
-            return new String(result);
-        });
-    }
+//    // TODO 아래 코드 변경 필요.
+//    private String getClusterNodesCommandResult() {
+//        return stringRedisTemplate.execute((RedisCallback<String>) connection -> {
+//            byte[] result = (byte[]) connection.execute("CLUSTER", "NODES".getBytes());
+//            return new String(result);
+//        });
+//    }
 
     private List<RedisClusterNodeInfo> convertNodeInfoList(String clusterNodes) {
         List<RedisClusterNodeInfo> redisNodeInfo = new ArrayList<RedisClusterNodeInfo>();
