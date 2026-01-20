@@ -72,6 +72,9 @@ public class RedisConfigManagerTest extends AbstractRedisServerTest {
 
         boolean setResult = redisConfigManager.setConfigValue("slowlog-log-slower-than", value);
         assertThat(setResult).isTrue();
+        
+        // TODO 모든 노드에 개별 연결 후 값 조회 테스트 추가 필요.
+        
     }
 
     @Test

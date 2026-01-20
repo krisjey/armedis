@@ -3,7 +3,6 @@ package com.github.armedis.config;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -24,13 +23,13 @@ import com.github.armedis.redis.RedisNode;
 import com.github.armedis.redis.connection.RedisServerDetector;
 
 import io.lettuce.core.ClientOptions;
-import io.lettuce.core.ReadFrom;
 import io.lettuce.core.SocketOptions;
 import io.lettuce.core.TimeoutOptions;
 
 @Component
 public class RedisConfigManager {
 
+    // TODO Multi node commander
     private final RedisServerDetector redisServerDetector;
     private final Map<String, RedisTemplate<String, String>> redisTemplateByNodes = new ConcurrentHashMap<>();
 
@@ -54,11 +53,7 @@ public class RedisConfigManager {
             String nodeKey = toKey(node);
             RedisTemplate<String, String> template = redisTemplateByNodes.get(nodeKey);
             try {
-                String value = template.execute((RedisConnection conn) -> {
-                    Properties prop = conn.serverCommands().getConfig(configKey);
-                    return (String) prop.get(configKey);
-                });
-                values.add(value);
+                values.add(template.execute(RedisCallbackFactory.getConfigCallback(configKey)));
             }
             catch (RedisConnectionFailureException e) {
                 // 연결 실패 시 해당 Pool 제거 → 다음 호출 시 재생성
@@ -90,11 +85,7 @@ public class RedisConfigManager {
             String nodeKey = toKey(node);
             RedisTemplate<String, String> template = redisTemplateByNodes.get(nodeKey);
             try {
-                String currentValue = template.execute((RedisConnection conn) -> {
-                    Properties prop = conn.serverCommands().getConfig(configKey);
-                    return (String) prop.get(configKey);
-                });
-                backupValues.put(nodeKey, currentValue);
+                backupValues.put(nodeKey, template.execute(RedisCallbackFactory.getConfigCallback(configKey)));
             }
             catch (Exception e) {
                 // 백업 실패 시 즉시 중단
@@ -125,6 +116,21 @@ public class RedisConfigManager {
 
         // 4. 모든 노드 성공
         return true;
+    }
+
+    public String getNodeInfo(RedisNode node) {
+        String nodeKey = toKey(node);
+
+        RedisTemplate<String, String> template = redisTemplateByNodes.computeIfAbsent(
+                nodeKey, k -> createTemplate(node));
+
+        try {
+            return template.execute(RedisCallbackFactory.getInfoCallback());
+        }
+        catch (RedisConnectionFailureException e) {
+            removeTemplate(nodeKey);
+            throw e;
+        }
     }
 
     private void rollback(String configKey, Map<String, String> backupValues, Set<String> successNodes) {
@@ -202,7 +208,7 @@ public class RedisConfigManager {
 
     @SuppressWarnings("unchecked")
     private RedisTemplate<String, String> createTemplate(RedisNode node) {
-     // 1) Lettuce reconnect/timeout 동작 정의
+        // 1) Lettuce reconnect/timeout 동작 정의
         ClientOptions clientOptions = ClientOptions.builder()
                 .autoReconnect(true) // 핵심: 자동 재연결
                 // Admin 성격이면 보통 "즉시 실패"가 운영상 예측 가능
@@ -210,16 +216,15 @@ public class RedisConfigManager {
                 // 커넥션 타임아웃/커맨드 타임아웃을 명확히 (무한 대기 방지)
                 .timeoutOptions(TimeoutOptions.enabled())
                 .socketOptions(SocketOptions.builder()
-                        .connectTimeout(Duration.ofMillis(1500))
+                        .connectTimeout(Duration.ofMillis(200))
                         .build())
                 .build();
-        
+
         LettuceClientConfiguration clientConfig = LettucePoolingClientConfiguration.builder()
                 .poolConfig(buildPoolConfig())
                 .clientOptions(clientOptions)
-//                .readFrom(ReadFrom.UPSTREAM) // master
-                .commandTimeout(Duration.ofMillis(1500))   // 필요 시 조정
-                .shutdownTimeout(Duration.ofMillis(100))   // Admin이면 짧게
+                .commandTimeout(Duration.ofMillis(200)) // 필요 시 조정
+                .shutdownTimeout(Duration.ofMillis(500)) // Admin이면 짧게
                 .build();
 
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(node.getHost(), node.getPort());
