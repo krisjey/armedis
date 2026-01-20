@@ -3,7 +3,6 @@ package com.github.armedis.config;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -17,7 +16,6 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
-import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -55,7 +53,7 @@ public class RedisConfigManager {
             String nodeKey = toKey(node);
             RedisTemplate<String, String> template = redisTemplateByNodes.get(nodeKey);
             try {
-                values.add(template.execute(getConfigCallback(configKey)));
+                values.add(template.execute(RedisCallbackFactory.getConfigCallback(configKey)));
             }
             catch (RedisConnectionFailureException e) {
                 // 연결 실패 시 해당 Pool 제거 → 다음 호출 시 재생성
@@ -87,7 +85,7 @@ public class RedisConfigManager {
             String nodeKey = toKey(node);
             RedisTemplate<String, String> template = redisTemplateByNodes.get(nodeKey);
             try {
-                backupValues.put(nodeKey, template.execute(getConfigCallback(configKey)));
+                backupValues.put(nodeKey, template.execute(RedisCallbackFactory.getConfigCallback(configKey)));
             }
             catch (Exception e) {
                 // 백업 실패 시 즉시 중단
@@ -118,6 +116,21 @@ public class RedisConfigManager {
 
         // 4. 모든 노드 성공
         return true;
+    }
+
+    public String getNodeInfo(RedisNode node) {
+        String nodeKey = toKey(node);
+
+        RedisTemplate<String, String> template = redisTemplateByNodes.computeIfAbsent(
+                nodeKey, k -> createTemplate(node));
+
+        try {
+            return template.execute(RedisCallbackFactory.getInfoCallback());
+        }
+        catch (RedisConnectionFailureException e) {
+            removeTemplate(nodeKey);
+            throw e;
+        }
     }
 
     private void rollback(String configKey, Map<String, String> backupValues, Set<String> successNodes) {
@@ -195,7 +208,7 @@ public class RedisConfigManager {
 
     @SuppressWarnings("unchecked")
     private RedisTemplate<String, String> createTemplate(RedisNode node) {
-     // 1) Lettuce reconnect/timeout 동작 정의
+        // 1) Lettuce reconnect/timeout 동작 정의
         ClientOptions clientOptions = ClientOptions.builder()
                 .autoReconnect(true) // 핵심: 자동 재연결
                 // Admin 성격이면 보통 "즉시 실패"가 운영상 예측 가능
@@ -206,12 +219,12 @@ public class RedisConfigManager {
                         .connectTimeout(Duration.ofMillis(200))
                         .build())
                 .build();
-        
+
         LettuceClientConfiguration clientConfig = LettucePoolingClientConfiguration.builder()
                 .poolConfig(buildPoolConfig())
                 .clientOptions(clientOptions)
-                .commandTimeout(Duration.ofMillis(200))   // 필요 시 조정
-                .shutdownTimeout(Duration.ofMillis(500))   // Admin이면 짧게
+                .commandTimeout(Duration.ofMillis(200)) // 필요 시 조정
+                .shutdownTimeout(Duration.ofMillis(500)) // Admin이면 짧게
                 .build();
 
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(node.getHost(), node.getPort());
@@ -222,13 +235,6 @@ public class RedisConfigManager {
         template.setConnectionFactory(factory);
         template.afterPropertiesSet();
         return template;
-    }
-    
-    private RedisCallback<String> getConfigCallback(String configKey) {
-        return conn -> {
-            Properties prop = conn.serverCommands().getConfig(configKey);
-            return (String) prop.get(configKey);
-        };
     }
 
     @PreDestroy
