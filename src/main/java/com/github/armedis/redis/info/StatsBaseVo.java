@@ -125,6 +125,10 @@ public abstract class StatsBaseVo {
 
                 key = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, key);
 
+//                if(clazz == Replication.class && key.startsWith("masterReplid"))    {
+//                    System.out.println(value);
+//                }
+                
                 ReflectionManipulator.setFieldValue(instance, key, value);
             }
         }
