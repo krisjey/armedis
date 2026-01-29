@@ -46,7 +46,7 @@ public class RedisNodeListService extends BaseService {
             logger.error("Can not execute redis command ", e);
             return buildResponse(ResponseCode.UNKNOWN_ERROR, redisRequest);
         }
-//
+
         return buildResponse(redisRequest, result);
     }
 }
