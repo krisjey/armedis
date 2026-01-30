@@ -388,10 +388,10 @@
         { 
                 id: "commandStatisticsCard", 
                 headers: [
-                    { name: "command", title: "Command", style: { headerTextAlign: "center", cellTextAlign: "center", width: "*" } },
-                    { name: "numberOfCalls", title: "Number of calls", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
-                    { name: "totalDuration", title: "Total Duration", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
-                    { name: "durationPerCall", title: "Duration per call", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } }
+                    { name: "command", title: "Command", style: { headerTextAlign: "center", cellTextAlign: "left", width: "*" } },
+                    { name: "numberOfCalls", title: "Number of calls", style: { headerTextAlign: "center", cellTextAlign: "right", width: "20%" } },
+                    { name: "totalDuration", title: "Total Duration", style: { headerTextAlign: "center", cellTextAlign: "right", width: "20%" } },
+                    { name: "durationPerCall", title: "Duration per call", style: { headerTextAlign: "center", cellTextAlign: "right", width: "20%" } }
                 ] 
         },
         { 
@@ -405,14 +405,14 @@
         { 
                 id: "nodesCard", 
                 headers: [
-                    { name: "id", title: "Id", style: { headerTextAlign: "center", cellTextAlign: "", width: "20%" } },
-                    { name: "address", title: "Address", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
-                    { name: "flags", title: "Flags", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
-                    { name: "replicaMaster", title: "Replica's Master", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
-                    { name: "pingWasSent", title: "Ping was sent", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
-                    { name: "pongWasReceived", title: "Pong was received", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
-                    { name: "state", title: "State", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
-                    { name: "hashSlotNumberOrRange", title: "Hash slot number or range", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } }
+                    { name: "id", title: "Id", style: { headerTextAlign: "center", cellTextAlign: "left", width: "15%" } },
+                    { name: "address", title: "Address", style: { headerTextAlign: "center", cellTextAlign: "center", width: "10%" } },
+                    { name: "flags", title: "Flags", style: { headerTextAlign: "center", cellTextAlign: "center", width: "5%" } },
+                    { name: "replicaMaster", title: "Replica's Master", style: { headerTextAlign: "center", cellTextAlign: "left", width: "15%" } },
+                    { name: "pingWasSent", title: "Ping was sent", style: { headerTextAlign: "center", cellTextAlign: "right", width: "10%" } },
+                    { name: "pongWasReceived", title: "Pong was received", style: { headerTextAlign: "center", cellTextAlign: "right", width: "10%" } },
+                    { name: "state", title: "State", style: { headerTextAlign: "center", cellTextAlign: "center", width: "5%" } },
+                    { name: "hashSlotNumberOrRange", title: "Hash slot number or range", style: { headerTextAlign: "center", cellTextAlign: "left", width: "10%" } }
                 ] 
         }
     ];
@@ -571,8 +571,11 @@
     // Ops/Sec 설정
     function setOpsPerSec() {
         var cardId = "opsPerSecCard";
+        // 마지막 stats
         var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
-        setDataValue(cardId, lastStatsSumStats.instantaneousOpsPerSec);
+
+        var opsPerSec = lastStatsSumStats.instantaneousOpsPerSec;
+        setDataValue(cardId, opsPerSec);
     }
 
     // Connected Clients 설정
@@ -712,13 +715,15 @@
 
     // hitRate 설정
     function setHitRate() {
-        // 5초전 stats
-        var fiveSecondsAgoStatsSumStats = _.nth(statsData, -6).redisInfoList.sum.stats;
+        // 1초전 stats
+        var beforecondsAgoStatsSumStats = _.nth(statsData, -2).redisInfoList.sum.stats;
         // 마지막 stats
         var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
 
-        var keyspaceHits = lastStatsSumStats.keyspaceHits - fiveSecondsAgoStatsSumStats.keyspaceHits;
-        var keyspaceMisses = lastStatsSumStats.keyspaceMisses - fiveSecondsAgoStatsSumStats.keyspaceMisses;
+        // var keyspaceHits = lastStatsSumStats.keyspaceHits - beforecondsAgoStatsSumStats.keyspaceHits;
+        // var keyspaceMisses = lastStatsSumStats.keyspaceMisses - beforecondsAgoStatsSumStats.keyspaceMisses;
+        var keyspaceHits = lastStatsSumStats.keyspaceHits - beforecondsAgoStatsSumStats.keyspaceHits;
+        var keyspaceMisses = lastStatsSumStats.keyspaceMisses - beforecondsAgoStatsSumStats.keyspaceMisses;
         var newHitRate = keyspaceHits / (keyspaceHits + keyspaceMisses) * 100;
 
         if (Number.isNaN(newHitRate)) {
@@ -764,6 +769,31 @@
         setEvictionPolicy()
     }
 
+    // Nodes 조회
+    async function getNodes() {
+        var rowCnt = 6;
+        var response = await fetch("/v1/management/nodelist");
+        if (!response.ok) throw new Error("HTTP " + res.status);
+
+        var data = await response.json();
+        if (data.result.length > 0) {
+            var datas = _.map(data.result, item => {
+                return {
+                    id: item.id,
+                    address: `${item.ip}:${item.listenPort}@${item.clusterBusPort}`,
+                    flags: isMyselfMaster(item.flags) && "master" || item.flags,
+                    replicaMaster: item.masterId,
+                    pingWasSent: formatTimeAgo(item.pingSend),
+                    pongWasReceived: formatTimeAgo(item.pongRecv),
+                    state: item.linkState,
+                    hashSlotNumberOrRange: `${item.shardSlotStart}-${item.shardSlotEnd}`
+                }
+            });
+            setTableRows(tables[3], datas, rowCnt);
+        }
+    }
+
+    // Client connections 조회
     async function getClientConnections() {
         var rowCnt = 20;
         var response = await fetch(`/v1/management/clientlist/${rowCnt}`);
@@ -788,6 +818,22 @@
         }
     }
 
+    // Command statistics 조회
+    async function getCommandStatistics() {
+        var rowCnt = 20;
+        var response = await fetch("/v1/management/commandstats");
+        if (!response.ok) throw new Error("HTTP " + res.status);
+
+        var data = await response.json();
+        if (data.statsList.length > 0) {
+            rowCnt = data.statsList.length;
+            var datas = _.map(data.statsList, item => {
+                return formatRedisStat(item);
+            });
+            setTableRows(tables[1], datas, rowCnt);
+        }
+    }
+
     // Slow queries log 조회
     async function getSlowlog() {
         var rowCnt = 20;
@@ -808,6 +854,66 @@
             
             setTableRows(tables[2], slowlogs, rowCnt);
         }
+    }
+
+    // Checks "myself,master"
+    function isMyselfMaster(flags) {
+        if (!flags) return false;
+
+        // Split flags by comma
+        var flagList = _.split(flags, ",");
+
+        // Trim each flag
+        fflagList = _.map(flagList, f => _.trim(f));
+
+        // Remove all internal whitespace
+        flagList = _.map(flagList, f => _.replace(f, /\s+/g, ""));
+
+        // Convert to lowercase
+        flagList = _.map(flagList, f => f.toLowerCase());
+
+        // Check for "myself" and "master"
+        return _.includes(flagList, "myself") && _.includes(flagList, "master");
+    }
+
+    // Time format
+    function formatTimeAgo(timestamp) {
+        if (!timestamp || timestamp <= 0) return "Never";
+
+        var now = moment();
+        var time = moment(timestamp);
+
+        var diffSeconds = now.diff(time, "seconds");
+
+        // UX 맞춤: 아주 짧은 시간은 강제 표현
+        if (diffSeconds < 5) {
+            return "a few seconds ago";
+        }
+
+        return time.fromNow();
+    }
+
+    // Redis command stat formatter
+    function formatRedisStat(stat) {
+        var formatCalls = (calls) => {
+            if (calls >= 1_000_000) return `${_.round(calls / 1_1000_000, 1)} Mil`;
+            //if (calls >= 1_000) return `${_.round(calls / 1_1000, 1)} K`;
+            if (calls >= 1_000) return calls.toLocaleString();
+            return `${calls}`;
+        };
+
+        var formatDuration =(usec) => {
+            if (usec >= 1_000_000) return `${_.round(usec / 1_1000_000, 1)} s`;
+            if (usec >= 1_000) return `${_.round(usec / 1_1000, 1)} ms`;
+            return `${_.round(usec, 0)} μs`;
+        };
+
+        return {
+            command: stat.commandName,
+            numberOfCalls: formatCalls(stat.calls),
+            totalDuration: formatDuration(stat.usec),
+            durationPerCall: formatDuration(stat.usecPerCall)
+        };
     }
 
     // Table 설정
@@ -894,9 +1000,12 @@
         });
     }
 
+    // 페이지 로드됐을 때 interval Init
     function intervalInit() {
         getStats();
+        getNodes();
         getClientConnections();
+        getCommandStatistics();
         getSlowlog();
     }
 
