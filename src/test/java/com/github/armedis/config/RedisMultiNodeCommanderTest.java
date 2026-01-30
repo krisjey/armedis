@@ -23,9 +23,9 @@ import com.github.armedis.redis.connection.RedisServerDetector;
  * 
  */
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
-public class RedisConfigManagerTest extends AbstractRedisServerTest {
+public class RedisMultiNodeCommanderTest extends AbstractRedisServerTest {
     @Autowired
-    private RedisConfigManager redisConfigManager;
+    private RedisMultiNodeCommander redisMultiNodeCommander;
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -54,10 +54,10 @@ public class RedisConfigManagerTest extends AbstractRedisServerTest {
             });
         }
 
-        String slowlogTime = redisConfigManager.getConfigValue("slowlog-log-slower-than");
+        String slowlogTime = redisMultiNodeCommander.getConfigValue("slowlog-log-slower-than");
 
         for (int i = 0; i < 100; i++) {
-            redisConfigManager.getConfigValue("slowlog-log-slower-than");
+            redisMultiNodeCommander.getConfigValue("slowlog-log-slower-than");
         }
         assertThat(slowlogTime).isNotNull();
 
@@ -70,7 +70,7 @@ public class RedisConfigManagerTest extends AbstractRedisServerTest {
         }
         System.out.println("------------" + slowlogTime + " ------------ " + value);
 
-        boolean setResult = redisConfigManager.setConfigValue("slowlog-log-slower-than", value);
+        boolean setResult = redisMultiNodeCommander.setConfigValue("slowlog-log-slower-than", value);
         assertThat(setResult).isTrue();
         
         // TODO 모든 노드에 개별 연결 후 값 조회 테스트 추가 필요.
@@ -79,10 +79,10 @@ public class RedisConfigManagerTest extends AbstractRedisServerTest {
 
     @Test
     void testSetTimeout() {
-        boolean result = redisConfigManager.setConfigValue("timeout", "0");
+        boolean result = redisMultiNodeCommander.setConfigValue("timeout", "0");
 
         for (int i = 0; i < 100; i++) {
-            redisConfigManager.getConfigValue("timeout");
+            redisMultiNodeCommander.getConfigValue("timeout");
         }
         assertThat(result).isTrue();
     }

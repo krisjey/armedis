@@ -30,23 +30,23 @@ import com.github.armedis.redis.info.RedisInfoVo;
 
 @Component
 @Scope("prototype")
-@RequestRedisCommandName(RedisCommandEnum.NODES)
-public class RedisNodeListCommandRunner extends AbstractRedisCommandRunner {
-    private final Logger logger = LoggerFactory.getLogger(RedisNodeListCommandRunner.class);
+@RequestRedisCommandName(RedisCommandEnum.COMMANDSTATS)
+public class RedisCommandStatsCommandRunner extends AbstractRedisCommandRunner {
+    private final Logger logger = LoggerFactory.getLogger(RedisCommandStatsCommandRunner.class);
 
     @SuppressWarnings("unused")
-    private static final boolean classLoaded = detectAnnotation(RedisNodeListCommandRunner.class);
+    private static final boolean classLoaded = detectAnnotation(RedisCommandStatsCommandRunner.class);
 
-    private RedisNodeListRequest redisRequest;
+    private RedisCommandStatsRequest redisRequest;
     private RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
     private RedisServerDetector redisServerDetector;
 
     @Autowired
-    private RedisStatInfoBucket redisStatInfoBucket;
+    private RedisStatInfoBucket bucket;
 
-    public RedisNodeListCommandRunner(RedisNodeListRequest redisRequest, RedisTemplate<String, Object> redisTemplate) {
+    public RedisCommandStatsCommandRunner(RedisCommandStatsRequest redisRequest, RedisTemplate<String, Object> redisTemplate) {
         this.redisRequest = redisRequest;
         this.redisTemplate = redisTemplate;
     }
@@ -55,7 +55,6 @@ public class RedisNodeListCommandRunner extends AbstractRedisCommandRunner {
     public RedisCommandExecuteResult executeAndGet() {
         logger.info(redisRequest.toString());
 
-        // TODO 고도화 필요. bucket 에서 가져오도록.
         List<RedisClusterNodeInfo> redisNodeInfo = new ArrayList<RedisClusterNodeInfo>();
 
         if (RedisInstanceType.CLUSTER.equals(redisServerDetector.getRedisInstanceType())) {
@@ -69,7 +68,7 @@ public class RedisNodeListCommandRunner extends AbstractRedisCommandRunner {
         }
         else {
             Set<RedisNode> nodes = redisServerDetector.getAllNodes();
-            Map<String, RedisInfoVo> redisStatInfoMap = redisStatInfoBucket.getFirstRedisInfoMap();
+            Map<String, RedisInfoVo> redisStatInfoMap = bucket.getFirstRedisInfoMap();
 
             for (RedisNode node : nodes) {
                 String runId = redisStatInfoMap.get(node.getHost() + ":" + node.getPort()).getServer().getRunId();
@@ -91,6 +90,6 @@ public class RedisNodeListCommandRunner extends AbstractRedisCommandRunner {
             }
         }
 
-        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(redisNodeInfo, Object.class);
+        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(bucket.getCommandStats());
     }
 }

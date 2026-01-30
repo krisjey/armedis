@@ -42,6 +42,7 @@ public class RedisSlowlogCommandRunner extends AbstractRedisCommandRunner {
         logger.info(redisRequest.toString());
         Integer size = redisRequest.getSize().orElse(10);
 
+        // TODO 모든 노드에 접속하여 개별 명령 수행.
         List<Object> result = this.redisTemplate.execute((RedisCallback<List<Object>>) connection -> {
             Object nativeConnection = connection.getNativeConnection();
             if (nativeConnection instanceof RedisCommands) {
