@@ -712,26 +712,22 @@
 
     // hitRate 설정
     function setHitRate() {
+        // 5초전 stats
+        var fiveSecondsAgoStatsSumStats = _.nth(statsData, -6).redisInfoList.sum.stats;
+        // 마지막 stats
         var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
 
-        // Hit Rate
-        var hits = Number(lastStatsSumStats.keyspaceHits ?? 0);
-        var misses = Number(lastStatsSumStats.keyspaceMisses ?? 0);
+        var keyspaceHits = lastStatsSumStats.keyspaceHits - fiveSecondsAgoStatsSumStats.keyspaceHits;
+        var keyspaceMisses = lastStatsSumStats.keyspaceMisses - fiveSecondsAgoStatsSumStats.keyspaceMisses;
+        var newHitRate = keyspaceHits / (keyspaceHits + keyspaceMisses) * 100;
 
-        // keyspace Bar 배경색 변경
-        // var cardBodyTarget = "ksHits";
-        // var colors = getChartColorsArray(cardBodyTarget);
-        // document.getElementById("hitRateCard").querySelector(".ks-bar").style.backgroundColor = colors[0];
-
-        var total = Math.max(hits + misses, 1);
-        var hitRate = Math.round((hits / total) * 100);
-        if (Number.isNaN(hitRate)) {
-            hitRate = 0;
+        if (Number.isNaN(newHitRate)) {
+            newHitRate = 0;
         }
 
-        $("#ksHits").css("width", Math.max(2, hitRate) + "%");
-        $("#hitsCount").text(hits.toLocaleString());
-        $("#missesCount").text(misses.toLocaleString());
+        $("#ksHits").css("width", Math.max(2, newHitRate) + "%");
+        $("#hitsCount").text(keyspaceHits.toLocaleString());
+        $("#missesCount").text(keyspaceMisses.toLocaleString());
     }
 
     // Version 설정
