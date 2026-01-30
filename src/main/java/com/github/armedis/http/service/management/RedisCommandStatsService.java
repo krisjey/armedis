@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import com.github.armedis.http.service.BaseService;
 import com.github.armedis.http.service.ResponseCode;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
-import com.github.armedis.redis.command.management.RedisNodeListRequest;
+import com.github.armedis.redis.command.management.RedisCommandStatsRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.MediaTypeNames;
 import com.linecorp.armeria.server.annotation.Consumes;
@@ -22,10 +22,10 @@ import com.linecorp.armeria.server.annotation.Path;
  *
  */
 @Component
-public class RedisNodeListService extends BaseService {
+public class RedisCommandStatsService extends BaseService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static final String REDIS_COMMAND = "nodelist";
+    private static final String REDIS_COMMAND = "commandstats";
 
     private static final String COMMAND_URL = "/v1/management/" + REDIS_COMMAND;
 
@@ -34,7 +34,7 @@ public class RedisNodeListService extends BaseService {
     @Get
     @Path(COMMAND_URL_WITH_KEY)
     @Consumes(MediaTypeNames.FORM_DATA)
-    public HttpResponse getUrlencodedWithKey(RedisNodeListRequest redisRequest) {
+    public HttpResponse getUrlencodedWithKey(RedisCommandStatsRequest redisRequest) {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
 
         // execute redis command by http request params.

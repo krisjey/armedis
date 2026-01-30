@@ -1,14 +1,13 @@
 package com.github.armedis.http.service.stats;
 
-import java.io.StringReader;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -22,8 +21,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.armedis.config.ArmedisConfiguration;
-import com.github.armedis.config.RedisConfigManager;
+import com.github.armedis.config.RedisMultiNodeCommander;
 import com.github.armedis.redis.RedisNode;
+import com.github.armedis.redis.command.management.RedisCommandStatsParser;
+import com.github.armedis.redis.command.management.vo.CommandStatsVO;
 import com.github.armedis.redis.connection.RedisServerDetector;
 import com.github.armedis.redis.info.RedisInfoAggregator;
 import com.github.armedis.redis.info.RedisInfoVo;
@@ -43,9 +44,9 @@ public class RedisStatInfoBucket {
      */
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private CircularFifoQueue<RedisStatsInfo> redisStatsInfoList = new CircularFifoQueue<>(10);
+    private CircularFifoQueue<RedisStatsInfo> redisStatsList = new CircularFifoQueue<>(10);
 
-    private Set<RedisNode> redisNodeInfoList;
+    private CommandStatsVO lastCommandStats;
 
     private ArmedisConfiguration armedisConfiguration;
 
@@ -53,23 +54,35 @@ public class RedisStatInfoBucket {
 
     private ObjectMapper mapper = configMapper();
 
-    private RedisConfigManager redisConfigManager;
+    private RedisMultiNodeCommander redisMultiNodeCommander;
 
-    public RedisStatInfoBucket(ArmedisConfiguration armedisConfiguration, RedisConfigManager redisConfigManager, RedisServerDetector redisServerDetector) {
+    public RedisStatInfoBucket(ArmedisConfiguration armedisConfiguration, RedisMultiNodeCommander redisMultiNodeCommander, RedisServerDetector redisServerDetector) {
         this.armedisConfiguration = armedisConfiguration;
-        this.redisConfigManager = redisConfigManager;
+        this.redisMultiNodeCommander = redisMultiNodeCommander;
         this.redisServerDetector = redisServerDetector;
     }
 
     public String getStats() {
         String stats = null;
         try {
-            stats = mapper.writeValueAsString(redisStatsInfoList);
+            stats = mapper.writeValueAsString(redisStatsList);
         }
         catch (JsonProcessingException e) {
             logger.error("Can not parse json from stats info list", e);
         }
 
+        return stats;
+    }
+
+    public String getCommandStats() {
+        String stats = null;
+        try {
+            stats = mapper.writeValueAsString(this.lastCommandStats);
+        }
+        catch (JsonProcessingException e) {
+            logger.error("Can not parse json from stats info list", e);
+        }
+// TODO CRLF 제거 필요.
         return stats;
     }
 
@@ -90,12 +103,12 @@ public class RedisStatInfoBucket {
     public ThreadPoolTaskScheduler taskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
 
-        scheduler.setPoolSize(2); // 원하는 크기로 조절
+        scheduler.setPoolSize(3); // 원하는 크기로 조절
 
         return scheduler;
     }
 
-    @Scheduled(fixedRate = 1000) // 1000ms
+    @Scheduled(fixedRate = 1000) // start every 1000ms term, except running time is over the 1000ms then starting no delay.
     public void redisStatPolling() throws Throwable {
         if (!armedisConfiguration.isStatEnabled()) {
             return;
@@ -103,30 +116,30 @@ public class RedisStatInfoBucket {
 
         ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.systemDefault());
 
-        // TODO Cluster랑 None Cluster 분리.
-        redisNodeInfoList = redisServerDetector.getAllNodes();
-
         RedisStatsInfo redisStatsInfo = new RedisStatsInfo(currentTime);
 
-        String info = null;
         String redisNodeIp = null;
 
+        Map<String, String> commandStatsResultMap = new HashMap<String, String>();
+
         // statsInfo
-        for (RedisNode redisNodeInfo : redisNodeInfoList) {
+        for (RedisNode redisNode : redisServerDetector.getAllNodes()) {
             try {
-                info = this.redisConfigManager.getNodeInfo(redisNodeInfo);
+                String info = this.redisMultiNodeCommander.getNodeInfo(redisNode);
 
                 // update stat info
                 RedisInfoVo redisInfo = RedisInfoVo.from(info, armedisConfiguration.isAddContentSection());
-                redisNodeIp = redisNodeInfo.getHost();
+                redisNodeIp = redisNode.getHost();
                 redisInfo.getServer().setHost(redisNodeIp);
-                redisInfo.getServer().setTcpPort(redisNodeInfo.getPort());
+                redisInfo.getServer().setTcpPort(redisNode.getPort());
 
-                printStatPollingLog(redisStatsInfo, redisNodeInfo, redisInfo);
+                printStatPollingLog(redisStatsInfo, redisNode, redisInfo);
 
                 String redisInfoId = redisInfo.getServer().getHost() + ":" + redisInfo.getServer().getTcpPort();
                 redisStatsInfo.put(redisInfoId, redisInfo);
-                // 현재 시간기준(초단위)
+
+                // info commandstats call by nodes.
+                commandStatsResultMap.put(redisNode.toKey(), this.redisMultiNodeCommander.getCommandStats(redisNode));
             }
             catch (Exception e) {
                 logger.error("Error when parsing info command! ", e);
@@ -144,11 +157,21 @@ public class RedisStatInfoBucket {
         redisStatsInfo.put("sum", sumRedisInfoVo);
         logger.debug("TOTAL OPS " + sumRedisInfoVo.getStats().getInstantaneousOpsPerSec());
 
-        if (redisStatsInfoList.isAtFullCapacity()) {
-            redisStatsInfoList.remove();
+        if (redisStatsList.isAtFullCapacity()) {
+            redisStatsList.remove();
         }
 
-        redisStatsInfoList.add(redisStatsInfo);
+        redisStatsList.add(redisStatsInfo);
+
+        RedisCommandStatsParser parser = new RedisCommandStatsParser();
+
+        List<CommandStatsVO> list = commandStatsResultMap.values().stream()
+                .map(parser::parseCommandStats)
+                .collect(Collectors.toList());
+
+        // sum commandstats
+        // update static data for commandstats
+        this.lastCommandStats = CommandStatsAggregator.aggregate(list);
     }
 
     /**
@@ -163,18 +186,7 @@ public class RedisStatInfoBucket {
         }
     }
 
-    private List<RedisClusterNodeInfo> convertNodeInfoList(String clusterNodes) {
-        List<RedisClusterNodeInfo> redisNodeInfo = new ArrayList<RedisClusterNodeInfo>();
-        List<String> nodeInfoStrings = IOUtils.readLines(new StringReader(clusterNodes));
-
-        for (String nodeInfoString : nodeInfoStrings) {
-            redisNodeInfo.add(RedisClusterNodeInfo.of(nodeInfoString));
-        }
-
-        return redisNodeInfo;
-    }
-
-    public CircularFifoQueue<RedisStatsInfo> getRedisStatsInfoList() {
-        return this.redisStatsInfoList;
+    public Map<String, RedisInfoVo> getFirstRedisInfoMap() {
+        return this.redisStatsList.element().getRedisInfoList();
     }
 }

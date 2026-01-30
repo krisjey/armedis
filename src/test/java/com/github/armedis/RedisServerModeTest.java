@@ -18,13 +18,6 @@ public class RedisServerModeTest {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
-    /**
-    * Redis INFO 명령을 실행하고 결과를 Properties 객체로 반환합니다.
-    */
-    public Properties getRedisInfo() {
-        return stringRedisTemplate.execute((RedisCallback<Properties>) connection -> connection.info());
-    }
-
     @Test
     public void test() throws InterruptedException, ExecutionException {
         Properties infoResult = stringRedisTemplate.execute((RedisCallback<Properties>) connection -> connection.serverCommands().info());

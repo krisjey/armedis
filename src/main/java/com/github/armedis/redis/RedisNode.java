@@ -9,11 +9,13 @@ public class RedisNode {
     private final String host;
     private final int port;
     private final RedisNodeRole role;
+    private final String key;
 
     public RedisNode(String host, int port, RedisNodeRole role) {
         this.host = host;
         this.port = port;
         this.role = role;
+        this.key = host + ":" + port;
     }
 
     public String getHost() {
@@ -26,6 +28,10 @@ public class RedisNode {
 
     public RedisNodeRole getRole() {
         return role;
+    }
+
+    public String toKey() {
+        return this.key;
     }
 
     @Override

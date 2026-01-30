@@ -13,6 +13,8 @@ import org.springframework.data.redis.core.RedisCallback;
  * 
  */
 public class RedisCallbackFactory {
+    private static final String COMMANDSTATS = "COMMANDSTATS";
+    public static final String CLUSTER_NODES = "CLUSTER_NODES";
     public static final String MAXMEMORY = "maxmemory";
     public static final String TIMEOUT = "timeout";
     public static final String INFO = "INFO";
@@ -31,5 +33,26 @@ public class RedisCallbackFactory {
             Object result = conn.execute("INFO");
             return result != null ? (String) result : null;
         });
+    }
+    
+    public static RedisCallback<String> getCommandStatsCallback() {
+        return CACHE.computeIfAbsent(COMMANDSTATS, key -> conn -> {
+            Object result = conn.execute("INFO", COMMANDSTATS.getBytes());
+            return result != null ? (String) result : null;
+        });
+    }
+
+    public static RedisCallback<String> getClusterNodesCallback() {
+        return CACHE.computeIfAbsent(CLUSTER_NODES, key -> conn -> {
+            byte[] result = (byte[]) conn.execute("CLUSTER", "NODES".getBytes());
+            return result != null ? new String(result) : null;
+        });
+    }
+
+    public static RedisCallback<Void> setConfigCallback(String configKey, String value) {
+        return conn -> {
+            conn.serverCommands().setConfig(configKey, value);
+            return null;
+        };
     }
 }

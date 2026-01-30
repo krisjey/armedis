@@ -11,7 +11,6 @@ import javax.annotation.PreDestroy;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.data.redis.RedisConnectionFailureException;
-import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -27,13 +26,13 @@ import io.lettuce.core.SocketOptions;
 import io.lettuce.core.TimeoutOptions;
 
 @Component
-public class RedisConfigManager {
+public class RedisMultiNodeCommander {
 
     // TODO Multi node commander
     private final RedisServerDetector redisServerDetector;
     private final Map<String, RedisTemplate<String, String>> redisTemplateByNodes = new ConcurrentHashMap<>();
 
-    public RedisConfigManager(RedisServerDetector redisServerDetector) {
+    public RedisMultiNodeCommander(RedisServerDetector redisServerDetector) {
         this.redisServerDetector = redisServerDetector;
     }
 
@@ -50,14 +49,13 @@ public class RedisConfigManager {
 
         Set<String> values = new HashSet<>();
         for (RedisNode node : currentNodes) {
-            String nodeKey = toKey(node);
-            RedisTemplate<String, String> template = redisTemplateByNodes.get(nodeKey);
+            RedisTemplate<String, String> template = redisTemplateByNodes.get(node.toKey());
             try {
                 values.add(template.execute(RedisCallbackFactory.getConfigCallback(configKey)));
             }
             catch (RedisConnectionFailureException e) {
                 // 연결 실패 시 해당 Pool 제거 → 다음 호출 시 재생성
-                removeTemplate(nodeKey);
+                removeTemplate(node.toKey());
             }
         }
 
@@ -82,7 +80,7 @@ public class RedisConfigManager {
         // 1. 백업: 각 노드의 현재 값 저장
         Map<String, String> backupValues = new ConcurrentHashMap<>();
         for (RedisNode node : currentNodes) {
-            String nodeKey = toKey(node);
+            String nodeKey = node.toKey();
             RedisTemplate<String, String> template = redisTemplateByNodes.get(nodeKey);
             try {
                 backupValues.put(nodeKey, template.execute(RedisCallbackFactory.getConfigCallback(configKey)));
@@ -97,14 +95,10 @@ public class RedisConfigManager {
         // 2. 설정 변경 시도
         Set<String> successNodes = new HashSet<>();
         for (RedisNode node : currentNodes) {
-            String nodeKey = toKey(node);
-            RedisTemplate<String, String> template = redisTemplateByNodes.get(nodeKey);
+            RedisTemplate<String, String> template = redisTemplateByNodes.get(node.toKey());
             try {
-                template.execute((RedisConnection conn) -> {
-                    conn.serverCommands().setConfig(configKey, configValue);
-                    return null;
-                });
-                successNodes.add(nodeKey);
+                template.execute(RedisCallbackFactory.setConfigCallback(configKey, configValue));
+                successNodes.add(node.toKey());
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -119,16 +113,27 @@ public class RedisConfigManager {
     }
 
     public String getNodeInfo(RedisNode node) {
-        String nodeKey = toKey(node);
-
         RedisTemplate<String, String> template = redisTemplateByNodes.computeIfAbsent(
-                nodeKey, k -> createTemplate(node));
+                node.toKey(), k -> createTemplate(node));
 
         try {
             return template.execute(RedisCallbackFactory.getInfoCallback());
         }
         catch (RedisConnectionFailureException e) {
-            removeTemplate(nodeKey);
+            removeTemplate(node.toKey());
+            throw e;
+        }
+    }
+
+    public String getCommandStats(RedisNode node) {
+        RedisTemplate<String, String> template = redisTemplateByNodes.computeIfAbsent(
+                node.toKey(), k -> createTemplate(node));
+
+        try {
+            return template.execute(RedisCallbackFactory.getCommandStatsCallback());
+        }
+        catch (RedisConnectionFailureException e) {
+            removeTemplate(node.toKey());
             throw e;
         }
     }
@@ -138,10 +143,7 @@ public class RedisConfigManager {
             RedisTemplate<String, String> template = redisTemplateByNodes.get(nodeKey);
             String originalValue = backupValues.get(nodeKey);
             try {
-                template.execute((RedisConnection conn) -> {
-                    conn.serverCommands().setConfig(configKey, originalValue);
-                    return null;
-                });
+                template.execute(RedisCallbackFactory.setConfigCallback(configKey, originalValue));
             }
             catch (Exception e) {
                 // 롤백 실패 시 로깅만 (이미 실패 상태)
@@ -152,7 +154,7 @@ public class RedisConfigManager {
 
     private void syncNodeTemplates(Set<RedisNode> currentNodes) {
         Set<String> currentKeys = currentNodes.stream()
-                .map(this::toKey)
+                .map(RedisNode::toKey)
                 .collect(Collectors.toSet());
 
         // 제거된 노드의 Pool 정리
@@ -166,12 +168,8 @@ public class RedisConfigManager {
 
         // 신규 노드의 Pool 생성
         for (RedisNode node : currentNodes) {
-            redisTemplateByNodes.computeIfAbsent(toKey(node), k -> createTemplate(node));
+            redisTemplateByNodes.computeIfAbsent(node.toKey(), k -> createTemplate(node));
         }
-    }
-
-    private String toKey(RedisNode node) {
-        return node.getHost() + ":" + node.getPort();
     }
 
     private void removeTemplate(String key) {
