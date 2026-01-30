@@ -388,7 +388,7 @@
         { 
                 id: "commandStatisticsCard", 
                 headers: [
-                    { name: "command", title: "Command", style: { headerTextAlign: "center", cellTextAlign: "center", width: "*" } },
+                    { name: "command", title: "Command", style: { headerTextAlign: "center", cellTextAlign: "left", width: "*" } },
                     { name: "numberOfCalls", title: "Number of calls", style: { headerTextAlign: "center", cellTextAlign: "right", width: "20%" } },
                     { name: "totalDuration", title: "Total Duration", style: { headerTextAlign: "center", cellTextAlign: "right", width: "20%" } },
                     { name: "durationPerCall", title: "Duration per call", style: { headerTextAlign: "center", cellTextAlign: "right", width: "20%" } }
@@ -405,10 +405,10 @@
         { 
                 id: "nodesCard", 
                 headers: [
-                    { name: "id", title: "Id", style: { headerTextAlign: "center", cellTextAlign: "", width: "20%" } },
-                    { name: "address", title: "Address", style: { headerTextAlign: "center", cellTextAlign: "center", width: "15%" } },
-                    { name: "flags", title: "Flags", style: { headerTextAlign: "center", cellTextAlign: "center", width: "7%" } },
-                    { name: "replicaMaster", title: "Replica's Master", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
+                    { name: "id", title: "Id", style: { headerTextAlign: "center", cellTextAlign: "left", width: "15%" } },
+                    { name: "address", title: "Address", style: { headerTextAlign: "center", cellTextAlign: "center", width: "10%" } },
+                    { name: "flags", title: "Flags", style: { headerTextAlign: "center", cellTextAlign: "center", width: "5%" } },
+                    { name: "replicaMaster", title: "Replica's Master", style: { headerTextAlign: "center", cellTextAlign: "left", width: "15%" } },
                     { name: "pingWasSent", title: "Ping was sent", style: { headerTextAlign: "center", cellTextAlign: "right", width: "10%" } },
                     { name: "pongWasReceived", title: "Pong was received", style: { headerTextAlign: "center", cellTextAlign: "right", width: "10%" } },
                     { name: "state", title: "State", style: { headerTextAlign: "center", cellTextAlign: "center", width: "5%" } },
@@ -781,7 +781,7 @@
                 return {
                     id: item.id,
                     address: `${item.ip}:${item.listenPort}@${item.clusterBusPort}`,
-                    flags: item.flags,
+                    flags: isMyselfMaster(item.flags) && "master" || item.flags,
                     replicaMaster: item.masterId,
                     pingWasSent: formatTimeAgo(item.pingSend),
                     pongWasReceived: formatTimeAgo(item.pongRecv),
@@ -856,6 +856,26 @@
         }
     }
 
+    // Checks "myself,master"
+    function isMyselfMaster(flags) {
+        if (!flags) return false;
+
+        // Split flags by comma
+        var flagList = _.split(flags, ",");
+
+        // Trim each flag
+        fflagList = _.map(flagList, f => _.trim(f));
+
+        // Remove all internal whitespace
+        flagList = _.map(flagList, f => _.replace(f, /\s+/g, ""));
+
+        // Convert to lowercase
+        flagList = _.map(flagList, f => f.toLowerCase());
+
+        // Check for "myself" and "master"
+        return _.includes(flagList, "myself") && _.includes(flagList, "master");
+    }
+
     // Time format
     function formatTimeAgo(timestamp) {
         if (!timestamp || timestamp <= 0) return "Never";
@@ -877,7 +897,8 @@
     function formatRedisStat(stat) {
         var formatCalls = (calls) => {
             if (calls >= 1_000_000) return `${_.round(calls / 1_1000_000, 1)} Mil`;
-            if (calls >= 1_000) return `${_.round(calls / 1_1000, 1)} K`;
+            //if (calls >= 1_000) return `${_.round(calls / 1_1000, 1)} K`;
+            if (calls >= 1_000) return calls.toLocaleString();
             return `${calls}`;
         };
 
