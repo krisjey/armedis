@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import com.github.armedis.config.RedisConfigManager;
+import com.github.armedis.config.RedisMultiNodeCommander;
 import com.github.armedis.http.service.management.configs.AllowedConfigCommands;
 import com.github.armedis.redis.command.AbstractRedisCommandRunner;
 import com.github.armedis.redis.command.RedisCommandEnum;
@@ -33,7 +33,7 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
     private RedisConfigRequest redisRequest;
 
     @Autowired
-    private RedisConfigManager redisConfigManager;
+    private RedisMultiNodeCommander redisMultiNodeCommander;
 
     public RedisConfigCommandRunner(RedisConfigRequest redisRequest, RedisTemplate<String, Object> redisTemplate) {
         this.redisRequest = redisRequest;
@@ -47,14 +47,14 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
         Map<Object, Object> result = new HashMap<>();
 
         if (redisRequest.getRequestMethod().equals(HttpMethod.GET)) {
-            String tempResult = this.redisConfigManager.getConfigValue(key);
+            String tempResult = this.redisMultiNodeCommander.getConfigValue(key);
             result.put(key, String.valueOf(tempResult));
             return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result);
         }
         else {
             Optional<String> value = this.redisRequest.getValue();
 
-            this.redisConfigManager.setConfigValue(key, value.get());
+            this.redisMultiNodeCommander.setConfigValue(key, value.get());
 
             // 업데이트 시 내부 값 업데이트
             AllowedConfigCommands.get(key).setCurrentValueFromDB(value.get());
