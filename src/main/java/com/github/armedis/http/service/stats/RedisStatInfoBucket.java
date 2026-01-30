@@ -147,7 +147,7 @@ public class RedisStatInfoBucket {
         }
 
         // Calculate sum using Collector pattern
-        RedisInfoVo sumRedisInfoVo = RedisInfoAggregator.aggregate(redisStatsInfo.getRedisInfoMap().values());
+        RedisInfoVo sumRedisInfoVo = RedisInfoAggregator.aggregate(redisStatsInfo.getRedisInfoList().values());
 
         // Set host information from last processed node
         if (redisNodeIp != null) {
@@ -187,6 +187,6 @@ public class RedisStatInfoBucket {
     }
 
     public Map<String, RedisInfoVo> getFirstRedisInfoMap() {
-        return this.redisStatsList.element().getRedisInfoMap();
+        return this.redisStatsList.element().getRedisInfoList();
     }
 }

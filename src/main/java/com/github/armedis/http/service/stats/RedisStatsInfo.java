@@ -16,7 +16,7 @@ import com.github.armedis.redis.info.RedisInfoVo;
 public class RedisStatsInfo {
     private Long epochTime;
     private String formatedEpochTime;
-    private Map<String, RedisInfoVo> redisInfoMap = new HashMap<>();
+    private Map<String, RedisInfoVo> redisInfoList = new HashMap<>();
 
     public RedisStatsInfo(ZonedDateTime currentTime) {
         epochTime = currentTime.toEpochSecond();
@@ -56,11 +56,11 @@ public class RedisStatsInfo {
      * @param redisInfo
      */
     public void put(String redisInfoId, RedisInfoVo redisInfo) {
-        redisInfoMap.put(redisInfoId, redisInfo);
+        redisInfoList.put(redisInfoId, redisInfo);
     }
 
-    public Map<String, RedisInfoVo> getRedisInfoMap() {
-        return redisInfoMap;
+    public Map<String, RedisInfoVo> getRedisInfoList() {
+        return redisInfoList;
     }
 
 //	private String
