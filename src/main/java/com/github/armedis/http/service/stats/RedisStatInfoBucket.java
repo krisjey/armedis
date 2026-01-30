@@ -82,7 +82,7 @@ public class RedisStatInfoBucket {
         catch (JsonProcessingException e) {
             logger.error("Can not parse json from stats info list", e);
         }
-// TODO CRLF 제거 필요.
+
         return stats;
     }
 

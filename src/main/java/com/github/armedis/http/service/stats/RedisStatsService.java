@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.github.armedis.config.ArmedisConfiguration;
 import com.github.armedis.http.service.BaseService;
 import com.github.armedis.http.service.ResponseCode;
 import com.github.armedis.http.service.ServiceUrl;
@@ -27,11 +26,8 @@ public class RedisStatsService extends BaseService {
     @Autowired
     private RedisStatInfoBucket redisStatInfoBucket;
 
-    @Autowired
-    private ArmedisConfiguration armedisConfiguration;
-
     /**
-     * Are you ok service for server instance.
+     * Redis stats service for server instance.
      * 
      * @param redisRequest
      * @return
