@@ -24,6 +24,11 @@ public final class ServiceUrl {
      * Redis status check
      */
     public static final String REDIS_COMMAND_STATS = "/v1/management/commandstats";
+    
+    /**
+     * Redis status check
+     */
+    public static final String REDIS_MANAGEMENT_LOGIN = "/v1/management/login";
 
     /**
      * Current memory status

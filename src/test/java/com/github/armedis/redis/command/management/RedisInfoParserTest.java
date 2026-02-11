@@ -203,13 +203,6 @@ class RedisInfoParserTest {
     @DisplayName("CommandStatsAggregator 테스트")
     class AggregatorTest {
 
-        private CommandStatsAggregator aggregator;
-
-        @BeforeEach
-        void setUp() {
-            aggregator = new CommandStatsAggregator();
-        }
-
         @Test
         @DisplayName("여러 VO 합산")
         void aggregateMultipleVOs() {
@@ -221,7 +214,7 @@ class RedisInfoParserTest {
             vo2.addStat(new CommandStat("get", 200, 1000, 1, 1));
             vo2.addStat(new CommandStat("del", 30, 150, 0, 0));
 
-            CommandStatsVO result = aggregator.aggregate(Arrays.asList(vo1, vo2));
+            CommandStatsVO result = CommandStatsAggregator.aggregate(Arrays.asList(vo1, vo2));
 
             assertThat(result.getStats()).hasSize(3);
             assertThat(result.getStats().get("get").getCalls()).isEqualTo(300);
@@ -234,7 +227,7 @@ class RedisInfoParserTest {
         @Test
         @DisplayName("빈 리스트 합산")
         void aggregateEmptyList() {
-            CommandStatsVO result = aggregator.aggregate(Collections.emptyList());
+            CommandStatsVO result = CommandStatsAggregator.aggregate(Collections.emptyList());
             assertThat(result.getStats()).isEmpty();
             assertThat(result.getTotalCalls()).isZero();
         }
@@ -242,7 +235,7 @@ class RedisInfoParserTest {
         @Test
         @DisplayName("null 리스트 합산")
         void aggregateNullList() {
-            CommandStatsVO result = aggregator.aggregate(null);
+            CommandStatsVO result = CommandStatsAggregator.aggregate(null);
             assertThat(result.getStats()).isEmpty();
         }
 
@@ -252,7 +245,7 @@ class RedisInfoParserTest {
             CommandStatsVO vo = new CommandStatsVO();
             vo.addStat(new CommandStat("get", 100, 500, 0, 0));
 
-            CommandStatsVO result = aggregator.aggregate(List.of(vo));
+            CommandStatsVO result = CommandStatsAggregator.aggregate(List.of(vo));
 
             assertThat(result.getStats()).hasSize(1);
             assertThat(result.getStats().get("get").getCalls()).isEqualTo(100);
@@ -267,29 +260,34 @@ class RedisInfoParserTest {
         @DisplayName("파싱 → 합산 전체 흐름")
         void fullFlow() {
             RedisCommandStatsParser parser = new RedisCommandStatsParser();
-            CommandStatsAggregator aggregator = new CommandStatsAggregator();
 
             String server1 = """
                     cmdstat_get:calls=100,usec=500,usec_per_call=5.00,rejected_calls=0,failed_calls=0
                     cmdstat_set:calls=50,usec=300,usec_per_call=6.00,rejected_calls=0,failed_calls=0
                     """;
 
+            // info command ignored CommandStatsAggregator.getExcludedCommands "replconf", "info", "ping", "auth", "psync"... etc.
             String server2 = """
                     cmdstat_get:calls=150,usec=900,usec_per_call=6.00,rejected_calls=1,failed_calls=0
                     cmdstat_info:calls=10,usec=100,usec_per_call=10.00,rejected_calls=0,failed_calls=0
+                    cmdstat_pexpire:calls=1,usec=21,usec_per_call=21.00,rejected_calls=0,failed_calls=0
+                    cmdstat_command|docs:calls=2,usec=3891,usec_per_call=1945.50,rejected_calls=0,failed_calls=0
+                    cmdstat_ping:calls=4,usec=9,usec_per_call=2.25,rejected_calls=0,failed_calls=0
+                    cmdstat_hexpire:calls=2,usec=75,usec_per_call=37.50,rejected_calls=0,failed_calls=0
+                    cmdstat_psync:calls=1,usec=71,usec_per_call=71.00,rejected_calls=0,failed_calls=0
                     """;
 
             List<CommandStatsVO> statsList = Arrays.asList(
                     parser.parseCommandStats(server1),
                     parser.parseCommandStats(server2));
 
-            CommandStatsVO result = aggregator.aggregate(statsList);
+            CommandStatsVO result = CommandStatsAggregator.aggregate(statsList);
 
-            assertThat(result.getStats()).hasSize(3);
+            assertThat(result.getStats()).hasSize(5);
             assertThat(result.getStats().get("get").getCalls()).isEqualTo(250);
             assertThat(result.getStats().get("get").getUsec()).isEqualTo(1400);
             assertThat(result.getStats().get("get").getUsecPerCall()).isCloseTo(5.6, within(0.01));
-            assertThat(result.getTotalCalls()).isEqualTo(310);
+            assertThat(result.getTotalCalls()).isEqualTo(305);
         }
     }
 }
