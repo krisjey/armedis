@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.armedis.config.ArmedisConfiguration;
 import com.github.armedis.http.service.BaseService;
+import com.github.armedis.http.service.ServiceUrl;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
@@ -31,8 +32,6 @@ public class ArmedisManagementLoginService extends BaseService {
 
     private ArmedisConfiguration armedisConfiguration;
 
-    private static final String COMMAND_URL = "/v1/management/login";
-
     public ArmedisManagementLoginService(ArmedisConfiguration armedisConfiguration) {
         this.armedisConfiguration = armedisConfiguration;
     }
@@ -45,7 +44,7 @@ public class ArmedisManagementLoginService extends BaseService {
      * @return
      */
     @Post
-    @Path(COMMAND_URL)
+    @Path(ServiceUrl.REDIS_MANAGEMENT_LOGIN)
     public HttpResponse urlencodedWithKey(@Param("loginId") String loginId, @Param("loginPassword") Optional<String> loginPassword) {
         logger.info("Text request for management login", loginId);
 
