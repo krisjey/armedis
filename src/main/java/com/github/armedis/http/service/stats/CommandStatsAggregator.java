@@ -25,4 +25,8 @@ public class CommandStatsAggregator {
 
         return result;
     }
+
+    public static Set<String> getExcludedCommands() {
+        return EXCLUDED_COMMANDS;
+    }
 }
