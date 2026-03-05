@@ -47,6 +47,11 @@ time limit
 "cluster-node-timeout" "15000"
 "slowlog-log-slower-than" "10000"
 
+// TODO Hotkeys, Keysizes, Threads(io_thread_0:clients=2,reads=407,writes=1179)
+// TODO 데이터가 한건도 없으면 Overview 화면 안나옴.
+
+TODO RedisInfoVo에서 setPersistence시 값이 없으면 빈 객체 생성 필요.                    	
+
 logging
 "syslog-ident" "redis"
 "loglevel" "notice"
@@ -63,3 +68,4 @@ logging
 99. add prometheus exportor - prometheus exporter armeria example
         https://github.com/heowc/armeria-example/blob/master/prometheus-metrics/src/main/java/com/example/PrometheusMetricsApplication.java
         https://jupiny.com/2021/01/03/armeria-metric-monitoring-by-prometheus/
+
