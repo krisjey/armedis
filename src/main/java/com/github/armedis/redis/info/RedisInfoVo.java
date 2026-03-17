@@ -280,8 +280,6 @@ public class RedisInfoVo {
                         break;
 
                     default:
-                    	// TODO Hotkeys, Keysizes, Threads(io_thread_0:clients=2,reads=407,writes=1179)
-                    	// TODO 데이터가 한건도 없으면 Overview 화면 안나옴.
                         logger.debug("Does not support " + sectionName + " " + contentSection);
                 }
             }
