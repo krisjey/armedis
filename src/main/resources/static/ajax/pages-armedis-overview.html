@@ -429,6 +429,17 @@
             { data: 'idleTime', className: 'text-end' },
             { data: 'lastCommand' }
         ],
+        columnDefs: [
+            {
+                targets: [1, 2],
+                render: function (data, type, row) {
+                    if (type === 'sort' || type === 'type') {
+                        return parseFloat(data.replace(/[^0-9.]/g, '')) || 0;
+                    }
+                    return data;
+                }
+            }
+        ],
         language: {
             emptyTable: '데이터가 없습니다.',
             loadingRecords: '데이터를 불러오는 중입니다...',
@@ -446,6 +457,17 @@
             { data: 'totalDuration', className: 'text-end' },
             { data: 'durationPerCall', className: 'text-end' }
         ],
+        columnDefs: [
+            {
+                targets: [1, 2, 3],
+                render: function (data, type, row) {
+                    if (type === 'sort' || type === 'type') {
+                        return parseFloat(data.replace(/[^0-9.]/g, '')) || 0;
+                    }
+                    return data;
+                }
+            }
+        ],
         language: {
             emptyTable: '데이터가 없습니다.',
             loadingRecords: '데이터를 불러오는 중입니다...',
@@ -461,6 +483,17 @@
             { data: 'timestamp' },
             { data: 'duration', className: 'text-end' },
             { data: 'command' }
+        ],
+        columnDefs: [
+            {
+                targets: 1,
+                render: function (data, type, row) {
+                    if (type === 'sort' || type === 'type') {
+                        return parseFloat(data.replace(/[^0-9.]/g, '')) || 0;
+                    }
+                    return data;
+                }
+            }
         ],
         language: {
             emptyTable: '데이터가 없습니다.',
