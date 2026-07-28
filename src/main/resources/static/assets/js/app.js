@@ -473,29 +473,6 @@ File: Main Js File
 		}
 	}
 
-	function call_ajax_page(page) {
-		if (page === "pages-armedis-overview.html") {
-			document.title = "Overiew |  Armedis";
-		} else {
-			var title = page.replace(".html", "");
-			var title1 = title.replace("-", " ");
-			document.title = title1.charAt(0).toUpperCase() + title1.slice(1) + " | Armedis";
-		}
-
-		$.ajax({
-			url: "/ajax/" + page,
-			cache: false,
-			dataType: "html",
-			type: "GET",
-			success: function (data) {
-				window.location.hash = page;
-				$("#ajaxresult").empty();
-				$("#ajaxresult").html(data);
-				$(window).scrollTop(0);
-			}
-		});
-	}
-
 	//  Search menu dropdown on Topbar
 	function isCustomDropdown() {
 		//Search bar
@@ -1902,9 +1879,6 @@ File: Main Js File
 			sessionStorage.setItem("defaultAttribute", JSON.stringify(isLayoutAttributes));
 			layoutSwitch(isLayoutAttributes);
 
-			// open right sidebar on first time load
-			var offCanvas = document.querySelector('.btn[data-bs-target="#theme-settings-offcanvas"]');
-			offCanvas ? offCanvas.click() : "";
 		} else {
 			var isLayoutAttributes = {};
 			isLayoutAttributes["data-layout"] = sessionStorage.getItem("data-layout");

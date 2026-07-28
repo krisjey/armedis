@@ -430,9 +430,10 @@ function createTable(headers, rows, className, styleObj) {
  * @returns 
  */
 function getMemoryCapacityUnit(size, unit = 'byte') {
-    // if (typeof size !== 'number' || size < 0) {
-    //   throw new Error('size는 0 이상의 숫자여야 합니다.');
-    // }
+    size = Number(size);
+    if (!Number.isFinite(size) || size < 0) {
+      size = 0;
+    }
   
     if (unit !== 'byte' && unit !== 'kbyte') {
       throw new Error("unit은 'byte' 또는 'kbyte' 중 하나여야 합니다.");

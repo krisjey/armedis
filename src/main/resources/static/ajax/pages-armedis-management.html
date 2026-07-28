@@ -28,25 +28,27 @@
         </div>
 	
         <!-- 설정 테이블 -->
-        <table class="table table-striped" id="configTable">
-            <thead>
-                <tr>
-                    <th>설정 키</th>
-                    <th>현재값</th>
-                    <th>편집</th>
-                    <th>설명</th>
-	            </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-striped" id="configTable">
+                <thead>
+                    <tr>
+                        <th>설정 키</th>
+                        <th>현재값</th>
+                        <th>편집</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
         <!-- 편집 모달 -->
-        <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true" style="position: fixed;">
+        <div class="modal" id="editModal" tabindex="-1" aria-hidden="true" style="position: fixed;">
         <!--      <div class="modal-dialog">-->
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="modalTitle" ></h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="설정 편집 닫기"></button>
                     </div>
                     <div class="modal-body">
                         <p>현재값: <span id="modalCurrent">-</span></p>
@@ -65,12 +67,12 @@
             </div>
         </div> 
         <!-- 로그인 모달 -->
-        <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true" style="position: fixed;">
+        <div class="modal" id="loginModal" tabindex="-1" aria-hidden="true" style="position: fixed;">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="loginModalTitle">Lock Screen</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="로그인 닫기"></button>
                     </div>
                     <div class="modal-body">
                         <div class="user-thumb text-center">
@@ -82,7 +84,7 @@
                             <input type="text" class="form-control" id="username" placeholder="Enter username" value="">
                         </div>
 
-                        <form>
+                        <form id="loginForm">
                             <div class="mb-3 position-relative">
                                 <label class="form-label" for="password-input">Password</label>
                                 <div class="position-relative auth-pass-inputgroup mb-3">
@@ -138,30 +140,62 @@
 	];
 
 	var tableBody = document.querySelector("#configTable tbody");
-	var editModal  = new bootstrap.Modal(document.getElementById("editModal"));
-    var loginModal = new bootstrap.Modal(document.getElementById("loginModal"), {
+    var editModalElement = document.getElementById("editModal");
+    var loginModalElement = document.getElementById("loginModal");
+	var editModal = new bootstrap.Modal(editModalElement);
+    var loginModal = new bootstrap.Modal(loginModalElement, {
         backdrop: 'static' // 바깥 클릭해도 닫히지 않음
     });
     var currentEdit = null;
 	var kvMap = {};
-	var editEventObject = null; //클릭 이벤트 객체
+    var pendingSave = null;
+    var currentEditReady = false;
+    var managementPageActive = true;
+    var configListController = null;
+    var configDetailController = null;
+    var configDetailRequestId = 0;
     
 	// 테이블 렌더링
 	function renderTable(category="All", filter="") {
-        tableBody.innerHTML = "";
+        tableBody.replaceChildren();
 
         if (!configKeys || configKeys.length === 0) {
             initTable();
         } else {
-            configKeys.filter(i => (category==="All" || i.category===category) && (i.key.includes(filter) || i.description.includes(filter)))
+            var normalizedFilter = filter.toLowerCase();
+            configKeys.filter(i => {
+                var key = String(i.key || "").toLowerCase();
+                var description = String(i.description || "").toLowerCase();
+                return (category === "All" || i.category === category)
+                    && (key.includes(normalizedFilter) || description.includes(normalizedFilter));
+            })
                     .forEach(i => {
                     var tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>${i.key}</td>
-                        <td><span class="current-value" data-key="${i.key}">${i.dataType === "memoryunit" ? getMemoryCapacityUnit(i.currentValue, "kbyte") : i.currentValue}</span></td>
-                        <td><button class="btn btn-sm btn-outline-primary edit-btn" data-key="${i.key}" data-cat="${i.category}">✏️</button></td>
-                        <td>${i.description}</td>
-                        `;
+                    var keyCell = document.createElement("td");
+                    var valueCell = document.createElement("td");
+                    var editCell = document.createElement("td");
+                    var descriptionCell = document.createElement("td");
+                    var currentValue = document.createElement("span");
+                    var editButton = document.createElement("button");
+
+                    keyCell.textContent = i.key;
+                    currentValue.className = "current-value";
+                    currentValue.dataset.key = i.key;
+                    currentValue.textContent = i.dataType === "memoryunit"
+                        ? getMemoryCapacityUnit(i.currentValue, "kbyte")
+                        : i.currentValue;
+                    valueCell.appendChild(currentValue);
+
+                    editButton.type = "button";
+                    editButton.className = "btn btn-sm btn-outline-primary edit-btn";
+                    editButton.dataset.key = i.key;
+                    editButton.dataset.cat = i.category;
+                    editButton.setAttribute("aria-label", i.key + " 설정 편집");
+                    editButton.textContent = "✏️";
+                    editCell.appendChild(editButton);
+
+                    descriptionCell.textContent = i.description;
+                    tr.append(keyCell, valueCell, editCell, descriptionCell);
                     tableBody.appendChild(tr);
                     });
             document.querySelectorAll(".edit-btn").forEach(btn => btn.addEventListener("click", openModal));
@@ -171,18 +205,31 @@
     // 모달 열기
     function openModal(e) {
         var event = e.currentTarget.dataset;
-        var itemsList = []; 
         var key = event.key;
-        var cat = event.cat;
-        currentEdit = configKeys.find(i => i.key === key);
+        var requestedEdit = configKeys.find(i => i.key === key);
+        if (!managementPageActive || !requestedEdit) {
+            return;
+        }
+
+        if (configDetailController) {
+            configDetailController.abort();
+        }
+        configDetailController = new AbortController();
+        var requestId = ++configDetailRequestId;
+
+        currentEdit = requestedEdit;
+        pendingSave = null;
+        currentEditReady = false;
+        document.getElementById("saveBtn").disabled = true;
+        document.getElementById("modalInputContainer").replaceChildren();
         $("#modalTitle").text(`${key} 설정 변경`);
         $("#modalCurrent").text("불러오는 중...");
         kvMap = {};
 
-        switch(currentEdit.dataType) {
+        switch(requestedEdit.dataType) {
             case "memoryunit":
-                $(".alert")[0].classList.remove("d-none");
-                $(".alert > #alertMsg")[0].innerText = 
+                document.querySelector("#editModal .alert").classList.remove("d-none");
+                document.querySelector("#editModal #alertMsg").innerText =
 `# 1k => 1000 bytes
 # 1kb => 1024 bytes
 # 1m => 1000000 bytes
@@ -191,21 +238,29 @@
 # 1gb => 1024*1024*1024 bytes`;
                 break;
             default:
-                $(".alert")[0].classList.add("d-none");
+                document.querySelector("#editModal .alert").classList.add("d-none");
         }
         editModal.show();
 
         // 조회
-        fetch("/v1/management/settings/config/" + key)
+        fetch("/v1/management/settings/config/" + encodeURIComponent(key), {
+            signal: configDetailController.signal
+        })
             .then(res=> {
                 if (!res.ok) {
-                    editModal.hide();
-                    console.error(res.statusText);
-                    alert("관리자에게 문의하세요");
+                    throw new Error("HTTP " + res.status);
                 }
                 return res.json();
             })
             .then(data=> {
+                if (!managementPageActive
+                    || requestId !== configDetailRequestId
+                    || currentEdit !== requestedEdit) {
+                    return;
+                }
+                if (!data.result || typeof data.result !== "object" || Object.keys(data.result).length === 0) {
+                    throw new Error("설정값 응답이 비어 있습니다.");
+                }
                 var currentKey = Object.keys(data.result)[0];
                 var currentVal = data.result[currentKey];
                 var viewCurrentVal = data.result[currentKey];
@@ -213,7 +268,7 @@
                     viewCurrentVal = numberWithCommas(currentVal);
                 }
                 
-                switch(currentEdit.dataType) {
+                switch(requestedEdit.dataType) {
                     case "memoryunit":
                         $("#modalCurrent").text(getMemoryCapacityUnit(currentVal, "kbyte"));
                         break;
@@ -221,51 +276,113 @@
                         $("#modalCurrent").text(viewCurrentVal);
                 }
 
-                if (currentEdit.dataType === "keyvalue") 
+                if (requestedEdit.dataType === "keyvalue")
                 try { 
                     kvMap = JSON.parse(currentVal);
                 } catch {
                     $("#modalCurrent").text("-");
                 };
-                renderModalInput(currentEdit, currentVal);
-                
+                renderModalInput(requestedEdit, currentVal);
+                currentEditReady = true;
+                document.getElementById("saveBtn").disabled = false;
             })
             .catch(err=> {
+                if (err.name === "AbortError"
+                    || !managementPageActive
+                    || requestId !== configDetailRequestId) {
+                    return;
+                }
                 console.error(err);
                 alert("관리자에게 문의하세요:" + err);
             	$("#modalCurrent").text("-");
                 editModal.hide();
+            })
+            .finally(() => {
+                if (requestId === configDetailRequestId) {
+                    configDetailController = null;
+                }
             });
 	}
 // 입력 컴포넌트 생성
 	function renderModalInput(cfg, curr) {
         var cont = document.getElementById("modalInputContainer");
-	    cont.innerHTML = "";
-        var html = "";
+        cont.replaceChildren();
+        var input = null;
+        var label = document.createElement("label");
+        label.className = "visually-hidden";
+        label.htmlFor = "modalInput";
+        label.textContent = cfg.key + " 새 값";
+
         switch(cfg.dataType) {
             case "integer":
-                html = `<input id="modalInput" type="number" class="form-control" value="${curr}">`;
+                input = document.createElement("input");
+                input.type = "number";
+                input.className = "form-control";
+                input.value = curr;
                 break;
             case "dropdown":
-                html = `<select id="modalInput" class="form-select">${cfg.options.map(o=>`<option value="${o}"${o===curr?' selected':''}>${o}</option>`).join('')}</select>`;
+                input = document.createElement("select");
+                input.className = "form-select";
+                cfg.options.forEach(optionValue => {
+                    var option = document.createElement("option");
+                    option.value = optionValue;
+                    option.textContent = optionValue;
+                    option.selected = optionValue === curr;
+                    input.appendChild(option);
+                });
                 break;
             case "toggle":
-                html = `<div class="form-check form-switch"><input id="modalInput" class="form-check-input" type="checkbox"${curr==='yes'?' checked':''}><label class="form-check-label">${cfg.description}</label></div>`;
+                var switchWrapper = document.createElement("div");
+                var switchLabel = document.createElement("label");
+                input = document.createElement("input");
+                switchWrapper.className = "form-check form-switch";
+                input.className = "form-check-input";
+                input.type = "checkbox";
+                input.checked = curr === "yes";
+                switchLabel.className = "form-check-label";
+                switchLabel.htmlFor = "modalInput";
+                switchLabel.textContent = cfg.description;
+                switchWrapper.append(input, switchLabel);
+                cont.appendChild(switchWrapper);
                 break;
             case "password":
-                html = `<input id="modalInput" type="password" class="form-control" placeholder="새 비밀번호">`;
+                input = document.createElement("input");
+                input.type = "password";
+                input.className = "form-control";
+                input.placeholder = "새 비밀번호";
                 break;
             case "string":
-                html = `<textarea id="modalInput" class="form-control" rows="3">${curr}</textarea>`;
+                input = document.createElement("textarea");
+                input.className = "form-control";
+                input.rows = 3;
+                input.value = curr;
                 break;
             case "keyvalue":
-                html = `<div id="kvContainer" class="mb-2"></div><button id="addKvBtn" class="btn btn-sm btn-outline-secondary mb-3">+ 추가</button>`;
+                var kvContainer = document.createElement("div");
+                var addButton = document.createElement("button");
+                kvContainer.id = "kvContainer";
+                kvContainer.className = "mb-2";
+                addButton.id = "addKvBtn";
+                addButton.type = "button";
+                addButton.className = "btn btn-sm btn-outline-secondary mb-3";
+                addButton.textContent = "+ 추가";
+                cont.append(kvContainer, addButton);
                 break;
             case "memoryunit":
-                html = `<input id="modalInput" type="text" class="form-control" value="${getMemoryCapacityUnit(curr, "kbyte")}">`;
+                input = document.createElement("input");
+                input.type = "text";
+                input.className = "form-control";
+                input.value = getMemoryCapacityUnit(curr, "kbyte");
                 break;
         }
-        cont.innerHTML = html;
+
+        if (input) {
+            input.id = "modalInput";
+            cont.prepend(label);
+            if (!input.parentElement) {
+                cont.appendChild(input);
+            }
+        }
         if (cfg.dataType === "keyvalue") initKeyValue();
     }
 
@@ -278,37 +395,89 @@
         };
 
         function renderKV() {
-            kvCont.innerHTML = "";
+            kvCont.replaceChildren();
             Object.entries(kvMap).forEach(([k,v]) => {
                 var row = document.createElement("div");
+                var keyInput = document.createElement("input");
+                var valueInput = document.createElement("input");
+                var removeButton = document.createElement("button");
+                var currentKey = k;
+
                 row.className = "d-flex mb-2";
-                row.innerHTML = `<input class="form-control me-2" data-key="key" value="${k}" placeholder="명령어">` +
-                                `<input class="form-control me-2" data-key="value" value="${v}" placeholder="새 이름">` +
-                                `<button class="btn btn-sm btn-danger">-</button>`;
-                row.querySelector("button").onclick=()=>{
-                    delete kvMap[k];
+                keyInput.className = "form-control me-2";
+                keyInput.dataset.key = "key";
+                keyInput.value = k;
+                keyInput.placeholder = "명령어";
+                keyInput.setAttribute("aria-label", "명령어");
+
+                valueInput.className = "form-control me-2";
+                valueInput.dataset.key = "value";
+                valueInput.value = v;
+                valueInput.placeholder = "새 이름";
+                valueInput.setAttribute("aria-label", "새 명령어 이름");
+
+                removeButton.type = "button";
+                removeButton.className = "btn btn-sm btn-danger";
+                removeButton.setAttribute("aria-label", (k || "빈 항목") + " 삭제");
+                removeButton.textContent = "-";
+                removeButton.onclick=()=>{
+                    delete kvMap[currentKey];
                     renderKV();
                 };
-                row.querySelectorAll("input").forEach(inp=>{
-                    inp.oninput=()=>{
-                        const newKey=row.querySelector("[data-key=key]").value;
-                        const newVal=row.querySelector("[data-key=value]").value;
-                        delete kvMap[k]; if(newKey) kvMap[newKey]=newVal; renderKV();
-                    };
-                });
+
+                keyInput.oninput=()=>{
+                    var newKey = keyInput.value;
+                    delete kvMap[currentKey];
+                    currentKey = newKey;
+                    if (currentKey) {
+                        kvMap[currentKey] = valueInput.value;
+                    }
+                };
+                valueInput.oninput=()=>{
+                    if (currentKey) {
+                        kvMap[currentKey] = valueInput.value;
+                    }
+                };
+
+                row.append(keyInput, valueInput, removeButton);
                 kvCont.appendChild(row);
             });
         }
         renderKV();
     }
 
-    // 저장 처리
-    document.getElementById("saveBtn").onclick=()=>{
+    function getCurrentEditValue() {
         var val;
         if (currentEdit.dataType === "toggle") val = document.getElementById("modalInput").checked ? "yes":"no";
         else if (currentEdit.dataType === "keyvalue") val = JSON.stringify(kvMap);
         else val = document.getElementById("modalInput").value;
-        
+        return val;
+    }
+
+    function isSuccessfulResult(result) {
+        return result && typeof result.result === "string" && result.result.toUpperCase() === "OK";
+    }
+
+    function setLoginBusy(isBusy) {
+        var loginButton = document.getElementById("saveLoginBtn");
+        var saveButton = document.getElementById("saveBtn");
+        if (loginButton) {
+            loginButton.disabled = isBusy;
+            loginButton.textContent = isBusy ? "처리 중..." : "LOGIN";
+        }
+        if (saveButton) {
+            saveButton.disabled = isBusy || !currentEditReady;
+        }
+    }
+
+    // 저장 처리
+    document.getElementById("saveBtn").onclick=()=>{
+        if (!managementPageActive || !currentEdit || !currentEditReady) {
+            alert("설정값을 불러온 후 다시 시도해주세요.");
+            return;
+        }
+        var val = getCurrentEditValue();
+
         if (val === "" || val === null || val === undefined) {
             alert("값을 입력해주세요");
             return;
@@ -328,6 +497,11 @@
                 return;
             }
         }
+        pendingSave = {
+            key: currentEdit.key,
+            dataType: currentEdit.dataType,
+            value: val
+        };
         //모달 창에 id, password 가 남아있어 지움
         document.getElementById("username").value = "";
         document.getElementById("password-input").value = "";
@@ -335,14 +509,15 @@
 	};
 
     // 로그인 처리
-    document.getElementById("saveLoginBtn").onclick=()=>{
-        var val;
-        if (currentEdit.dataType === "toggle") val = document.getElementById("modalInput").checked ? "yes":"no";
-        else if (currentEdit.dataType === "keyvalue") val = JSON.stringify(kvMap);
-        else val = document.getElementById("modalInput").value;
-
+    document.getElementById("saveLoginBtn").onclick=async ()=>{
+        var saveRequest = pendingSave;
         var id = document.getElementById("username").value;
         var pwd = document.getElementById("password-input").value;
+
+        if (!managementPageActive || !saveRequest) {
+            alert("저장할 설정을 다시 선택해주세요.");
+            return;
+        }
 
         if (id === "" || id === null || id === undefined) {
             alert("아이디를 입력해주세요");
@@ -357,51 +532,73 @@
         loginData.append("loginId", id);
         loginData.append("loginPassword", pwd);
 
-        //로그인 검증
-        fetch("/v1/management/login", {
-            method:"POST",
-            headers:{"Content-Type":"application/x-www-form-urlencoded"},
-            body: loginData.toString()
-        })
-        .then(res => res.json())
-        .then(loginRes => {
-            if (loginRes.hasOwnProperty("result") && loginRes.result.toUpperCase() === "OK") {
-                //저장
-                var saveData = new URLSearchParams();
-                saveData.append("value", val);
-                fetch("/v1/management/settings/config/" + currentEdit.key, {
-                    method:"PUT",
-                    headers:{"Content-Type":"application/x-www-form-urlencoded"},
-                    body: saveData.toString()
-                })
-                .then(res => res.json())
-                .then(saveRes => {
-                    document.querySelector(`.current-value[data-key="${currentEdit.key}"]`).textContent = val;
-                    loginModal.hide();
-                    editModal.hide();
-                    if (saveRes.hasOwnProperty("result") && saveRes.result.toUpperCase() === "OK") {
-                        alert("저장 성공하였습니다");
-                    } else {
-                        alert("저장 실패하였습니다");
-                    }
-                })
-                .catch(err => {
-                    alert("저장 실패하였습니다: " + err)
-                });
-            } else {
+        setLoginBusy(true);
+        try {
+            var loginResponse = await fetch("/v1/management/login", {
+                method:"POST",
+                headers:{"Content-Type":"application/x-www-form-urlencoded"},
+                body: loginData.toString()
+            });
+            if (!loginResponse.ok) {
+                throw new Error("HTTP " + loginResponse.status);
+            }
+            var loginResult = await loginResponse.json();
+            if (!isSuccessfulResult(loginResult)) {
                 alert("로그인 인증이 실패하였습니다");
                 return;
             }
-        })
-        .catch(err => {
-            alert("로그인 인증이 실패하였습니다");
-            console.error("로그인 인증이 실패하였습니다: ", err)
-        });
+            if (!managementPageActive) {
+                return;
+            }
+
+            var saveData = new URLSearchParams();
+            saveData.append("value", saveRequest.value);
+            var saveResponse = await fetch("/v1/management/settings/config/" + encodeURIComponent(saveRequest.key), {
+                method:"PUT",
+                headers:{"Content-Type":"application/x-www-form-urlencoded"},
+                body: saveData.toString()
+            });
+            if (!saveResponse.ok) {
+                throw new Error("HTTP " + saveResponse.status);
+            }
+            var saveResult = await saveResponse.json();
+            if (!isSuccessfulResult(saveResult)) {
+                alert("저장 실패하였습니다");
+                return;
+            }
+            if (!managementPageActive) {
+                return;
+            }
+
+            var currentValue = document.querySelector(`.current-value[data-key="${CSS.escape(saveRequest.key)}"]`);
+            if (currentValue) {
+                currentValue.textContent = saveRequest.value;
+            }
+            pendingSave = null;
+            loginModal.hide();
+            editModal.hide();
+            alert("저장 성공하였습니다");
+        } catch (error) {
+            console.error("설정 저장 실패:", error);
+            if (managementPageActive) {
+                alert("저장 실패하였습니다");
+            }
+        } finally {
+            if (managementPageActive) {
+                setLoginBusy(false);
+            }
+        }
 	};
+
+    document.getElementById("loginForm").addEventListener("submit", event => {
+        event.preventDefault();
+        document.getElementById("saveLoginBtn").click();
+    });
 
     // 검색이벤트	
     document.getElementById("searchInput").oninput = () => {
-        var cat = document.querySelector("#categoryTabs .nav-link.active").dataset.cat;
+        var activeTab = document.querySelector("#categoryTabs .nav-link.active");
+        var cat = activeTab ? activeTab.dataset.cat : "All";
         renderTable(cat,document.getElementById("searchInput").value);
     };
 
@@ -416,15 +613,27 @@
         var categories = data.map(item => item.category);
         var uniqueCategory = [...new Set(categories)];
         var ul = document.getElementById("categoryTabs");
-        var html = `<li class="nav-item"><a class="nav-link active" data-cat="All" href="#">전체</a></li>`;
-        uniqueCategory.forEach(category => {
-            html += `<li class="nav-item"><a class="nav-link" data-cat="${category}" href="#">${category}</a></li>`;
-        })
-        ul.innerHTML = html;
+        ul.replaceChildren();
+
+        function appendCategory(label, category, active) {
+            var listItem = document.createElement("li");
+            var link = document.createElement("a");
+            listItem.className = "nav-item";
+            link.className = "nav-link" + (active ? " active" : "");
+            link.dataset.cat = category;
+            link.href = "#";
+            link.textContent = label;
+            listItem.appendChild(link);
+            ul.appendChild(listItem);
+        }
+
+        appendCategory("전체", "All", true);
+        uniqueCategory.forEach(category => appendCategory(category, category, false));
 
 		// 탭 & 검색 이벤트
         ul.addEventListener("click", e => {
             if(e.target && e.target.matches(".nav-link")) {
+                e.preventDefault();
                 document.querySelectorAll("#categoryTabs .nav-link").forEach(t=>t.classList.remove("active")); 
                 e.target.classList.add("active"); 
                 renderTable(e.target.dataset.cat, document.getElementById("searchInput").value);
@@ -437,18 +646,38 @@
         return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 	
-	// 조회
+    // 조회
     function getList() {
-        fetch("/v1/management/settings/configs")
-            .then(res => { 
+        if (configListController) {
+            configListController.abort();
+        }
+        configListController = new AbortController();
+        var controller = configListController;
+        fetch("/v1/management/settings/configs", { signal: controller.signal })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error("HTTP " + res.status);
+                }
                 return res.json();
             })
             .then(data => {
+                if (!managementPageActive || controller !== configListController) {
+                    return;
+                }
                 setCategory(data.configKeys);
                 configKeys = data.configKeys;
                 renderTable("All");
             })
-            .catch(err =>alert("조회 실패 되었습니다: " + err));
+            .catch(err => {
+                if (err.name !== "AbortError" && managementPageActive) {
+                    alert("조회 실패 되었습니다: " + err);
+                }
+            })
+            .finally(() => {
+                if (controller === configListController) {
+                    configListController = null;
+                }
+            });
     }
 
     function initTable() {
@@ -462,9 +691,47 @@
         tableBody.appendChild(tr);
     }
 
-	// 처음 로드되었을 떄 
-    initTable();
-	getList();
+    function destroyManagementResources() {
+        managementPageActive = false;
+        configDetailRequestId++;
+        currentEditReady = false;
+        pendingSave = null;
+
+        if (configListController) {
+            configListController.abort();
+            configListController = null;
+        }
+        if (configDetailController) {
+            configDetailController.abort();
+            configDetailController = null;
+        }
+
+        [editModalElement, loginModalElement].forEach(modalElement => {
+            modalElement.classList.remove("show");
+            modalElement.style.display = "none";
+            modalElement.setAttribute("aria-hidden", "true");
+            modalElement.removeAttribute("aria-modal");
+            modalElement.removeAttribute("role");
+        });
+        editModal.dispose();
+        loginModal.dispose();
+        document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+        document.body.classList.remove("modal-open");
+        document.body.style.removeProperty("overflow");
+        document.body.style.removeProperty("padding-right");
+    }
+
+    window.pageHooks = window.pageHooks || {};
+    window.pageHooks["pages-armedis-management.html"] = {
+        onLoad: function () {
+            managementPageActive = true;
+            initTable();
+            getList();
+        },
+        onUnload: function () {
+            destroyManagementResources();
+        }
+    };
 	
 </script>
 
