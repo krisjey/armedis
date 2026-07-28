@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg"
+<html lang="ko" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg"
     data-sidebar-image="none" data-preloader="disable">
 
 <head>
@@ -28,9 +28,9 @@
     <!-- App Css-->
     <link href="/assets/css/app.min.css" id="app-style" rel="stylesheet" type="text/css" />
     <!-- custom Css-->
-    <link href="/assets/css/custom.min.css" id="app-style" rel="stylesheet" type="text/css" />
+    <link href="/assets/css/custom.min.css" id="custom-style" rel="stylesheet" type="text/css" />
 
-    <link href="/assets/css/extra-css.css" id="app-style" rel="stylesheet" type="text/css" />
+    <link href="/assets/css/extra-css.css" id="extra-style" rel="stylesheet" type="text/css" />
 
 </head>
 
@@ -1000,7 +1000,7 @@
     <script src="/assets/js/app.js"></script>
     <script src="/assets/js/ajax.js"></script>
     <script>
-    console.log(document.domain);
+        document.getElementById("serverType").textContent = window.location.host;
     </script>
 </body>
 

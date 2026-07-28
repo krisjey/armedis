@@ -268,20 +268,22 @@
                         <h5 class="card-title mb-0"></h5>
                     </div>
                     <div class="card-body">
-                        <table id="nodes-datatables" class="display table table-bordered dt-responsive table-hover table-bordered" style="width:100%">
-                            <thead>
-                                <tr>
-                                    <th>Id</th>
-                                    <th>Address</th>
-                                    <th>Flags</th>
-                                    <th>Replica's Master</th>
-                                    <th>Ping was sent</th>
-                                    <th>Pong was received</th>
-                                    <th>State</th>
-                                    <th>Hash slot number or range</th>
-                                </tr>
-                            </thead>
-                        </table>
+                        <div class="table-responsive">
+                            <table id="nodes-datatables" class="display table table-bordered table-hover" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Id</th>
+                                        <th>Address</th>
+                                        <th>Flags</th>
+                                        <th>Replica's Master</th>
+                                        <th>Ping was sent</th>
+                                        <th>Pong was received</th>
+                                        <th>State</th>
+                                        <th>Hash slot number or range</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div><!--end col-->
@@ -295,16 +297,18 @@
                     </div><!-- end card header -->
 
                     <div class="card-body">
-                        <table id="client-connections-datatables" class="display table table-bordered dt-responsive table-hover table-bordered" style="width:100%">
-                            <thead>
-                                <tr>
-                                    <th>Client</th>
-                                    <th>Total Duration</th>
-                                    <th>Idle time</th>
-                                    <th>Last command</th>
-                                </tr>
-                            </thead>
-                        </table>
+                        <div class="table-responsive">
+                            <table id="client-connections-datatables" class="display table table-bordered table-hover" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Client</th>
+                                        <th>Total Duration</th>
+                                        <th>Idle time</th>
+                                        <th>Last command</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
                     </div><!-- end card-body -->
                 </div><!-- end card -->
             </div> <!-- end col -->
@@ -316,16 +320,18 @@
                     </div><!-- end card header -->
 
                     <div class="card-body">
-                        <table id="command-statistics-datatables" class="display table table-bordered dt-responsive table-hover table-bordered" style="width:100%">
-                            <thead>
-                                <tr>
-                                    <th>Command</th>
-                                    <th>Number of calls</th>
-                                    <th>Total Duration</th>
-                                    <th>Duration per call</th>
-                                </tr>
-                            </thead>
-                        </table>
+                        <div class="table-responsive">
+                            <table id="command-statistics-datatables" class="display table table-bordered table-hover" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Command</th>
+                                        <th>Number of calls</th>
+                                        <th>Total Duration</th>
+                                        <th>Duration per call</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
                     </div><!-- end card-body -->
                 </div><!-- end card -->
             </div> <!-- end col -->
@@ -337,15 +343,17 @@
                     </div><!-- end card header -->
 
                     <div class="card-body">
-                        <table id="slow-queries-log-datatables" class="display table table-bordered dt-responsive table-hover table-bordered" style="width:100%">
-                            <thead>
-                                <tr>
-                                    <th>Timestamp</th>
-                                    <th>Duration</th>
-                                    <th>Command</th>
-                                </tr>
-                            </thead>
-                        </table>
+                        <div class="table-responsive">
+                            <table id="slow-queries-log-datatables" class="display table table-bordered table-hover" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Duration</th>
+                                        <th>Command</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
                     </div><!-- end card-body -->
                 </div><!-- end card -->
             </div> <!-- end col -->
@@ -375,6 +383,10 @@
 
     var charts = {};
     var statsData = [];
+    var overviewPollTimeoutId = null;
+    var overviewPollInFlight = false;
+    var overviewPageActive = false;
+    var overviewAbortControllers = [];
     
     var networkInputSeries = {
         data: [0]
@@ -393,6 +405,35 @@
             data: [0]
         }]
     };
+
+    function getStatsSnapshot(offsetFromEnd = 0) {
+        if (!Array.isArray(statsData) || statsData.length === 0) {
+            return null;
+        }
+        var index = Math.max(statsData.length - 1 - offsetFromEnd, 0);
+        return statsData[index] || null;
+    }
+
+    function getStatsSection(section, offsetFromEnd = 0) {
+        var snapshot = getStatsSnapshot(offsetFromEnd);
+        return snapshot && snapshot.redisInfoList && snapshot.redisInfoList.sum
+            ? snapshot.redisInfoList.sum[section]
+            : null;
+    }
+
+    async function fetchOverviewJson(url) {
+        var controller = new AbortController();
+        overviewAbortControllers.push(controller);
+        try {
+            var response = await fetch(url, { signal: controller.signal });
+            if (!response.ok) {
+                throw new Error("HTTP " + response.status);
+            }
+            return await response.json();
+        } finally {
+            overviewAbortControllers = overviewAbortControllers.filter(item => item !== controller);
+        }
+    }
 
     /**
      * Datatables 옵션
@@ -504,6 +545,12 @@
         paging: false,
         info: false
     });
+    var overviewDatatables = [
+        nodesDatatables,
+        clientConnectionsDatatables,
+        commandStatisticsDatatables,
+        slowQueriesLogDatatables
+    ];
 
     // 차트 영역 생성
     function createChartCard(cardId, cardBodyTarget, chartType, series) {
@@ -659,46 +706,50 @@
     // Ops/Sec 설정
     function setOpsPerSec() {
         var cardId = "opsPerSecCard";
-        // 마지막 stats
-        var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
-
-        var opsPerSec = lastStatsSumStats.instantaneousOpsPerSec;
+        var lastStatsSumStats = getStatsSection("stats");
+        var opsPerSec = lastStatsSumStats ? lastStatsSumStats.instantaneousOpsPerSec : 0;
         setDataValue(cardId, opsPerSec);
     }
 
     // Connected Clients 설정
     function setConnectedClients() {
         var cardId = "connectedClientsCard";
-        // 5초전 stats
-        var fiveSecondsAgoStatsSumStats = _.nth(statsData, -6).redisInfoList.sum.stats;
-        // 마지막 stats
-        var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
-        // 5초전 totalConnectionsReceived 
-        var fiveSecondsAgoConnectedReceived = fiveSecondsAgoStatsSumStats.totalConnectionsReceived;
-        // 마지막 totalConnectionsReceived
+        var fiveSecondsAgoStatsSumStats = getStatsSection("stats", 5);
+        var lastStatsSumStats = getStatsSection("stats");
+        var lastStatsSumClients = getStatsSection("clients");
+        if (!lastStatsSumStats || !lastStatsSumClients) {
+            setDataValue(cardId, "0(0)");
+            return;
+        }
+
+        var fiveSecondsAgoConnectedReceived = fiveSecondsAgoStatsSumStats
+            ? fiveSecondsAgoStatsSumStats.totalConnectionsReceived
+            : lastStatsSumStats.totalConnectionsReceived;
         var lastConnectedReceived = lastStatsSumStats.totalConnectionsReceived;
-        // 마지막 totalConnectionsReceived - 5초전 totalConnectionsReceived
         var computedConnectedReceived = Math.max(lastConnectedReceived - fiveSecondsAgoConnectedReceived, 0);
-        var lastStatsSumClients = _.last(statsData).redisInfoList.sum.clients;
         setDataValue(cardId, `${lastStatsSumClients.connectedClients.toLocaleString()}(${computedConnectedReceived.toLocaleString()})`);
     }
 
     // Number of Keys 설정
     function setTotalKeys() {
         var cardId = "totalKeysCard";
-        var lastStatsSumKeyspace = _.last(statsData).redisInfoList.sum.keyspace;
-        setDataValue(cardId, lastStatsSumKeyspace['0'].keys.toLocaleString());
+        var lastStatsSumKeyspace = getStatsSection("keyspace");
+        var dbZero = lastStatsSumKeyspace && lastStatsSumKeyspace["0"];
+        setDataValue(cardId, dbZero ? dbZero.keys.toLocaleString() : "0");
     }
 
     // Network 설정
     function setNetwork() {
         var cardId = "networkCard";
-        var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
+        var lastStatsSumStats = getStatsSection("stats");
+        if (!lastStatsSumStats) {
+            return;
+        }
         
-        // 1Gb 기준
-        var total = 1024 * 1024 * 1024;
-        var input = lastStatsSumStats.instantaneousInputKbps.toFixed(2);
-        var output = lastStatsSumStats.instantaneousOutputKbps.toFixed(2);
+        // Redis 수치는 KB/s이므로 1GB/s를 KB 기준으로 환산한다.
+        var total = 1024 * 1024;
+        var input = Number(lastStatsSumStats.instantaneousInputKbps || 0).toFixed(2);
+        var output = Number(lastStatsSumStats.instantaneousOutputKbps || 0).toFixed(2);
 
         var inputPct = input / total * 100;
         var outputPct = output / total * 100;
@@ -734,8 +785,11 @@
         var cardId = "memoryCard";
         var parent = document.getElementById(cardId);
         if (parent) {
-            var memoryElement = parent.querySelector("#memoryBar");
-            var lastStatsSumMemory = _.last(statsData).redisInfoList.sum.memory;
+            var lastStatsSumMemory = getStatsSection("memory");
+            if (!lastStatsSumMemory) {
+                charts["memoryBar"].updateSeries([{ data: [0, 0, 0, 0, 0] }], true);
+                return;
+            }
     
             // Max Memory가 없는 경우 Card에 Alert표시
             if (lastStatsSumMemory.maxmemory > 0) {
@@ -745,13 +799,9 @@
                 parent.querySelector(".alert").classList.remove("d-none");
             }
             
-            series: [{
-                data: [0, 0, 0, 0, 0]
-            }],
-    
             charts["memoryBar"].updateOptions({
                 xaxis: {
-                    max: getMemoryCapacityUnit(lastStatsSumMemory.totalSystemMemory)
+                    max: Number(lastStatsSumMemory.totalSystemMemory || 0)
                 }
             }, true);
             charts["memoryBar"].updateSeries(
@@ -770,15 +820,21 @@
 
     function setUptime() {
         var cardId = "uptimeCard";
-        var lastStatsSumServer = _.last(statsData).redisInfoList.sum.server;
+        var lastStatsSumServer = getStatsSection("server");
+        if (!lastStatsSumServer) {
+            setDataValue(cardId, "-");
+            return;
+        }
         var duration = moment.duration(lastStatsSumServer.uptimeInSeconds, "seconds");
         setDataValue(cardId, duration.humanize());
     }
 
     // Keyspace 설정
     function setKeyspace() {
-        var lastStatsSumKeyspace = _.last(statsData).redisInfoList.sum.keyspace;
-        var { keys, expires } = lastStatsSumKeyspace[0];
+        var lastStatsSumKeyspace = getStatsSection("keyspace");
+        var dbZero = lastStatsSumKeyspace && lastStatsSumKeyspace["0"];
+        var keys = dbZero ? Number(dbZero.keys || 0) : 0;
+        var expires = dbZero ? Number(dbZero.expires || 0) : 0;
         var nonTTL = keys - expires;
         
         // keyspace Bar 배경색 변경
@@ -799,10 +855,14 @@
 
     // hitRate 설정
     function setHitRate() {
-        // 1초전 stats
-        var beforecondsAgoStatsSumStats = _.nth(statsData, -2).redisInfoList.sum.stats;
-        // 마지막 stats
-        var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
+        var beforecondsAgoStatsSumStats = getStatsSection("stats", 1);
+        var lastStatsSumStats = getStatsSection("stats");
+        if (!beforecondsAgoStatsSumStats || !lastStatsSumStats) {
+            $("#ksHits").css("width", "0%");
+            $("#hitsCount").text("0");
+            $("#missesCount").text("0");
+            return;
+        }
 
         // var keyspaceHits = lastStatsSumStats.keyspaceHits - beforecondsAgoStatsSumStats.keyspaceHits;
         // var keyspaceMisses = lastStatsSumStats.keyspaceMisses - beforecondsAgoStatsSumStats.keyspaceMisses;
@@ -810,9 +870,10 @@
         var keyspaceMisses = lastStatsSumStats.keyspaceMisses - beforecondsAgoStatsSumStats.keyspaceMisses;
         var newHitRate = keyspaceHits / (keyspaceHits + keyspaceMisses) * 100;
 
-        if (Number.isNaN(newHitRate)) {
+        if (!Number.isFinite(newHitRate)) {
             newHitRate = 0;
         }
+        newHitRate = Math.min(Math.max(newHitRate, 0), 100);
 
         $("#ksHits").css("width", Math.max(newHitRate) + "%");
         $("#hitsCount").text(keyspaceHits.toLocaleString());
@@ -822,24 +883,24 @@
     // Version 설정
     function setVersion() {
         var cardId = "versionCard";
-        var lastStatsSumServer = _.last(statsData).redisInfoList.sum.server;
-        setDataValue(cardId, lastStatsSumServer.redisVersion);
+        var lastStatsSumServer = getStatsSection("server");
+        setDataValue(cardId, lastStatsSumServer ? lastStatsSumServer.redisVersion : "-");
     }
 
     // Eviction Policy 설정
     function setEvictionPolicy() {
         var cardId = "evictionPolicyCard";
-        var lastStatsSumMemory = _.last(statsData).redisInfoList.sum.memory;
-        setDataValue(cardId, lastStatsSumMemory.maxmemoryPolicy);
+        var lastStatsSumMemory = getStatsSection("memory");
+        setDataValue(cardId, lastStatsSumMemory ? lastStatsSumMemory.maxmemoryPolicy : "-");
     }
 
     // Redis 정보 조회
     async function getStats() {
-        var response = await fetch("/v1/redis/stats");
-        if (!response.ok) throw new Error("HTTP " + res.status);
-
-        var data = await response.json();
-        statsData = data;
+        var data = await fetchOverviewJson("/v1/redis/stats");
+        if (!overviewPageActive) {
+            return;
+        }
+        statsData = Array.isArray(data) ? data : [];
 
         setOpsPerSec();
         setConnectedClients();
@@ -855,13 +916,12 @@
 
     // Nodes 조회
     async function getNodes() {
-        var rowCnt = 6;
-        var response = await fetch("/v1/management/nodelist");
-        if (!response.ok) throw new Error("HTTP " + res.status);
-
-        var data = await response.json();
-        if (data.result.length > 0) {
-            var datas = _.map(data.result, item => {
+        var data = await fetchOverviewJson("/v1/management/nodelist");
+        if (!overviewPageActive) {
+            return;
+        }
+        var results = Array.isArray(data.result) ? data.result : [];
+        var datas = _.map(results, item => {
                 return {
                     id: item.id,
                     address: `${item.ip}:${item.listenPort}@${item.clusterBusPort}`,
@@ -873,22 +933,24 @@
                     hashSlotNumberOrRange: `${item.shardSlotStart}-${item.shardSlotEnd}`
                 }
             });
-            
-            nodesDatatables.clear();
+
+        nodesDatatables.clear();
+        if (datas.length > 0) {
             nodesDatatables.rows.add(datas);
-            nodesDatatables.draw(false);
         }
+        nodesDatatables.draw(false);
     }
 
     // Client connections 조회
     async function getClientConnections() {
         var rowCnt = 20;
-        var response = await fetch(`/v1/management/clientlist/${rowCnt}`);
-        if (!response.ok) throw new Error("HTTP " + res.status);
-
-        var data = await response.json();
-        if (data.result.length > 0) {
-            var last20Datas = _.takeRight(data.result, rowCnt);
+        var data = await fetchOverviewJson(`/v1/management/clientlist/${rowCnt}`);
+        if (!overviewPageActive) {
+            return;
+        }
+        var results = Array.isArray(data.result) ? data.result : [];
+        var last20Datas = _.takeRight(results, rowCnt);
+        if (last20Datas.length > 0) {
             last20Datas = _.map(last20Datas, item => {
                 var picked = _.pick(item, ['addressPort', 'age', 'idle', 'lastCommand']);
                 picked.age = `${picked.age.toLocaleString()} s`;
@@ -901,40 +963,41 @@
                 };
             });
 
-            clientConnectionsDatatables.clear();
-            clientConnectionsDatatables.rows.add(last20Datas);
-            clientConnectionsDatatables.draw(false);
         }
+        clientConnectionsDatatables.clear();
+        if (last20Datas.length > 0) {
+            clientConnectionsDatatables.rows.add(last20Datas);
+        }
+        clientConnectionsDatatables.draw(false);
     }
 
     // Command statistics 조회
     async function getCommandStatistics() {
-        var rowCnt = 20;
-        var response = await fetch("/v1/management/commandstats");
-        if (!response.ok) throw new Error("HTTP " + res.status);
-
-        var data = await response.json();
-        if (data.statsList.length > 0) {
-            rowCnt = data.statsList.length;
-            var datas = _.map(data.statsList, item => {
+        var data = await fetchOverviewJson("/v1/management/commandstats");
+        if (!overviewPageActive) {
+            return;
+        }
+        var statsList = Array.isArray(data.statsList) ? data.statsList : [];
+        var datas = _.map(statsList, item => {
                 return formatRedisStat(item);
             });
 
-            commandStatisticsDatatables.clear();
+        commandStatisticsDatatables.clear();
+        if (datas.length > 0) {
             commandStatisticsDatatables.rows.add(datas);
-            commandStatisticsDatatables.draw(false);
         }
+        commandStatisticsDatatables.draw(false);
     }
 
     // Slow queries log 조회
     async function getSlowlog() {
         var rowCnt = 20;
-        var response = await fetch(`/v1/management/slowlog/${rowCnt}`);
-        if (!response.ok) throw new Error("HTTP " + res.status);
-
-        var data = await response.json();
-        if (data.result.length > 0) {
-            var slowlogs = _.map(data.result, item => {
+        var data = await fetchOverviewJson(`/v1/management/slowlog/${rowCnt}`);
+        if (!overviewPageActive) {
+            return;
+        }
+        var results = Array.isArray(data.result) ? data.result : [];
+        var slowlogs = _.map(results, item => {
                 var cloned = _.clone(item);
                 var [timestamp, duration, commands] = _.pullAt(cloned, [1, 2, 3]);
                 return {
@@ -944,10 +1007,11 @@
                 }
             });
 
-            slowQueriesLogDatatables.clear();
+        slowQueriesLogDatatables.clear();
+        if (slowlogs.length > 0) {
             slowQueriesLogDatatables.rows.add(slowlogs);
-            slowQueriesLogDatatables.draw(false);
         }
+        slowQueriesLogDatatables.draw(false);
     }
 
     // Checks "myself,master"
@@ -958,7 +1022,7 @@
         var flagList = _.split(flags, ",");
 
         // Trim each flag
-        fflagList = _.map(flagList, f => _.trim(f));
+        flagList = _.map(flagList, f => _.trim(f));
 
         // Remove all internal whitespace
         flagList = _.map(flagList, f => _.replace(f, /\s+/g, ""));
@@ -1061,38 +1125,71 @@
         }
     }
 
-    // 페이지 로드됐을 때 interval Init
-    function intervalInit() {
-        getStats();
-        getNodes();
-        getClientConnections();
-        getCommandStatistics();
-        getSlowlog();
+    async function intervalInit() {
+        if (!overviewPageActive || overviewPollInFlight) {
+            return;
+        }
+
+        overviewPollInFlight = true;
+        try {
+            var results = await Promise.allSettled([
+                getStats(),
+                getNodes(),
+                getClientConnections(),
+                getCommandStatistics(),
+                getSlowlog()
+            ]);
+            results.forEach(result => {
+                if (result.status === "rejected" && result.reason && result.reason.name !== "AbortError") {
+                    console.error("Overview 데이터 갱신 실패:", result.reason);
+                }
+            });
+        } finally {
+            overviewPollInFlight = false;
+            if (overviewPageActive) {
+                overviewPollTimeoutId = setTimeout(intervalInit, 5000);
+            }
+        }
     }
 
-    function clearIntervalIds() {
-        if (window.globalIntervalIds.length > 0) {
-            window.globalIntervalIds.forEach(id => clearInterval(id));
-            window.globalIntervalIds = [];
+    function destroyOverviewResources() {
+        overviewPageActive = false;
+        if (overviewPollTimeoutId) {
+            clearTimeout(overviewPollTimeoutId);
+            overviewPollTimeoutId = null;
         }
+        overviewAbortControllers.forEach(controller => controller.abort());
+        overviewAbortControllers = [];
+
+        Object.values(charts).forEach(chart => {
+            if (chart && typeof chart.destroy === "function") {
+                chart.destroy();
+            }
+        });
+        charts = {};
+
+        overviewDatatables.forEach(datatable => {
+            if (datatable && typeof datatable.destroy === "function") {
+                datatable.destroy();
+            }
+        });
+        overviewDatatables = [];
+        nodesDatatables = null;
+        clientConnectionsDatatables = null;
+        commandStatisticsDatatables = null;
+        slowQueriesLogDatatables = null;
     }
 
     window.pageHooks = window.pageHooks || {};
     window.pageHooks["pages-armedis-overview.html"] = {
         onLoad: function () {
             initCard();
-            intervalInit();
             initChart();
-            
-            // 기존 interval 모두 제거
-            clearIntervalIds();
-            var intervalId = setInterval(() => {
-                intervalInit();
-            }, 5000);
-            window.globalIntervalIds.push(intervalId);
+            overviewPageActive = true;
+            intervalInit();
         },
         onUnload: function () {
-            clearIntervalIds();
+            destroyOverviewResources();
         }
     };
 </script>

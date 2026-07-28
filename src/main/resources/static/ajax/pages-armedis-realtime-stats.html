@@ -93,13 +93,15 @@
                     </div><!-- end card header -->
 
                     <div class="card-body">
-                        <table class="table table-bordered dt-responsive nowrap table-striped align-middle"
-                            style="width:100%">
-                            <thead>
-                                <tr></tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="table table-bordered nowrap table-striped align-middle"
+                                style="width:100%">
+                                <thead>
+                                    <tr></tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div><!-- end card-body -->
                 </div><!-- end card -->
                 <!-- Analysis END -->
@@ -153,6 +155,12 @@
     var prevStatsData = [];
     var redisStatDatas = [];
     var statsData = [];
+    var realtimePollTimeoutId = null;
+    var realtimePollInFlight = false;
+    var realtimePageActive = false;
+    var realtimeStatsController = null;
+    var hiddenAt = null;
+    var lastRenderedPointX = {};
     var tpsSeries = [{ name: "TPS", data: [] }];
     var hitRateSeries = [{ name: "HitRate", data: [] }];
     var memorySeries = [
@@ -183,6 +191,18 @@
             ] 
         }
     ];
+
+    function hasStatsData() {
+        return Array.isArray(statsData) && statsData.length > 0;
+    }
+
+    function trimSeries(series, totalPoints) {
+        series.forEach(item => {
+            if (item.data.length > totalPoints) {
+                item.data.splice(0, item.data.length - totalPoints);
+            }
+        });
+    }
 
     // 차트 영역 생성
     function createChartCard(cardId, series) {
@@ -308,104 +328,113 @@
             charts[cardId] = new ApexCharts(chartElement, chartOptions);
             charts[cardId].render();
 
-            var lastX = series[0].data.length > 0 && series[0].data[series[0].data.length - 1].x;
-            var optionsUpdate = {
-                xaxis: { min: lastX - 60000, max: lastX }
-            };
             charts[cardId].updateSeries(series);
-            charts[cardId].updateOptions(optionsUpdate, false, true);
+            if (series[0].data.length > 0) {
+                var lastX = series[0].data[series[0].data.length - 1].x;
+                lastRenderedPointX[cardId] = lastX;
+                charts[cardId].updateOptions({
+                    xaxis: { min: lastX - 60000, max: lastX }
+                }, false, true);
+            } else {
+                delete lastRenderedPointX[cardId];
+            }
         }
     }
 
     // 차트 그리기
     function addDataPoint(cardId, series) {
-        if (!series || series.length === 0) return;
+        if (!series || series.length === 0 || !series[0].data.length) return;
 
-        // charts에 데이터 추가
-        var datas = series.map(elem => ({ data: [_.last(elem.data)] }));
-        if (charts[cardId] && datas.length > 0) {
-            charts[cardId].appendData(datas);
-            var lastX = series[0].data[series[0].data.length - 1].x;
+        var lastX = series[0].data[series[0].data.length - 1].x;
+        if (!charts[cardId] || lastRenderedPointX[cardId] === lastX) {
+            return;
+        }
 
-            var optionsUpdate = {
-                xaxis: { min: lastX - 60000, max: lastX }
+        var visibleSeries = series.map(item => ({
+            name: item.name,
+            data: item.data.slice(-60)
+        }));
+        charts[cardId].updateSeries(visibleSeries, false);
+        lastRenderedPointX[cardId] = lastX;
+
+        var optionsUpdate = {
+            xaxis: { min: lastX - 60000, max: lastX }
+        };
+
+        // ============================
+        // TPS Card
+        // ============================
+        if (cardId === "tpsCard") {
+            var allY = series[0].data.map(d => d.y);
+            var maxY = Math.max(...allY);
+            var adjustedMaxY = maxY * 1.1; // 10% 여유
+
+            // max값에 따라 100 또는 500단위로 조정
+            var step = adjustedMaxY > 500 ? 500 : 100;
+            var roundedMaxY = Math.ceil(adjustedMaxY / step) * step;
+
+            optionsUpdate.yaxis = {
+                min: 0,
+                max: roundedMaxY,
+                tickAmount: 5,
+                labels: {
+                    formatter: val => val.toFixed(0)
+                }
             };
 
-            // ============================
-            // TPS Card
-            // ============================
-            if (cardId === "tpsCard") {
-                var allY = series[0].data.map(d => d.y);
-                var maxY = Math.max(...allY);
-                var adjustedMaxY = maxY * 1.1; // 10% 여유
+        // ============================
+        // Memory Card
+        // ============================
+        } else if (cardId === "memoryCard") {
+            var allY = series.flatMap(s => s.data.map(d => d.y));
+            var maxY = Math.max(...allY);
+            var adjustedMaxY = maxY * 1.1;
 
-                // max값에 따라 100 또는 500단위로 조정
-                var step = adjustedMaxY > 500 ? 500 : 100;
-                var roundedMaxY = Math.ceil(adjustedMaxY / step) * step;
-
-                optionsUpdate.yaxis = {
-                    min: 0,
-                    max: roundedMaxY,
-                    tickAmount: 5,
-                    labels: {
-                        formatter: val => val.toFixed(0)
+            // Memory 단위: MB 또는 GB 자동 변환
+            optionsUpdate.yaxis = {
+                min: 0,
+                max: adjustedMaxY,
+                labels: {
+                    formatter: val => {
+                        return getMemoryCapacityUnit(val);
                     }
-                };
+                }
+            };
 
-            // ============================
-            // Memory Card
-            // ============================
-            } else if (cardId === "memoryCard") {
-                var allY = series.flatMap(s => s.data.map(d => d.y));
-                var maxY = Math.max(...allY);
-                var adjustedMaxY = maxY * 1.1;
+        // ============================
+        // HitRate Card
+        // ============================
+        } else if (cardId === "hitRateCard") {
+            optionsUpdate.yaxis = {
+                min: 0,
+                max: 100,
+                tickAmount: 5,
+                labels: { formatter: val => val.toFixed(0) + "%" }
+            };
 
-                // Memory 단위: MB 또는 GB 자동 변환
-                optionsUpdate.yaxis = {
-                    min: 0,
-                    max: adjustedMaxY,
-                    labels: {
-                        formatter: val => {
-                            return getMemoryCapacityUnit(val);
-                        }
-                    }
-                };
+        // ============================
+        // Received Connections Card
+        // ============================
+        } else if (cardId === "receivedConnectionsCard") {
+            var allY = series[0].data.map(d => d.y);
+            var maxY = Math.max(...allY);
+            var adjustedMaxY = maxY * 1.1; // 10% 여유
 
-            // ============================
-            // HitRate Card
-            // ============================
-            } else if (cardId === "hitRateCard") {
-                optionsUpdate.yaxis = {
-                    min: 0,
-                    max: 100,
-                    tickAmount: 5,
-                    labels: { formatter: val => val.toFixed(0) + "%" }
-                };
+            // max값에 따라 100 또는 500단위로 조정
+            var step = adjustedMaxY > 500 ? 500 : 100;
+            var roundedMaxY = Math.ceil(adjustedMaxY / step) * step;
 
-            // ============================
-            // Received Connections Card
-            // ============================
-            } else if (cardId === "receivedConnectionsCard") {
-                var allY = series[0].data.map(d => d.y);
-                var maxY = Math.max(...allY);
-                var adjustedMaxY = maxY * 1.1; // 10% 여유
-
-                // max값에 따라 100 또는 500단위로 조정
-                var step = adjustedMaxY > 500 ? 500 : 100;
-                var roundedMaxY = Math.ceil(adjustedMaxY / step) * step;
-
-                optionsUpdate.yaxis = {
-                    min: 0,
-                    max: roundedMaxY,
-                    tickAmount: 5,
-                    labels: {
-                        formatter: val => val.toLocaleString()
-                    }
-                };
-            }
-
-            charts[cardId].updateOptions(optionsUpdate, false, true);
+            optionsUpdate.yaxis = {
+                min: 0,
+                max: roundedMaxY,
+                tickAmount: 5,
+                labels: {
+                    formatter: val => val.toLocaleString()
+                }
+            };
         }
+
+        charts[cardId].updateOptions(optionsUpdate, false, true);
     }
 
     // card box 설정
@@ -429,8 +458,7 @@
     }
 
     // 차트 초기설정
-    async function initChart() {
-        await getStats();
+    function initChart() {
         setTPSData();
         createChartCard("tpsCard", _.cloneDeep(tpsSeries));
         
@@ -444,8 +472,8 @@
         createChartCard("receivedConnectionsCard", _.cloneDeep(receivedConnectionsSeries));
     }
 
-    // 차트 제거 후 재생성
-    function destroyChart() {
+    // 차트 제거 후 현재 데이터로 재생성
+    function rebuildCharts() {
         var cardIds = ["tpsCard", "hitRateCard", "memoryCard", "receivedConnectionsCard"];
 
         cardIds.forEach((elem, idx) => {
@@ -453,6 +481,7 @@
                 charts[elem].destroy();
                 delete charts[elem];
             }
+            delete lastRenderedPointX[elem];
 
             switch (idx) {
                 case 1: hitRateSeries[0].data = []; break;
@@ -466,7 +495,9 @@
             }
         });
 
-        initChart();
+        if (realtimePageActive) {
+            initChart();
+        }
     }
 
     // TPS 차트 데이터 설정
@@ -489,10 +520,7 @@
             }
         });
         
-        if (tpsSeries[0].data.length > totalPoints) {
-            tpsSeries[0].data.shift();
-            // tpsSeries[0].data = _.drop(tpsSeries[0].data, tpsSeries[0].data.length - totalPoints);
-        }
+        trimSeries(tpsSeries, totalPoints);
     }
 
     // Hit Rate 차트 데이터 설정
@@ -516,9 +544,10 @@
                     var keyspaceMisses = lastStatsSumStats.keyspaceMisses - beforeStats.keyspaceMisses;
                     var newHitRate = keyspaceHits / (keyspaceHits + keyspaceMisses) * 100;
         
-                    if (Number.isNaN(newHitRate)) {
+                    if (!Number.isFinite(newHitRate)) {
                         newHitRate = 0;
                     }
+                    newHitRate = Math.min(Math.max(newHitRate, 0), 100);
                     hitRateSeries[0].data.push({
                         x: curTime,
                         y: newHitRate
@@ -527,10 +556,7 @@
             }
         });
         
-        if (hitRateSeries[0].data.length > totalPoints) {
-            hitRateSeries[0].data.shift();
-            // hitRateSeries[0].data = _.drop(hitRateSeries[0].data, hitRateSeries[0].data.length - totalPoints);
-        }
+        trimSeries(hitRateSeries, totalPoints);
     }
 
     // Memory 차트 데이터 설정
@@ -570,12 +596,7 @@
             }
         });
 
-        memorySeries.forEach(elem => {
-            if (elem.data.length > totalPoints) {
-                elem.data.shift();
-                // elem.data = _.drop(elem.data, elem.data.length - totalPoints);
-            }
-        })
+        trimSeries(memorySeries, totalPoints);
     }
 
     // Received Connections 차트 데이터 설정
@@ -614,10 +635,7 @@
             }
         });
         
-        if (receivedConnectionsSeries[0].data.length > totalPoints) {
-            receivedConnectionsSeries[0].data.shift();
-            // receivedConnectionsSeries[0].data = _.drop(receivedConnectionsSeries[0].data, receivedConnectionsSeries[0].data.length - totalPoints);
-        }
+        trimSeries(receivedConnectionsSeries, totalPoints);
     }
 
     // Table 설정
@@ -670,14 +688,14 @@
             newItems = statsSum;
         } else {
             lastPrevItems = _.last(prevStatsData);
-            lastPrevDate = lastPrevItems.epochTime;
+            var lastPrevDate = lastPrevItems.epochTime;
             newItems = _.filter(statsSum, d => d.epochTime > lastPrevDate);    
         }
         
         newItems.map((elem, idx) => {
             var curTime = moment(elem.formatedEpochTime).format("HH:mm:ss");
             if(!_.some(redisStatDatas, { Time: curTime })) {
-                
+                var lastStatsSumStats = elem.redisInfoList.sum.stats;
                 var beforeStats;
                 if (!_.isEmpty(lastPrevItems)) {
                     beforeStats = lastPrevItems.redisInfoList.sum.stats;
@@ -685,19 +703,18 @@
                     if (idx > 0) {
                         beforeStats = newItems[idx - 1].redisInfoList.sum.stats;
                     } else {
-                        beforeStats = {}
+                        beforeStats = lastStatsSumStats;
                     }
                 }
-
-                var lastStatsSumStats = elem.redisInfoList.sum.stats;
 
                 // Hit Rate
                 var keyspaceHits = lastStatsSumStats.keyspaceHits - beforeStats.keyspaceHits || 0;
                 var keyspaceMisses = lastStatsSumStats.keyspaceMisses - beforeStats.keyspaceMisses || 0;
                 var newHitRate = keyspaceHits / (keyspaceHits + keyspaceMisses) * 100;
-                if (Number.isNaN(newHitRate)) {
+                if (!Number.isFinite(newHitRate)) {
                     newHitRate = 0;
                 }
+                newHitRate = Math.min(Math.max(newHitRate, 0), 100);
 
                 // Received Connections
                 // 1초전 totalConnectionsReceived 
@@ -758,7 +775,8 @@
                 var tableTd = document.createElement("td");
                 tableTd.textContent = "데이터가 없습니다.";
                 tableTd.style.textAlign = "center";
-                tableTd.colSpan = tableInfo.headers.length;
+                var tableConfig = tables.find(item => item.id === cardId);
+                tableTd.colSpan = tableConfig ? tableConfig.headers.length : 1;
                 tableTr.appendChild(tableTd);
 
                 tableTbody.innerHTML = "";
@@ -771,10 +789,18 @@
 
     // Redis 정보 조회
     async function getStats() {
-        var response = await fetch("/v1/redis/stats");
-        if (!response.ok) throw new Error("HTTP " + res.status);
-
-        statsData = await response.json();
+        if (realtimeStatsController) {
+            realtimeStatsController.abort();
+        }
+        realtimeStatsController = new AbortController();
+        try {
+            var response = await fetch("/v1/redis/stats", { signal: realtimeStatsController.signal });
+            if (!response.ok) throw new Error("HTTP " + response.status);
+            var data = await response.json();
+            statsData = Array.isArray(data) ? data : [];
+        } finally {
+            realtimeStatsController = null;
+        }
     }
 
     // Instance Information 데이터 설정
@@ -784,7 +810,17 @@
         var instanceInfoTableContent = ['version', 'mode', 'role', 'uptime', 'master_info', 'slave_info', 'aof_enable', 'hz', 'rdb_last_save_time', 'memory_policy', 'connected_clients', 'pid', 'maxclients', 'blocked_clients', 'mem_fragmentation_ratio'];
         var redisInfoHeaders = [];
         var redisHost = '';
-        var dataObj = Object.keys(statsData);
+        if (!hasStatsData()) {
+            var emptyCardBody = document.querySelector("#instanceInformation .card-body");
+            if (emptyCardBody) {
+                emptyCardBody.replaceChildren();
+                var emptyMessage = document.createElement("p");
+                emptyMessage.className = "text-muted mb-0";
+                emptyMessage.textContent = "데이터가 없습니다.";
+                emptyCardBody.appendChild(emptyMessage);
+            }
+            return;
+        }
 
         var lastStats = _.last(statsData).redisInfoList;
         var statsRedisServer = _.omit(lastStats, ["sum"]);
@@ -880,72 +916,111 @@
         var parent = document.getElementById(cardId);
         if (parent) {
             var cardBody = parent.querySelector(".card-body");
-            cardBody.innerHTML = "";
-            cardBody.appendChild(createTable(redisInfoHeaders, instanceInfoData, "table table-bordered dt-responsive nowrap table-striped align-middle", { width: "100%" }));
+            var tableWrapper = document.createElement("div");
+            tableWrapper.className = "table-responsive";
+            tableWrapper.appendChild(createTable(redisInfoHeaders, instanceInfoData, "table table-bordered nowrap table-striped align-middle", { width: "100%" }));
+            cardBody.replaceChildren(tableWrapper);
         }
     }
 
     async function intervalInit() {
-        await getStats();
-        setTPSData();
-        addDataPoint("tpsCard", tpsSeries)
-
-        setHitRateData();
-        addDataPoint("hitRateCard", hitRateSeries);
-        
-        setMemory();
-        addDataPoint("memoryCard", memorySeries);
-        
-        setReceivedConnectionsData();
-        addDataPoint("receivedConnectionsCard", receivedConnectionsSeries);
-
-        setRedisStat();
-        setInstanceInfo();
-    }
-
-    function clearIntervalIds() {
-        if (window.globalIntervalIds.length > 0) {
-            window.globalIntervalIds.forEach(id => clearInterval(id));
-            window.globalIntervalIds = [];
+        if (!realtimePageActive || realtimePollInFlight) {
+            return;
         }
-    }
 
-    // Life Cycle START
-    var hiddenAt = null; // 최소화 시작 시간 기록
-    window.pageHooks = window.pageHooks || {};
-    window.pageHooks["pages-armedis-realtime-stats.html"] = {
-        // 페이지가 로드 됐을 때
-        onLoad: function () {
-            initCard();
-            initChart();
-            initTableHeader();
-            
-            // 기존 interval 모두 제거
-            clearIntervalIds();
-            var intervalId = setInterval(intervalInit, 1000);
-            window.globalIntervalIds.push(intervalId);
-        },
-        // 페이지를 떠날 때
-        onUnload: function () {
-            clearIntervalIds();
-        }
-    };
+        realtimePollInFlight = true;
+        try {
+            await getStats();
+            if (!realtimePageActive) {
+                return;
+            }
 
-    document.addEventListener("visibilitychange", function() {
-        if (document.hidden) {
-            hiddenAt = Date.now();
-        } else {
-            var hiddenDuration = (Date.now() - hiddenAt) / 1000;
-            console.log(`브라우저가 ${hiddenDuration}초 동안 비활성화됨`);
+            setTPSData();
+            addDataPoint("tpsCard", tpsSeries);
 
-            // 특정 시간 이상일 때만 실행
-            if (hiddenDuration > 60) {
-                console.log("차트 재랜더링!");
-                
-                // 차트 제거 후 재랜더링
-                destroyChart();
+            setHitRateData();
+            addDataPoint("hitRateCard", hitRateSeries);
+
+            setMemory();
+            addDataPoint("memoryCard", memorySeries);
+
+            setReceivedConnectionsData();
+            addDataPoint("receivedConnectionsCard", receivedConnectionsSeries);
+
+            setRedisStat();
+            setInstanceInfo();
+        } catch (error) {
+            if (error.name !== "AbortError") {
+                console.error("Realtime 데이터 갱신 실패:", error);
+            }
+        } finally {
+            realtimePollInFlight = false;
+            if (realtimePageActive) {
+                realtimePollTimeoutId = setTimeout(intervalInit, 1000);
             }
         }
-    });
-    // Life Cycle END
+    }
+
+    async function initializeRealtimePage() {
+        try {
+            await getStats();
+            if (!realtimePageActive) {
+                return;
+            }
+            initChart();
+            setRedisStat();
+            setInstanceInfo();
+        } catch (error) {
+            if (error.name !== "AbortError") {
+                console.error("Realtime 초기화 실패:", error);
+            }
+        } finally {
+            if (realtimePageActive) {
+                realtimePollTimeoutId = setTimeout(intervalInit, 1000);
+            }
+        }
+    }
+
+    function handleRealtimeVisibilityChange() {
+        if (!realtimePageActive) {
+            return;
+        }
+        if (document.hidden) {
+            hiddenAt = Date.now();
+        } else if (hiddenAt !== null) {
+            var hiddenDuration = (Date.now() - hiddenAt) / 1000;
+            hiddenAt = null;
+            if (hiddenDuration > 60) {
+                rebuildCharts();
+            }
+        }
+    }
+
+    function destroyRealtimeResources() {
+        realtimePageActive = false;
+        if (realtimePollTimeoutId) {
+            clearTimeout(realtimePollTimeoutId);
+            realtimePollTimeoutId = null;
+        }
+        if (realtimeStatsController) {
+            realtimeStatsController.abort();
+            realtimeStatsController = null;
+        }
+        document.removeEventListener("visibilitychange", handleRealtimeVisibilityChange);
+        rebuildCharts();
+    }
+
+    window.pageHooks = window.pageHooks || {};
+    window.pageHooks["pages-armedis-realtime-stats.html"] = {
+        onLoad: function () {
+            realtimePageActive = true;
+            initCard();
+            initTableHeader();
+            document.addEventListener("visibilitychange", handleRealtimeVisibilityChange);
+            initializeRealtimePage();
+        },
+        onUnload: function () {
+            destroyRealtimeResources();
+        }
+    };
 </script>
