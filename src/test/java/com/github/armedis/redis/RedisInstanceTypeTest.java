@@ -27,6 +27,10 @@ public class RedisInstanceTypeTest {
         assertThat(type).isNotNull();
         assertThat(type).isEqualTo(RedisInstanceType.STANDALONE);
 
+        type = RedisInstanceType.of("STANDalone");
+        assertThat(type).isNotNull();
+        assertThat(type).isEqualTo(RedisInstanceType.STANDALONE);
+
         type = RedisInstanceType.of("");
         assertThat(type).isNotNull();
         assertThat(type).isEqualTo(RedisInstanceType.NOT_DETECTED);
@@ -34,7 +38,7 @@ public class RedisInstanceTypeTest {
         type = RedisInstanceType.of("null");
         assertThat(type).isNotNull();
         assertThat(type).isEqualTo(RedisInstanceType.NOT_DETECTED);
-        
+
         assertThatThrownBy(() -> {
             @SuppressWarnings("unused")
             RedisInstanceType typeNull = RedisInstanceType.of(null);

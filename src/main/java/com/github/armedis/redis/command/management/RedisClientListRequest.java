@@ -14,11 +14,10 @@ public class RedisClientListRequest extends RedisRequest {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Param("size")
-    protected Optional<Integer> size;
+    private Optional<Integer> size;
 
     public RedisClientListRequest(AggregatedHttpRequest httpRequest) {
         super(httpRequest);
         this.setCommand("ClientList");
-        this.setSubCommand("list");
     }
 }

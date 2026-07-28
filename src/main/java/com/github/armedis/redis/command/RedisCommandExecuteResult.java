@@ -22,17 +22,29 @@ public interface RedisCommandExecuteResult {
     public static final String RESULT_KEY = "result";
 
     static RedisCommandExecuteResult getEmptyResult(String responseString) {
-        return new RedisCommandExecuteResult() {
+        return new EmptyResult(responseString);
+    }
 
-            @Override
-            public String toResponseString() {
-                return responseString;
-            }
+    final class EmptyResult implements RedisCommandExecuteResult {
+        private final String responseString;
 
-            @Override
-            public ObjectNode toObjectNode() {
-                return mapper.createObjectNode();
-            }
-        };
+        // 가능하면 외부에서 주입된 ObjectMapper 사용 권장 (아래 설명)
+        private static final ObjectMapper MAPPER = new ObjectMapper();
+
+        EmptyResult(String responseString) {
+            this.responseString = responseString;
+        }
+
+        @Override
+        public String toResponseString() {
+            return responseString;
+        }
+
+        @Override
+        public ObjectNode toObjectNode() {
+            ObjectNode node = MAPPER.createObjectNode();
+            node.put(RESULT_KEY, responseString);
+            return node;
+        }
     }
 }

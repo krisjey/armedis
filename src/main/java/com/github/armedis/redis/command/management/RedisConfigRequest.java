@@ -14,7 +14,7 @@ public class RedisConfigRequest extends RedisRequest {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Param("value")
-    protected Optional<String> value;
+    private Optional<String> value;
 
     public RedisConfigRequest(AggregatedHttpRequest httpRequest) {
         super(httpRequest);

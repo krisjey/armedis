@@ -47,10 +47,10 @@ public class RedisRequestBuilderTest {
         assertThat(builder).isExactlyInstanceOf(RedisGetRequestBuilder.class);
 
         JsonNode jsonNode = new ObjectMapper().readTree("{\"key\":\"" + key + "\"}");
-        
+
         final AggregatedHttpRequest aReq = AggregatedHttpRequest.of(
                 HttpMethod.POST, "/foo", PLAIN_TEXT_UTF_8, "bar");
-        
+
         RedisRequest redisRequest = builder.build(aReq, jsonNode);
         assertThat(redisRequest).isNotNull();
         assertThat(redisRequest).isExactlyInstanceOf(RedisGetRequest.class);

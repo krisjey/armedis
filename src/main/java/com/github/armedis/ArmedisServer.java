@@ -32,7 +32,7 @@ import com.linecorp.armeria.spring.ArmeriaSettings;
 public class ArmedisServer implements ApplicationRunner {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    
+
     @Autowired
     private ArmeriaSettings settings;
 
@@ -56,7 +56,7 @@ public class ArmedisServer implements ApplicationRunner {
         logger.info("Stats url is /index.htm");
 
         // TODO print connected redis config.
-        
+
         System.out.println(loadedMessage);
     }
 }

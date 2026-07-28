@@ -1,39 +1,38 @@
 package com.github.armedis.http.service.stats;
 
-import java.io.StringReader;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.armedis.config.ArmedisConfiguration;
-import com.github.armedis.redis.connection.pool.RedisConnectionPool;
+import com.github.armedis.config.RedisMultiNodeCommander;
+import com.github.armedis.redis.RedisNode;
+import com.github.armedis.redis.command.management.RedisCommandStatsParser;
+import com.github.armedis.redis.command.management.vo.CommandStatsVO;
+import com.github.armedis.redis.connection.RedisServerDetector;
 import com.github.armedis.redis.info.RedisInfoAggregator;
 import com.github.armedis.redis.info.RedisInfoVo;
-
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 
 /**
  * Redis cluster node status info command result --> redis status
  */
 @Component
-@Configuration
 @EnableScheduling
 public class RedisStatInfoBucket {
     /*
@@ -45,25 +44,43 @@ public class RedisStatInfoBucket {
      */
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private CircularFifoQueue<RedisStatsInfo> redisStatsInfoList = new CircularFifoQueue<>(10);
+    private CircularFifoQueue<RedisStatsInfo> redisStatsList = new CircularFifoQueue<>(10);
 
-    private List<RedisClusterNodeInfo> redisNodeInfoList;
+    private CommandStatsVO lastCommandStats;
 
-    @Autowired
     private ArmedisConfiguration armedisConfiguration;
+
+    private final RedisServerDetector redisServerDetector;
 
     private ObjectMapper mapper = configMapper();
 
-    @Autowired
-    private RedisConnectionPool<String, String> redisConnectionPool;
+    private RedisMultiNodeCommander redisMultiNodeCommander;
+
+    public RedisStatInfoBucket(ArmedisConfiguration armedisConfiguration, RedisMultiNodeCommander redisMultiNodeCommander, RedisServerDetector redisServerDetector) {
+        this.armedisConfiguration = armedisConfiguration;
+        this.redisMultiNodeCommander = redisMultiNodeCommander;
+        this.redisServerDetector = redisServerDetector;
+    }
 
     public String getStats() {
         String stats = null;
         try {
-            stats = mapper.writeValueAsString(redisStatsInfoList);
+            stats = mapper.writeValueAsString(redisStatsList);
         }
-        catch (Exception e) {
-            e.printStackTrace();
+        catch (JsonProcessingException e) {
+            logger.error("Can not parse json from stats info list", e);
+        }
+
+        return stats;
+    }
+
+    public String getCommandStats() {
+        String stats = null;
+        try {
+            stats = mapper.writeValueAsString(this.lastCommandStats);
+        }
+        catch (JsonProcessingException e) {
+            logger.error("Can not parse json from stats info list", e);
         }
 
         return stats;
@@ -86,56 +103,43 @@ public class RedisStatInfoBucket {
     public ThreadPoolTaskScheduler taskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
 
-        scheduler.setPoolSize(2); // 원하는 크기로 조절
+        scheduler.setPoolSize(3); // 원하는 크기로 조절
 
         return scheduler;
     }
 
-    @Scheduled(fixedRate = 1000) // 1000ms
+    @Scheduled(fixedRate = 1000) // start every 1000ms term, except running time is over the 1000ms then starting no delay.
     public void redisStatPolling() throws Throwable {
-        // TODO Cluster랑 None Cluster 분리.
         if (!armedisConfiguration.isStatEnabled()) {
             return;
         }
 
-        /**
-         * TODO RedisConnector사용? 아니면 Cluster connection 계속 유지?
-         * 클러스터 노드 변경되었을 때 필요.
-         * 0. 노드 접속 정보 추출 1. polling 문자열 Return per sec. 2. Convert to RedisStatsInfo
-         * per sec, every node RedisInfoVo 3.
-         */
         ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.systemDefault());
-
-        String clusterNodes = getClusterNodesCommandResult(redisConnectionPool);
-        redisNodeInfoList = convertNodeInfoList(clusterNodes);
 
         RedisStatsInfo redisStatsInfo = new RedisStatsInfo(currentTime);
 
-        String info = null;
         String redisNodeIp = null;
 
-        // statsInfo
-        for (RedisClusterNodeInfo redisNodeInfo : redisNodeInfoList) {
-            try {
-                StatefulRedisClusterConnection<String, String> connection = redisConnectionPool.getClusterConnection();
-                StatefulRedisConnection<String, String> nodeConnection = connection.getConnection(redisNodeInfo.id());
+        Map<String, String> commandStatsResultMap = new HashMap<String, String>();
 
-                redisNodeIp = redisNodeInfo.ip();
-                // send info command
-                info = nodeConnection.sync().info();
-                redisConnectionPool.returnObject(connection);
+        // statsInfo
+        for (RedisNode redisNode : redisServerDetector.getAllNodes()) {
+            try {
+                String info = this.redisMultiNodeCommander.getNodeInfo(redisNode);
 
                 // update stat info
                 RedisInfoVo redisInfo = RedisInfoVo.from(info, armedisConfiguration.isAddContentSection());
-
+                redisNodeIp = redisNode.getHost();
                 redisInfo.getServer().setHost(redisNodeIp);
-                redisInfo.getServer().setTcpPort(redisNodeInfo.listenPort());
+                redisInfo.getServer().setTcpPort(redisNode.getPort());
 
-                printStatPollingLog(redisStatsInfo, redisNodeInfo, redisInfo);
+                printStatPollingLog(redisStatsInfo, redisNode, redisInfo);
 
                 String redisInfoId = redisInfo.getServer().getHost() + ":" + redisInfo.getServer().getTcpPort();
                 redisStatsInfo.put(redisInfoId, redisInfo);
-                // 현재 시간기준(초단위)
+
+                // info commandstats call by nodes.
+                commandStatsResultMap.put(redisNode.toKey(), this.redisMultiNodeCommander.getCommandStats(redisNode));
             }
             catch (Exception e) {
                 logger.error("Error when parsing info command! ", e);
@@ -143,10 +147,8 @@ public class RedisStatInfoBucket {
         }
 
         // Calculate sum using Collector pattern
-        RedisInfoVo sumRedisInfoVo = RedisInfoAggregator.aggregate(
-            redisStatsInfo.getRedisInfoList().values()
-        );
-        
+        RedisInfoVo sumRedisInfoVo = RedisInfoAggregator.aggregate(redisStatsInfo.getRedisInfoList().values());
+
         // Set host information from last processed node
         if (redisNodeIp != null) {
             sumRedisInfoVo.getServer().setHost(redisNodeIp);
@@ -154,12 +156,22 @@ public class RedisStatInfoBucket {
 
         redisStatsInfo.put("sum", sumRedisInfoVo);
         logger.debug("TOTAL OPS " + sumRedisInfoVo.getStats().getInstantaneousOpsPerSec());
-        
-        if (redisStatsInfoList.isAtFullCapacity()) {
-            redisStatsInfoList.remove();
+
+        if (redisStatsList.isAtFullCapacity()) {
+            redisStatsList.remove();
         }
 
-        redisStatsInfoList.add(redisStatsInfo);
+        redisStatsList.add(redisStatsInfo);
+
+        RedisCommandStatsParser parser = new RedisCommandStatsParser();
+
+        List<CommandStatsVO> list = commandStatsResultMap.values().stream()
+                .map(parser::parseCommandStats)
+                .collect(Collectors.toList());
+
+        // sum commandstats
+        // update static data for commandstats
+        this.lastCommandStats = CommandStatsAggregator.aggregate(list);
     }
 
     /**
@@ -168,36 +180,13 @@ public class RedisStatInfoBucket {
      * @param redisNodeInfo
      * @param redisInfo
      */
-    private void printStatPollingLog(RedisStatsInfo redisStatsInfo, RedisClusterNodeInfo redisNodeInfo, RedisInfoVo redisInfo) {
+    private void printStatPollingLog(RedisStatsInfo redisStatsInfo, RedisNode redisNodeInfo, RedisInfoVo redisInfo) {
         if (armedisConfiguration.isLoggingEnabled()) {
-            logger.info("{}:{} {} {}", redisInfo.getServer().getHost(), redisInfo.getServer().getTcpPort(), redisNodeInfo.id(), redisInfo.toJsonString());
+            logger.info("{}:{} {} {}", redisInfo.getServer().getHost(), redisInfo.getServer().getTcpPort(), redisNodeInfo.getHost(), redisInfo.toJsonString());
         }
     }
 
-    private String getClusterNodesCommandResult(RedisConnectionPool<String, String> redisConnectionPool) {
-        String nodesInfo = null;
-        try {
-            StatefulRedisClusterConnection<String, String> connection = redisConnectionPool.getClusterConnection();
-            nodesInfo = connection.sync().clusterNodes();
-            redisConnectionPool.returnObject(connection);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return nodesInfo;
-    }
-
-    private List<RedisClusterNodeInfo> convertNodeInfoList(String clusterNodes) {
-        List<RedisClusterNodeInfo> redisNodeInfo = new ArrayList<RedisClusterNodeInfo>();
-        List<String> nodeInfoStrings = IOUtils.readLines(new StringReader(clusterNodes));
-
-        for (String nodeInfoString : nodeInfoStrings) {
-            RedisClusterNodeInfo nodeInfo = RedisClusterNodeInfoConverter.convert(nodeInfoString);
-
-            redisNodeInfo.add(nodeInfo);
-        }
-
-        return redisNodeInfo;
+    public Map<String, RedisInfoVo> getFirstRedisInfoMap() {
+        return this.redisStatsList.element().getRedisInfoList();
     }
 }

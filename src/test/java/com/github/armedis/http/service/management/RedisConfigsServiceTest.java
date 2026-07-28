@@ -3,13 +3,14 @@
  */
 package com.github.armedis.http.service.management;
 
-import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.test.context.ActiveProfiles;
 
 import com.github.armedis.ArmedisServer;
 import com.github.armedis.http.service.AbstractRedisServerTest;
@@ -20,9 +21,10 @@ import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.common.RequestHeaders;
 
-@ActiveProfiles("testbed")
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
 class RedisConfigsServiceTest extends AbstractRedisServerTest {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Test
     void testConfigsGet() {
@@ -47,8 +49,32 @@ class RedisConfigsServiceTest extends AbstractRedisServerTest {
         assertThat(responseString).isNotNull();
 
         assertThatJson(responseString)
-                .as("Check result field in result json")
-                .node("configKeys").isPresent()
-                .node("configKeys").isArray();
+                .node("configKeys")
+                .isArray();
+
+        assertThatJson(responseString)
+                .node("configKeys[0].key")
+                .isPresent();
+
+        assertThatJson(responseString)
+                .inPath("$.configKeys[*].key")
+                .isArray()
+                .contains("timeout", "maxmemory");
+
+        logger.info(responseString);
+
+        assertThatJson(responseString)
+                .inPath("$.configKeys[?(@.key=='maxmemory')].currentValue")
+                .isArray();
+
+        assertThatJson(responseString)
+                .inPath("$.configKeys[?(@['key'] == 'timeout')]")
+                .isArray()
+                .hasSize(1);
+
+//        assertThatJson(responseString)
+//                .inPath("$.configKeys[?(@['key'] == 'timeout')].currentValue")
+//                .isArray()
+//                .containsExactly("\"0\"");
     }
 }

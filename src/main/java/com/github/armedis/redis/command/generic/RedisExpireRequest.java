@@ -7,7 +7,7 @@ import com.linecorp.armeria.server.annotation.Param;
 
 public class RedisExpireRequest extends RedisRequest {
     @Param("seconds")
-    protected Long seconds;
+    private Long seconds;
 
     public RedisExpireRequest(AggregatedHttpRequest httpRequest) {
         super(httpRequest);

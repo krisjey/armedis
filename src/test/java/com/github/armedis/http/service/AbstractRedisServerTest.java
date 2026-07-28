@@ -26,7 +26,7 @@ public abstract class AbstractRedisServerTest {
     protected static final ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
-    private ArmedisConfiguration armedisConfiguration;
+    protected ArmedisConfiguration armedisConfiguration;
 
     protected WebClient client;
 

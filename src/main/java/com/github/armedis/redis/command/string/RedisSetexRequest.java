@@ -7,10 +7,10 @@ import com.linecorp.armeria.server.annotation.Param;
 
 public class RedisSetexRequest extends RedisRequest {
     @Param("value")
-    protected String value;
+    private String value;
 
     @Param("seconds")
-    protected Long seconds;
+    private Long seconds;
 
     public RedisSetexRequest(AggregatedHttpRequest httpRequest) {
         super(httpRequest);
@@ -24,7 +24,7 @@ public class RedisSetexRequest extends RedisRequest {
     public void setValue(String value) {
         this.value = value;
     }
-    
+
     /**
      * @return the seconds
      */

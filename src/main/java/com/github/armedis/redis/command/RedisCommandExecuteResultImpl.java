@@ -18,12 +18,12 @@ public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult 
     private float floatResult;
     private long longResult;
     private double doubleResult;
-    private Map<String, String> mapResult;
+    private Map<Object, Object> mapResult;
     private List<?> listResult;
     private ResultType resultType;
-    private Class clazz;
+    private Class<?> clazz;
 
-    public RedisCommandExecuteResultImpl(ResultType resultType, boolean boolResult, int intResult, String stringResult, float floatResult, long longResult, double doubleResult, Map<String, String> mapResult, List<?> listResult, Class clazz) {
+    public RedisCommandExecuteResultImpl(ResultType resultType, boolean boolResult, int intResult, String stringResult, float floatResult, long longResult, double doubleResult, Map<Object, Object> mapResult, List<?> listResult, Class<?> clazz) {
         this.resultType = resultType;
         this.boolResult = boolResult;
         this.intResult = intResult;
@@ -39,7 +39,7 @@ public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult 
     @Override
     public String toResponseString() {
         ObjectNode result = createObjectNode();
-        return result.textValue();
+        return result.toString();
     }
 
     @Override
@@ -49,6 +49,14 @@ public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult 
 
     private ObjectNode createObjectNode() {
         ObjectNode result = mapper.createObjectNode();
+        
+//        if (listResult != null) {
+//            ArrayNode node = mapper.convertValue(listResult, ArrayNode.class);
+//            if (node != null) {
+//                System.out.println(node.toString());
+//            }
+//        }
+
         switch (resultType) {
             case BOOLEAN:
                 result.put(RedisCommandExecuteResult.RESULT_KEY, boolResult);
@@ -71,7 +79,7 @@ public class RedisCommandExecuteResultImpl implements RedisCommandExecuteResult 
             case MAP:
                 result.set(RedisCommandExecuteResult.RESULT_KEY, mapper.convertValue(mapResult, ObjectNode.class));
                 break;
-                
+
             case LIST:
                 result.set(RedisCommandExecuteResult.RESULT_KEY, mapper.convertValue(listResult, ArrayNode.class));
                 break;

@@ -190,7 +190,7 @@
                             <div class="card-body">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <h6 class="mb-0"></h6>
-                                    <span class="small-muted"></span>
+                                    <span></span>
                                 </div>
                                 <div class="mb-2">
                                     <div class="mt-2 ks-bar">
@@ -199,7 +199,7 @@
                                             data-colors='["--vz-warning", "--vz-success"]'></div>
                                     </div>
                                 </div>
-                                <div class="d-flex justify-content-between small-muted">
+                                <div class="d-flex justify-content-between">
                                     <div>TTL: <strong id="ttlCount"></strong></div>
                                     <div>Non TTL: <strong id="nonTtlCount"></strong></div>
                                 </div>
@@ -216,7 +216,7 @@
                             <div class="card-body">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <h6 class="mb-0"></h6>
-                                    <span class="small-muted"></span>
+                                    <span></span>
                                 </div>
                                 <div class="mb-2">
                                     <div class="mt-2 ks-bar">
@@ -225,7 +225,7 @@
                                             data-colors='["--vz-warning", "--vz-success"]'></div>
                                     </div>
                                 </div>
-                                <div class="d-flex justify-content-between small-muted">
+                                <div class="d-flex justify-content-between">
                                     <div>Hits: <strong id="hitsCount"></strong></div>
                                     <div>Misses: <strong id="missesCount"></strong></div>
                                 </div>
@@ -262,24 +262,30 @@
         </div> <!-- end row-->
 
         <div class="row">
-            <div class="col-xl-12">
+            <div class="col-lg-12">
                 <div class="card card-animate" id="nodesCard">
                     <div class="card-header">
-                        <h4 class="card-title mb-0"></h4>
-                    </div><!-- end card header -->
-
+                        <h5 class="card-title mb-0"></h5>
+                    </div>
                     <div class="card-body">
-                        <table class="table table-bordered dt-responsive nowrap table-striped align-middle"
-                            style="width:100%">
+                        <table id="nodes-datatables" class="display table table-bordered dt-responsive table-hover table-bordered" style="width:100%">
                             <thead>
-                                <tr></tr>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Address</th>
+                                    <th>Flags</th>
+                                    <th>Replica's Master</th>
+                                    <th>Ping was sent</th>
+                                    <th>Pong was received</th>
+                                    <th>State</th>
+                                    <th>Hash slot number or range</th>
+                                </tr>
                             </thead>
-                            <tbody></tbody>
                         </table>
-                    </div><!-- end card-body -->
-                </div><!-- end card -->
-            </div> <!-- end col -->
-        </div> <!-- end row-->
+                    </div>
+                </div>
+            </div><!--end col-->
+        </div><!--end row-->
 
         <div class="row">
             <div class="col-xl-4">
@@ -289,12 +295,15 @@
                     </div><!-- end card header -->
 
                     <div class="card-body">
-                        <table class="table table-bordered dt-responsive nowrap table-striped align-middle"
-                            style="width:100%">
+                        <table id="client-connections-datatables" class="display table table-bordered dt-responsive table-hover table-bordered" style="width:100%">
                             <thead>
-                                <tr></tr>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Total Duration</th>
+                                    <th>Idle time</th>
+                                    <th>Last command</th>
+                                </tr>
                             </thead>
-                            <tbody></tbody>
                         </table>
                     </div><!-- end card-body -->
                 </div><!-- end card -->
@@ -307,12 +316,15 @@
                     </div><!-- end card header -->
 
                     <div class="card-body">
-                        <table class="table table-bordered dt-responsive nowrap table-striped align-middle"
-                            style="width:100%">
+                        <table id="command-statistics-datatables" class="display table table-bordered dt-responsive table-hover table-bordered" style="width:100%">
                             <thead>
-                                <tr></tr>
+                                <tr>
+                                    <th>Command</th>
+                                    <th>Number of calls</th>
+                                    <th>Total Duration</th>
+                                    <th>Duration per call</th>
+                                </tr>
                             </thead>
-                            <tbody></tbody>
                         </table>
                     </div><!-- end card-body -->
                 </div><!-- end card -->
@@ -325,12 +337,14 @@
                     </div><!-- end card header -->
 
                     <div class="card-body">
-                        <table class="table table-bordered dt-responsive nowrap table-striped align-middle"
-                            style="width:100%">
+                        <table id="slow-queries-log-datatables" class="display table table-bordered dt-responsive table-hover table-bordered" style="width:100%">
                             <thead>
-                                <tr></tr>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Duration</th>
+                                    <th>Command</th>
+                                </tr>
                             </thead>
-                            <tbody></tbody>
                         </table>
                     </div><!-- end card-body -->
                 </div><!-- end card -->
@@ -351,6 +365,10 @@
 <script src="/assets/js/pages/apexcharts-radialbar.init.js"></script>
 
 <script src="/assets/js/common.js"></script>
+
+<!--datatable js-->
+<script src="/assets/cdn/datatables/jquery.dataTables.min.js"></script>
+<script src="/assets/cdn/datatables/dataTables.bootstrap5.min.js"></script>
 
 <script>
     window.globalIntervalIds = window.globalIntervalIds || [];
@@ -375,47 +393,117 @@
             data: [0]
         }]
     };
-    var tables = [
-        { 
-            id: "clientConnectionsCard", 
-            headers: [
-                { name: "client", title: "Client", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
-                { name: "totalDuration", title: "Total Duration", style: { headerTextAlign: "center", cellTextAlign: "right", width: "20%" } },
-                { name: "idleTime", title: "Idle time", style: { headerTextAlign: "center", cellTextAlign: "right", width: "20%" } },
-                { name: "lastCommand", title: "Last command", style: { headerTextAlign: "center", cellTextAlign: "left", width: "*" } }
-            ] 
+
+    /**
+     * Datatables 옵션
+     * columns 텍스트 정렬
+     * className: 'text-start' (왼쪽 정렬)
+     * className: 'text-center' (가운데 정렬)
+     * className: 'text-end' (오른쪽 정렬)
+     */
+    var nodesDatatables = $('#nodes-datatables').DataTable({
+        columns: [
+            { data: 'id' },
+            { data: 'address' },
+            { data: 'flags' },
+            { data: 'replicaMaster' },
+            { data: 'pingWasSent' },
+            { data: 'pongWasReceived' },
+            { data: 'state' },
+            { data: 'hashSlotNumberOrRange' }
+        ],
+        language: {
+            emptyTable: '데이터가 없습니다.',
+            loadingRecords: '데이터를 불러오는 중입니다...',
+            zeroRecords: '검색 결과가 없습니다.'
         },
-        { 
-                id: "commandStatisticsCard", 
-                headers: [
-                    { name: "command", title: "Command", style: { headerTextAlign: "center", cellTextAlign: "center", width: "*" } },
-                    { name: "numberOfCalls", title: "Number of calls", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
-                    { name: "totalDuration", title: "Total Duration", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
-                    { name: "durationPerCall", title: "Duration per call", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } }
-                ] 
+        lengthChange: false,
+        paging: false,
+        info: false
+    });
+
+    var clientConnectionsDatatables = $('#client-connections-datatables').DataTable({
+        columns: [
+            { data: 'client' },
+            { data: 'totalDuration', className: 'text-end' },
+            { data: 'idleTime', className: 'text-end' },
+            { data: 'lastCommand' }
+        ],
+        columnDefs: [
+            {
+                targets: [1, 2],
+                render: function (data, type, row) {
+                    if (type === 'sort' || type === 'type') {
+                        return parseFloat(data.replace(/[^0-9.]/g, '')) || 0;
+                    }
+                    return data;
+                }
+            }
+        ],
+        language: {
+            emptyTable: '데이터가 없습니다.',
+            loadingRecords: '데이터를 불러오는 중입니다...',
+            zeroRecords: '검색 결과가 없습니다.'
         },
-        { 
-                id: "slowQueriesLogCard", 
-                headers: [
-                    { name: "timestamp", title: "Timestamp", style: { headerTextAlign: "center", cellTextAlign: "left", width: "25%" } },
-                    { name: "duration", title: "Duration", style: { headerTextAlign: "center", cellTextAlign: "right", width: "25%" } },
-                    { name: "command", title: "Command", style: { headerTextAlign: "center", cellTextAlign: "left", width: "*" } }
-                ] 
+        lengthChange: false,
+        paging: false,
+        info: false
+    });
+
+    var commandStatisticsDatatables = $('#command-statistics-datatables').DataTable({
+        columns: [
+            { data: 'command' },
+            { data: 'numberOfCalls', className: 'text-end' },
+            { data: 'totalDuration', className: 'text-end' },
+            { data: 'durationPerCall', className: 'text-end' }
+        ],
+        columnDefs: [
+            {
+                targets: [1, 2, 3],
+                render: function (data, type, row) {
+                    if (type === 'sort' || type === 'type') {
+                        return parseFloat(data.replace(/[^0-9.]/g, '')) || 0;
+                    }
+                    return data;
+                }
+            }
+        ],
+        language: {
+            emptyTable: '데이터가 없습니다.',
+            loadingRecords: '데이터를 불러오는 중입니다...',
+            zeroRecords: '검색 결과가 없습니다.'
         },
-        { 
-                id: "nodesCard", 
-                headers: [
-                    { name: "id", title: "Id", style: { headerTextAlign: "center", cellTextAlign: "", width: "20%" } },
-                    { name: "address", title: "Address", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
-                    { name: "flags", title: "Flags", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
-                    { name: "replicaMaster", title: "Replica's Master", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
-                    { name: "pingWasSent", title: "Ping was sent", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
-                    { name: "pongWasReceived", title: "Pong was received", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
-                    { name: "state", title: "State", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } },
-                    { name: "hashSlotNumberOrRange", title: "Hash slot number or range", style: { headerTextAlign: "center", cellTextAlign: "center", width: "20%" } }
-                ] 
-        }
-    ];
+        lengthChange: false,
+        paging: false,
+        info: false
+    });
+
+    var slowQueriesLogDatatables = $('#slow-queries-log-datatables').DataTable({
+        columns: [
+            { data: 'timestamp' },
+            { data: 'duration', className: 'text-end' },
+            { data: 'command' }
+        ],
+        columnDefs: [
+            {
+                targets: 1,
+                render: function (data, type, row) {
+                    if (type === 'sort' || type === 'type') {
+                        return parseFloat(data.replace(/[^0-9.]/g, '')) || 0;
+                    }
+                    return data;
+                }
+            }
+        ],
+        language: {
+            emptyTable: '데이터가 없습니다.',
+            loadingRecords: '데이터를 불러오는 중입니다...',
+            zeroRecords: '검색 결과가 없습니다.'
+        },
+        lengthChange: false,
+        paging: false,
+        info: false
+    });
 
     // 차트 영역 생성
     function createChartCard(cardId, cardBodyTarget, chartType, series) {
@@ -571,8 +659,11 @@
     // Ops/Sec 설정
     function setOpsPerSec() {
         var cardId = "opsPerSecCard";
+        // 마지막 stats
         var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
-        setDataValue(cardId, lastStatsSumStats.instantaneousOpsPerSec);
+
+        var opsPerSec = lastStatsSumStats.instantaneousOpsPerSec;
+        setDataValue(cardId, opsPerSec);
     }
 
     // Connected Clients 설정
@@ -606,12 +697,8 @@
         
         // 1Gb 기준
         var total = 1024 * 1024 * 1024;
-        // var inputTotal =  lastStatsSumStats.totalNetInputBytes;
-        // var outputTotal =  lastStatsSumStats.totalNetOutputBytes;
-        
-        // kbps 단위 데이터를 Byte 단위로 변환
-        var input = lastStatsSumStats.instantaneousInputKbps * 1000 / 8;
-        var output = lastStatsSumStats.instantaneousOutputKbps * 1000 / 8;
+        var input = lastStatsSumStats.instantaneousInputKbps.toFixed(2);
+        var output = lastStatsSumStats.instantaneousOutputKbps.toFixed(2);
 
         var inputPct = input / total * 100;
         var outputPct = output / total * 100;
@@ -627,13 +714,13 @@
     
             charts["inputRadialbar"].updateOptions({
                 custom: {
-                    origin: input / 1024
+                    origin: input
                 },
                 colors: [getChartColors("inputRadialbar", inputPct)]
             }, true, true);
             charts["outputRadialbar"].updateOptions({
                 custom: {
-                    origin: output / 1024
+                    origin: output
                 },
                 colors: [getChartColors("outputRadialbar", outputPct)]
             }, true, true);
@@ -704,7 +791,7 @@
     
             var total = Math.max(keys, 1);
             var expiredPct = Math.round((expires / total) * 100);
-            $("#nonTtl").css("width", Math.max(2, expiredPct) + "%");
+            $("#nonTtl").css("width", Math.max(expiredPct) + "%");
             $("#ttlCount").text(expires.toLocaleString());
             $("#nonTtlCount").text(nonTTL.toLocaleString());
         }
@@ -712,26 +799,24 @@
 
     // hitRate 설정
     function setHitRate() {
+        // 1초전 stats
+        var beforecondsAgoStatsSumStats = _.nth(statsData, -2).redisInfoList.sum.stats;
+        // 마지막 stats
         var lastStatsSumStats = _.last(statsData).redisInfoList.sum.stats;
 
-        // Hit Rate
-        var hits = Number(lastStatsSumStats.keyspaceHits ?? 0);
-        var misses = Number(lastStatsSumStats.keyspaceMisses ?? 0);
+        // var keyspaceHits = lastStatsSumStats.keyspaceHits - beforecondsAgoStatsSumStats.keyspaceHits;
+        // var keyspaceMisses = lastStatsSumStats.keyspaceMisses - beforecondsAgoStatsSumStats.keyspaceMisses;
+        var keyspaceHits = lastStatsSumStats.keyspaceHits - beforecondsAgoStatsSumStats.keyspaceHits;
+        var keyspaceMisses = lastStatsSumStats.keyspaceMisses - beforecondsAgoStatsSumStats.keyspaceMisses;
+        var newHitRate = keyspaceHits / (keyspaceHits + keyspaceMisses) * 100;
 
-        // keyspace Bar 배경색 변경
-        // var cardBodyTarget = "ksHits";
-        // var colors = getChartColorsArray(cardBodyTarget);
-        // document.getElementById("hitRateCard").querySelector(".ks-bar").style.backgroundColor = colors[0];
-
-        var total = Math.max(hits + misses, 1);
-        var hitRate = Math.round((hits / total) * 100);
-        if (Number.isNaN(hitRate)) {
-            hitRate = 0;
+        if (Number.isNaN(newHitRate)) {
+            newHitRate = 0;
         }
 
-        $("#ksHits").css("width", Math.max(2, hitRate) + "%");
-        $("#hitsCount").text(hits.toLocaleString());
-        $("#missesCount").text(misses.toLocaleString());
+        $("#ksHits").css("width", Math.max(newHitRate) + "%");
+        $("#hitsCount").text(keyspaceHits.toLocaleString());
+        $("#missesCount").text(keyspaceMisses.toLocaleString());
     }
 
     // Version 설정
@@ -768,6 +853,34 @@
         setEvictionPolicy()
     }
 
+    // Nodes 조회
+    async function getNodes() {
+        var rowCnt = 6;
+        var response = await fetch("/v1/management/nodelist");
+        if (!response.ok) throw new Error("HTTP " + res.status);
+
+        var data = await response.json();
+        if (data.result.length > 0) {
+            var datas = _.map(data.result, item => {
+                return {
+                    id: item.id,
+                    address: `${item.ip}:${item.listenPort}@${item.clusterBusPort}`,
+                    flags: isMyselfMaster(item.flags) && "master" || item.flags,
+                    replicaMaster: item.masterId,
+                    pingWasSent: formatTimeAgo(item.pingSend),
+                    pongWasReceived: formatTimeAgo(item.pongRecv),
+                    state: item.linkState,
+                    hashSlotNumberOrRange: `${item.shardSlotStart}-${item.shardSlotEnd}`
+                }
+            });
+            
+            nodesDatatables.clear();
+            nodesDatatables.rows.add(datas);
+            nodesDatatables.draw(false);
+        }
+    }
+
+    // Client connections 조회
     async function getClientConnections() {
         var rowCnt = 20;
         var response = await fetch(`/v1/management/clientlist/${rowCnt}`);
@@ -777,18 +890,39 @@
         if (data.result.length > 0) {
             var last20Datas = _.takeRight(data.result, rowCnt);
             last20Datas = _.map(last20Datas, item => {
-                var picked = _.pick(item, ['addr', 'age', 'idle', 'cmd']);
-                picked.age = `${picked.age} s`;
-                picked.idle = `${picked.idle} s`;
+                var picked = _.pick(item, ['addressPort', 'age', 'idle', 'lastCommand']);
+                picked.age = `${picked.age.toLocaleString()} s`;
+                picked.idle = `${picked.idle.toLocaleString()} s`;
                 return {
-                    client: picked.addr,
+                    client: picked.addressPort,
                     totalDuration: picked.age,
                     idleTime: picked.idle,
-                    lastCommand: picked.cmd
+                    lastCommand: picked.lastCommand
                 };
             });
-            
-            setTableRows(tables[0], last20Datas, rowCnt);
+
+            clientConnectionsDatatables.clear();
+            clientConnectionsDatatables.rows.add(last20Datas);
+            clientConnectionsDatatables.draw(false);
+        }
+    }
+
+    // Command statistics 조회
+    async function getCommandStatistics() {
+        var rowCnt = 20;
+        var response = await fetch("/v1/management/commandstats");
+        if (!response.ok) throw new Error("HTTP " + res.status);
+
+        var data = await response.json();
+        if (data.statsList.length > 0) {
+            rowCnt = data.statsList.length;
+            var datas = _.map(data.statsList, item => {
+                return formatRedisStat(item);
+            });
+
+            commandStatisticsDatatables.clear();
+            commandStatisticsDatatables.rows.add(datas);
+            commandStatisticsDatatables.draw(false);
         }
     }
 
@@ -809,36 +943,72 @@
                     command: _.head(commands)
                 }
             });
-            
-            setTableRows(tables[2], slowlogs, rowCnt);
+
+            slowQueriesLogDatatables.clear();
+            slowQueriesLogDatatables.rows.add(slowlogs);
+            slowQueriesLogDatatables.draw(false);
         }
     }
 
-    // Table 설정
-    function createInitTable(cardId, headers) {
-        var parent = document.getElementById(cardId);
-        var tableTheadTr = parent.querySelector("table thead tr");
-        var tableTbody = parent.querySelector("table tbody");
-        
-        // Table thead 설정
-        tableTheadTr.innerHTML = "";
-        headers.forEach(elem => {
-            var tableTh = document.createElement("th");
-            tableTh.style.textAlign = elem.style.headerTextAlign;
-            tableTh.innerText = elem.title;
-            tableTheadTr.appendChild(tableTh);
-        });
-        
-        // Table tbody 설정
-        var tableTbodyTr = document.createElement("tr");
-        var tableTd = document.createElement("td");
-        tableTd.textContent = "데이터가 없습니다.";
-        tableTd.style.textAlign = "center";
-        tableTd.colSpan = headers.length;
-        tableTbodyTr.appendChild(tableTd);
+    // Checks "myself,master"
+    function isMyselfMaster(flags) {
+        if (!flags) return false;
 
-        tableTbody.innerHTML = "";
-        tableTbody.appendChild(tableTbodyTr);
+        // Split flags by comma
+        var flagList = _.split(flags, ",");
+
+        // Trim each flag
+        fflagList = _.map(flagList, f => _.trim(f));
+
+        // Remove all internal whitespace
+        flagList = _.map(flagList, f => _.replace(f, /\s+/g, ""));
+
+        // Convert to lowercase
+        flagList = _.map(flagList, f => f.toLowerCase());
+
+        // Check for "myself" and "master"
+        return _.includes(flagList, "myself") && _.includes(flagList, "master");
+    }
+
+    // Time format
+    function formatTimeAgo(timestamp) {
+        if (!timestamp || timestamp <= 0) return "Never";
+
+        var now = moment();
+        var time = moment(timestamp);
+
+        var diffSeconds = now.diff(time, "seconds");
+
+        // UX 맞춤: 아주 짧은 시간은 강제 표현
+        if (diffSeconds < 5) {
+            return "a few seconds ago";
+        }
+
+        return time.fromNow();
+    }
+
+    // Redis command stat formatter
+    function formatRedisStat(stat) {
+        var formatCalls = (calls) => {
+            //if (calls >= 1_000_000) return `${_.round(calls / 1_1000_000, 1)} Mil`;
+            //if (calls >= 1_000) return `${_.round(calls / 1_1000, 1)} K`;
+            //return `${calls}`;
+            
+            return `${calls.toLocaleString()}`;
+        };
+
+        var formatDuration =(usec) => {
+            // if (usec >= 1_000_000) return `${_.round(usec / 1_1000_000, 1)} s`;
+            // if (usec >= 1_000) return `${_.round(usec / 1_1000, 1)} ms`;
+            return `${_.round(usec, 0).toLocaleString()} μs`;
+        };
+
+        return {
+            command: stat.commandName,
+            numberOfCalls: formatCalls(stat.calls),
+            totalDuration: formatDuration(stat.usec),
+            durationPerCall: formatDuration(stat.usecPerCall)
+        };
     }
 
     function setTableRows(tableInfo, datas, rowsCnt = 10) {
@@ -858,18 +1028,18 @@
         
                     tableTbody.innerHTML = "";
                     var keys = Object.keys(tableRows[0]);
-                    var headerData = tables.find(item => item.id === cardId);
+                    // var headerData = tables.find(item => item.id === cardId);
                     tableRows.forEach(elem => {
                         var tableTr = document.createElement("tr");
                         keys.forEach(key => {
-                            var headersObj = headerData.headers.find(item => item.name === key);
+                            // var headersObj = headerData.headers.find(item => item.name === key);
                             var tableTd = document.createElement("td");
                             tableTd.style.overflowWrap = "anywhere";
                             
-                            if (headersObj && key === headersObj.name) {
-                                tableTd.style.textAlign = headersObj.style.cellTextAlign;
-                                tableTd.style.width = headersObj.style.width;
-                            }
+                            // if (headersObj && key === headersObj.name) {
+                            //     tableTd.style.textAlign = headersObj.style.cellTextAlign;
+                            //     tableTd.style.width = headersObj.style.width;
+                            // }
                             
                             tableTd.innerText = elem[key] === "NULL" ? "" : elem[key];
                             tableTr.appendChild(tableTd);
@@ -891,16 +1061,12 @@
         }
     }
 
-    // Table 초기설정
-    function initTable() {
-        tables.forEach(elem => {
-            createInitTable(elem.id, elem.headers);
-        });
-    }
-
+    // 페이지 로드됐을 때 interval Init
     function intervalInit() {
         getStats();
+        getNodes();
         getClientConnections();
+        getCommandStatistics();
         getSlowlog();
     }
 
@@ -917,7 +1083,6 @@
             initCard();
             intervalInit();
             initChart();
-            initTable();
             
             // 기존 interval 모두 제거
             clearIntervalIds();
@@ -931,117 +1096,11 @@
         }
     };
 </script>
+
+<!--datatable css-->
+<link rel="stylesheet" href="/assets/cdn/datatables/dataTables.bootstrap5.min.css" />
+
 <style>
-    :root {
-        --bg: #f4f7fb;
-        --card: #ffffff;
-        --muted: #9aa6b2;
-        --green: #2ecc71;
-        --red: #e74c3c;
-        --blue: #2b8cff;
-        --panel-border: rgba(0, 0, 0, 0.06);
-        --accent: #0d6efd;
-        font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, "Helvetica Neue", Arial;
-    }
-
-    body {
-        background: var(--bg);
-        color: #24313a;
-    }
-
-    .card {
-        border: 1px solid var(--panel-border);
-        border-radius: 8px;
-        background: var(--card);
-        box-shadow: 0 6px 16px rgba(20, 30, 40, 0.04);
-    }
-
-    .top-stat {
-        padding: 18px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        border-radius: 8px;
-    }
-
-    .stat-value {
-        font-weight: 800;
-        font-size: 28px;
-        line-height: 1;
-    }
-
-    .stat-label {
-        font-size: 12px;
-        color: var(--muted);
-        margin-top: 6px;
-        text-transform: uppercase;
-        letter-spacing: .06em;
-    }
-
-    /* grid like screenshot */
-    .grid-4 {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 12px;
-        margin-bottom: 12px;
-    }
-
-    .grid-3 {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-        margin-bottom: 12px;
-    }
-
-    .grid-2 {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-        margin-bottom: 12px;
-    }
-
-    .gauge-large {
-        height: 150px;
-    }
-
-    .sparkbars {
-        height: 56px;
-    }
-
-    /* small badges style */
-    .badge-panel {
-        padding: 10px 12px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-    }
-
-    .badge-value {
-        font-size: 20px;
-        font-weight: 700;
-    }
-
-    .badge-sub {
-        font-size: 12px;
-        color: var(--muted);
-        margin-top: 4px;
-    }
-
-    /* small tables */
-    .table-sm td,
-    .table-sm th {
-        padding: 6px 8px;
-        vertical-align: middle;
-    }
-
-    .small-muted {
-        font-size: 12px;
-        color: var(--muted);
-    }
-
     /* keyspace bar */
     .ks-bar {
         height: 12px;
@@ -1056,39 +1115,5 @@
         height: 100%;
         background: linear-gradient(90deg, #1abc9c, #16a085);
         display: block;
-    }
-
-    /* right side blue boxes */
-    .blue-box {
-        background: linear-gradient(180deg, #1d6fe0, #0d47a1);
-        color: white;
-        padding: 10px;
-        border-radius: 8px;
-        text-align: center;
-    }
-
-    .blue-box .big {
-        font-weight: 800;
-        font-size: 20px;
-    }
-
-    /* responsive tweaks */
-    @media (max-width: 1000px) {
-        .grid-4 {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .grid-3 {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @media (max-width: 640px) {
-
-        .grid-4,
-        .grid-3,
-        .grid-2 {
-            grid-template-columns: 1fr;
-        }
     }
 </style>

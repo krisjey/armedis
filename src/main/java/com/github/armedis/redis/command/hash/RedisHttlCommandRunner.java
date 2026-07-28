@@ -1,11 +1,17 @@
 
 package com.github.armedis.redis.command.hash;
 
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import com.github.armedis.redis.command.AbstractRedisCommandRunner;
@@ -13,9 +19,6 @@ import com.github.armedis.redis.command.RedisCommandEnum;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
 import com.github.armedis.redis.command.RedisCommandExecuteResultFactory;
 import com.github.armedis.redis.command.RequestRedisCommandName;
-
-import io.lettuce.core.api.sync.RedisCommands;
-import io.lettuce.core.cluster.api.sync.RedisClusterCommands;
 
 @Component
 @Scope("prototype")
@@ -28,30 +31,24 @@ public class RedisHttlCommandRunner extends AbstractRedisCommandRunner {
 
     private RedisHttlRequest redisRequest;
 
-    public RedisHttlCommandRunner(RedisHttlRequest redisRequest) {
+    private RedisTemplate<String, Object> redisTemplate;
+
+    public RedisHttlCommandRunner(RedisHttlRequest redisRequest, RedisTemplate<String, Object> redisTemplate) {
         this.redisRequest = redisRequest;
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
-    public RedisCommandExecuteResult executeAndGet(RedisCommands<String, String> commands) {
-
+    public RedisCommandExecuteResult executeAndGet() {
         logger.info(redisRequest.toString());
 
         String key = this.redisRequest.getKey();
-        String field = this.redisRequest.getField();
-        List<Long> result = commands.httl(key, field);
-
-        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result, Long.class);
-    }
-
-    @Override
-    public RedisCommandExecuteResult executeAndGet(RedisClusterCommands<String, String> commands) {
-        logger.info(redisRequest.toString());
-
-        String key = this.redisRequest.getKey();
-        String field = this.redisRequest.getField();
-        List<Long> result = commands.httl(key, field);
-
-        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(result, Long.class);
+        List<String> field = this.redisRequest.getField();
+        List<Entry<Object, Duration>> result = this.redisTemplate.opsForHash().getTimeToLive(key, new ArrayList<Object>(field)).expiring();
+        Map<Object, Object> ttlSecondsMap = result.stream()
+                .collect(Collectors.toMap(
+                        Entry::getKey,
+                        e -> e.getValue().getSeconds()));
+        return RedisCommandExecuteResultFactory.buildRedisCommandExecuteResult(ttlSecondsMap);
     }
 }

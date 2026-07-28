@@ -1,15 +1,16 @@
 
 package com.github.armedis.http.service.string;
 
-import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -24,9 +25,11 @@ import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.common.RequestHeaders;
 
-@ActiveProfiles("testbed")
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
 public class RedisSetServiceTest extends AbstractRedisServerTest {
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
     @Test
     void testSetCommand() throws JsonParseException, JsonMappingException, IOException {
         // TODO data 응답 크기 제한 필요.
@@ -54,6 +57,10 @@ public class RedisSetServiceTest extends AbstractRedisServerTest {
         assertThatJson(responseString)
                 .as("Check result field in result json")
                 .node(RedisCommandExecuteResult.RESULT_KEY).isPresent()
-                .node(RedisCommandExecuteResult.RESULT_KEY).isEqualTo("OK");
+                .isEqualTo("OK");
+
+        String value = stringRedisTemplate.opsForValue().get(StringServiceTestSuite.TEST_KEY);
+        assertThat(value).isEqualTo(StringServiceTestSuite.TEST_VALUE);
+
     }
 }

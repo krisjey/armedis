@@ -2,11 +2,8 @@
 package com.github.armedis.http.service;
 
 /**
-     * EndPoint of API URL Constants.
-     * 
-     * @author krisjey
-     *
-     */
+ * EndPoint of API URL Constants.
+ */
 public final class ServiceUrl {
     /**
      * dummy api endpoint
@@ -17,11 +14,21 @@ public final class ServiceUrl {
      * Server active check.
      */
     public static final String RUOK = "/v1/ruok";
-    
+
     /**
      * Redis status check
      */
     public static final String REDIS_STATS = "/v1/redis/stats";
+
+    /**
+     * Redis status check
+     */
+    public static final String REDIS_COMMAND_STATS = "/v1/management/commandstats";
+    
+    /**
+     * Redis status check
+     */
+    public static final String REDIS_MANAGEMENT_LOGIN = "/v1/management/login";
 
     /**
      * Current memory status

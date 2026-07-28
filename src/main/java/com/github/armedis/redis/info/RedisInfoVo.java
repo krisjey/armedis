@@ -1,7 +1,6 @@
 package com.github.armedis.redis.info;
 
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -281,7 +280,7 @@ public class RedisInfoVo {
                         break;
 
                     default:
-                        logger.error("Can not convert " + sectionName + " " + contentSection);
+                        logger.debug("Does not support " + sectionName + " " + contentSection);
                 }
             }
         }

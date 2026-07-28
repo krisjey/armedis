@@ -12,9 +12,9 @@ import com.linecorp.armeria.server.annotation.Param;
 
 public class RedisSlowlogRequest extends RedisRequest {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    
+
     @Param("size")
-    protected Optional<Integer> size;
+    private Optional<Integer> size;
 
     public RedisSlowlogRequest(AggregatedHttpRequest httpRequest) {
         super(httpRequest);

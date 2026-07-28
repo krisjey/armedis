@@ -3,13 +3,12 @@
  */
 package com.github.armedis.http.service.management;
 
-import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.test.context.ActiveProfiles;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -26,7 +25,6 @@ import com.linecorp.armeria.common.RequestHeaders;
 /**
  * 
  */
-@ActiveProfiles("testbed")
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
 class RedisSlowlogServiceTest extends AbstractRedisServerTest {
 
@@ -56,7 +54,7 @@ class RedisSlowlogServiceTest extends AbstractRedisServerTest {
         assertThatJson(responseString)
                 .as("Check result field in result json")
                 .node(RedisCommandExecuteResult.RESULT_KEY).isPresent()
-                .node(RedisCommandExecuteResult.RESULT_KEY).isArray();
+                .isArray();
     }
 
 }

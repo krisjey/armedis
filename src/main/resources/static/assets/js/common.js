@@ -491,6 +491,5 @@ function getMemoryCapacityUnit(size, unit = 'byte') {
         value /= 1024;
         unitIndex++;
     }
-    
-    return `${value.toFixed(2)} ${units[unitIndex]}`;
+    return `${parseFloat(value).toFixed(2)} ${units[unitIndex]}`;
   }

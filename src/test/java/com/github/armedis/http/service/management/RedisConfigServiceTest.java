@@ -3,13 +3,12 @@
  */
 package com.github.armedis.http.service.management;
 
-import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.test.context.ActiveProfiles;
 
 import com.github.armedis.ArmedisServer;
 import com.github.armedis.http.service.AbstractRedisServerTest;
@@ -22,7 +21,6 @@ import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.common.RequestHeaders;
 
-@ActiveProfiles("testbed")
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
 class RedisConfigServiceTest extends AbstractRedisServerTest {
 
@@ -64,7 +62,7 @@ class RedisConfigServiceTest extends AbstractRedisServerTest {
         assertThatJson(responseString)
                 .as("Check result field in result json")
                 .node(RedisCommandExecuteResult.RESULT_KEY).isPresent()
-                .node("result.timeout").isPresent();
+                .node("timeout").isPresent();
     }
 
     @Test
@@ -90,7 +88,7 @@ class RedisConfigServiceTest extends AbstractRedisServerTest {
         assertThatJson(responseString)
                 .as("Check result field in result json")
                 .node(RedisCommandExecuteResult.RESULT_KEY).isPresent()
-                .node("result.maxmemory").isPresent();
+                .node("maxmemory").isPresent();
     }
 
     @Test
@@ -118,6 +116,6 @@ class RedisConfigServiceTest extends AbstractRedisServerTest {
         assertThatJson(responseString)
                 .as("Check result field in result json")
                 .node(RedisCommandExecuteResult.RESULT_KEY).isPresent()
-                .node(RedisCommandExecuteResult.RESULT_KEY).equals("OK");
+                .isEqualTo("OK");
     }
 }

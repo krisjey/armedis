@@ -56,13 +56,14 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
      */
     protected final HttpResponse buildResponse(ResponseCode code, RedisRequest redisRequest,
             RedisCommandExecuteResult redisCommandExecuteResult) {
+
         // 응답 type에 따른 구분 처리.
         switch (redisRequest.getResponseDataType()) {
             case JSON:
-                return buildJsonResponse(code, redisCommandExecuteResult.toObjectNode());
+                return buildJsonResponse(code, (redisCommandExecuteResult == null) ? emptyResult : redisCommandExecuteResult.toObjectNode());
 
             case PLAIN_TEXT:
-                return buildPlainTextResponse(code, redisCommandExecuteResult);
+                return buildPlainTextResponse(code, (redisCommandExecuteResult == null) ? RedisCommandExecuteResult.getEmptyResult("OK") : redisCommandExecuteResult);
 
             default:
                 // default response type is json
@@ -124,6 +125,7 @@ public class BaseService implements ArmeriaAnnotatedHttpService {
         }
         catch (Exception e) {
             logger.info("Can not execute redis command " + redisRequest.toString(), e);
+            redisCommandExecuteResult = RedisCommandExecuteResult.getEmptyResult("500");
         }
 
         return redisCommandExecuteResult;

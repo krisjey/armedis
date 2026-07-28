@@ -10,7 +10,7 @@ import com.google.common.collect.ImmutableMap;
 public enum RedisInstanceType {
     CLUSTER("cluster"), //
     STANDALONE("standalone"), //
-    MASTER_SLAVE("master_slave"), //
+    REPLICA("master_slave"), //
     SENTINEL("sentinel"), //
     NOT_DETECTED("none"), //
     ;
@@ -29,7 +29,8 @@ public enum RedisInstanceType {
     static {
         final ImmutableMap.Builder<String, RedisInstanceType> builder = ImmutableMap.builder();
         for (RedisInstanceType e : values()) {
-            builder.put(e.getName(), e);
+
+            builder.put(e.getName().toLowerCase(), e);
         }
 
         redisInstanceTypes = builder.build();
@@ -41,7 +42,7 @@ public enum RedisInstanceType {
     public static RedisInstanceType of(String name) {
         name = requireNonNull(name);
 
-        RedisInstanceType type = redisInstanceTypes.get(name);
+        RedisInstanceType type = redisInstanceTypes.get(name.toLowerCase());
         if (type == null) {
             type = RedisInstanceType.NOT_DETECTED;
         }

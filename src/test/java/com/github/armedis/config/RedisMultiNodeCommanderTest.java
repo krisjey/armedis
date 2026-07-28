@@ -1,0 +1,89 @@
+/**
+ * 
+ */
+package com.github.armedis.config;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Properties;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.StringRedisTemplate;
+
+import com.github.armedis.ArmedisServer;
+import com.github.armedis.http.service.AbstractRedisServerTest;
+import com.github.armedis.redis.RedisInstanceType;
+import com.github.armedis.redis.connection.RedisServerDetector;
+
+/**
+ * 
+ */
+@SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
+public class RedisMultiNodeCommanderTest extends AbstractRedisServerTest {
+    @Autowired
+    private RedisMultiNodeCommander redisMultiNodeCommander;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    private RedisServerDetector redisServerDetector;
+
+    @Test
+    void testGetTimeout() {
+        // slowlog-log-slower-than
+        Object oldValue = stringRedisTemplate.execute((RedisConnection connection) -> {
+            Properties props = connection.serverCommands().getConfig("slowlog-log-slower-than");
+            String key = (String) props.stringPropertyNames().toArray()[0];
+            return props.get(key);
+        });
+        
+        String value = (oldValue == null) ? null : String.valueOf(oldValue);
+//        long slowlogLogSlowerThan = (value == null) ? -1L : Long.parseLong(value);
+
+        // 단일 노드가 아니면
+        if (!redisServerDetector.getRedisInstanceType().equals(RedisInstanceType.STANDALONE)) {
+            stringRedisTemplate.execute((RedisConnection connection) -> {
+                // CONFIG SET <key> <value>
+                Object raw = connection.execute("CONFIG", "SET".getBytes(), "slowlog-log-slower-than".getBytes(), "10000000".getBytes());
+                return raw == null ? null : raw.toString(); // 보통 "OK"
+            });
+        }
+
+        String slowlogTime = redisMultiNodeCommander.getConfigValue("slowlog-log-slower-than");
+
+        for (int i = 0; i < 100; i++) {
+            redisMultiNodeCommander.getConfigValue("slowlog-log-slower-than");
+        }
+        assertThat(slowlogTime).isNotNull();
+
+        // 단일 노드가 아니면
+        if (!redisServerDetector.getRedisInstanceType().equals(RedisInstanceType.STANDALONE)) {
+            assertThat(slowlogTime).endsWith("(+)");
+        }
+        else {
+
+        }
+        System.out.println("------------" + slowlogTime + " ------------ " + value);
+
+        boolean setResult = redisMultiNodeCommander.setConfigValue("slowlog-log-slower-than", value);
+        assertThat(setResult).isTrue();
+        
+        // TODO 모든 노드에 개별 연결 후 값 조회 테스트 추가 필요.
+        
+    }
+
+    @Test
+    void testSetTimeout() {
+        boolean result = redisMultiNodeCommander.setConfigValue("timeout", "0");
+
+        for (int i = 0; i < 100; i++) {
+            redisMultiNodeCommander.getConfigValue("timeout");
+        }
+        assertThat(result).isTrue();
+    }
+}

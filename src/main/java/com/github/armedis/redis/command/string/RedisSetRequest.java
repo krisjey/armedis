@@ -7,7 +7,7 @@ import com.linecorp.armeria.server.annotation.Param;
 
 public class RedisSetRequest extends RedisRequest {
     @Param("value")
-    protected String value;
+    private String value;
 
     public RedisSetRequest(AggregatedHttpRequest httpRequest) {
         super(httpRequest);

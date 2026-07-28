@@ -39,7 +39,7 @@ class CircularQueueTest {
 //        while (!queue.isEmpty()) {
 //            System.out.println(queue.poll());
 //        }
-        
+
         String stats = null;
         try {
             stats = mapper.writeValueAsString(queue);

@@ -48,3 +48,6 @@ gen-src/
 # Ignore line of code files.
 /loc/
 /classes/
+
+#add redis setup script
+!/src/main/resources/redis-setup/*.zip
