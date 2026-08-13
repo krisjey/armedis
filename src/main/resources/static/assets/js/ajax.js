@@ -1,159 +1,228 @@
 /*
-Template Name: Armedis - Admin & Dashboard Template
-Author: Themesbrand
-Version: 3.5.0
-Website: https://Themesbrand.com/
-Contact: Themesbrand@gmail.com
-File: Ajax Js File
-*/
+ * Template Name: Armedis - Admin & Dashboard Template
+ * File: Ajax Js File
+ */
 
-var layoutSetupInitialized = false; // 플래그: 이벤트 리스너가 이미 등록되었는지 확인
+var layoutSetupInitialized = false;
+var currentPageUnload = null;
+var currentAjaxRequest = null;
+var requestedPage = null;
+var activePage = null;
+
+function getDefaultPage() {
+	return "pages-armedis-overview.html";
+}
+
+function normalizePage(page) {
+	var candidate = (page || "").replace(/^#/, "");
+	var knownLink = document.querySelector("#navbar-nav a[href='" + CSS.escape(candidate) + "']");
+
+	if (!/^[a-z0-9-]+\.html$/i.test(candidate) || !knownLink) {
+		return getDefaultPage();
+	}
+	return candidate;
+}
+
+function updateDocumentTitle(page) {
+	var titles = {
+		"pages-armedis-overview.html": "Overview",
+		"pages-armedis-realtime-stats.html": "Realtime Stats",
+		"pages-armedis-management.html": "Management"
+	};
+	document.title = (titles[page] || "Armedis") + " | Armedis";
+}
+
+function updateActiveMenu(page) {
+	$("#navbar-nav li, #navbar-nav li a").removeClass("active");
+	$("#two-column-menu li a").removeClass("active");
+	$("#navbar-nav li a").attr("aria-expanded", "false");
+
+	var navbar = document.getElementById("navbar-nav");
+	var link = navbar && navbar.querySelector('[href="' + page + '"]');
+	if (!link) {
+		return;
+	}
+
+	link.classList.add("active");
+	var parentCollapseDiv = link.closest(".collapse.menu-dropdown");
+	if (parentCollapseDiv) {
+		parentCollapseDiv.classList.add("show");
+		if (parentCollapseDiv.parentElement.children[0]) {
+			parentCollapseDiv.parentElement.children[0].classList.add("active");
+			parentCollapseDiv.parentElement.children[0].setAttribute("aria-expanded", "true");
+		}
+	}
+}
+
+function cleanupCurrentPage() {
+	var unload = currentPageUnload;
+	if (typeof unload !== "function" && activePage && window.pageHooks) {
+		var activeHooks = window.pageHooks[activePage];
+		unload = activeHooks && activeHooks.onUnload;
+	}
+
+	if (typeof unload === "function") {
+		try {
+			unload();
+		} catch (error) {
+			console.error("onUnload error:", error);
+		}
+	}
+	currentPageUnload = null;
+}
+
+function clearPageLoadError() {
+	var error = document.querySelector("#ajaxresult .page-load-error");
+	if (error) {
+		error.remove();
+	}
+}
+
+function renderPageLoadError(page) {
+	var result = document.getElementById("ajaxresult");
+	if (!result) {
+		return;
+	}
+
+	clearPageLoadError();
+	var alert = document.createElement("div");
+	alert.className = "alert alert-danger page-load-error";
+	alert.setAttribute("role", "alert");
+	alert.textContent = page + " 화면을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.";
+	result.prepend(alert);
+}
+
+function call_ajax_page(page, options) {
+	var settings = Object.assign({ updateHistory: true, force: false }, options);
+	var normalizedPage = normalizePage(page);
+
+	if (!settings.force && requestedPage === normalizedPage) {
+		return;
+	}
+
+	var previousPage = activePage;
+	requestedPage = normalizedPage;
+	clearPageLoadError();
+
+	if (currentAjaxRequest) {
+		currentAjaxRequest.abort();
+	}
+
+	var request = $.ajax({
+		url: "/ajax/" + normalizedPage,
+		cache: false,
+		dataType: "html",
+		type: "GET"
+	});
+	currentAjaxRequest = request;
+
+	request.done(function (data) {
+		if (currentAjaxRequest !== request) {
+			return;
+		}
+
+		cleanupCurrentPage();
+		$("#ajaxresult").empty().html(data);
+		$(window).scrollTop(0);
+
+		activePage = normalizedPage;
+		requestedPage = normalizedPage;
+		if (settings.updateHistory && window.location.hash !== "#" + normalizedPage) {
+			window.history.pushState({ page: normalizedPage }, "", "#" + normalizedPage);
+		}
+		updateDocumentTitle(normalizedPage);
+		updateActiveMenu(normalizedPage);
+
+		var hooks = window.pageHooks && window.pageHooks[normalizedPage];
+		if (hooks) {
+			if (typeof hooks.onLoad === "function") {
+				try {
+					hooks.onLoad();
+				} catch (error) {
+					console.error("onLoad error:", error);
+				}
+			}
+			if (typeof hooks.onUnload === "function") {
+				currentPageUnload = hooks.onUnload;
+			}
+		}
+	});
+
+	request.fail(function (_request, status) {
+		if (status === "abort" || currentAjaxRequest !== request) {
+			return;
+		}
+
+		requestedPage = previousPage;
+		if (previousPage) {
+			window.history.replaceState({ page: previousPage }, "", "#" + previousPage);
+			updateDocumentTitle(previousPage);
+			updateActiveMenu(previousPage);
+		}
+		renderPageLoadError(normalizedPage);
+	});
+
+	request.always(function () {
+		if (currentAjaxRequest === request) {
+			currentAjaxRequest = null;
+		}
+	});
+}
+
+function routeFromLocation() {
+	var rawPage = window.location.hash.replace(/^#/, "");
+	var page = normalizePage(rawPage);
+	if (rawPage !== page) {
+		window.history.replaceState({ page: page }, "", "#" + page);
+	}
+	if (page === requestedPage && page === activePage) {
+		return;
+	}
+	call_ajax_page(page, { updateHistory: false });
+}
 
 function setupLayout() {
-	// 이미 이벤트 리스너가 등록되었으면 다시 등록하지 않음
 	if (layoutSetupInitialized) {
 		return;
 	}
 	layoutSetupInitialized = true;
 
-	var menuLinks = document.querySelectorAll("#navbar-nav li a");
+	document.querySelectorAll("#navbar-nav li a").forEach(function (link) {
+		link.addEventListener("click", function (event) {
+			var page = link.getAttribute("href");
+			var target = link.getAttribute("target");
 
-	menuLinks.forEach(function (ele, i) {
-		ele.addEventListener("click", function (e) {
-			e.preventDefault()
-			var page = e.target.getAttribute("href");
-			var target = e.target.getAttribute("target");
-
-			if (!page && e.target.parentElement instanceof HTMLAnchorElement) {
-				page = e.target.parentElement.getAttribute("href");
-				target = e.target.parentElement.getAttribute("href");
+			if (!page || page.indexOf(".html") === -1) {
+				return;
+			}
+			if (target === "_blank" || target === "_self") {
+				return;
 			}
 
-			if (page.indexOf('.html') === -1) {
-				return false;
-			}
-
-			if (target == "_self") { window.location.href = page; return true };
-			if (target == "_blank") window.open(page, "_blank");
-			if (page == "javascript: void(0);") return false;
-
-			$("#navbar-nav li, #navbar-nav li a").removeClass("active");
-			$("#two-column-menu li a").removeClass("active");
-			$("#navbar-nav li a").attr("aria-expanded", "false");
-			if (page) {
-				// navbar-nav
-				var a = document.getElementById("navbar-nav").querySelector('[href="' + page + '"]');
-				if (a) {
-					if (document.documentElement.getAttribute("data-layout") == "twocolumn") {
-						a.classList.add("active");
-						var parentCollapseDiv = a.closest(".collapse.menu-dropdown");
-						if (parentCollapseDiv && parentCollapseDiv.parentElement.closest(".collapse.menu-dropdown")) {
-							parentCollapseDiv.classList.add("show");
-							parentCollapseDiv.parentElement.children[0].classList.add("active");
-							parentCollapseDiv.parentElement.children[0].setAttribute("aria-expanded", "true");
-							parentCollapseDiv.parentElement.closest(".collapse.menu-dropdown").parentElement.classList.add("twocolumn-item-show");
-							if (parentCollapseDiv.parentElement.parentElement.parentElement.parentElement.closest(".collapse.menu-dropdown")) {
-								var menuIdSub = parentCollapseDiv.parentElement.parentElement.parentElement.parentElement.closest(".collapse.menu-dropdown").getAttribute("id");
-								parentCollapseDiv.parentElement.parentElement.parentElement.parentElement.children[0].setAttribute("aria-expanded", "true");
-								parentCollapseDiv.parentElement.parentElement.parentElement.parentElement.closest(".collapse.menu-dropdown").parentElement.classList.add("twocolumn-item-show");
-								parentCollapseDiv.parentElement.closest(".collapse.menu-dropdown").parentElement.classList.remove("twocolumn-item-show");
-								if (document.getElementById("two-column-menu").querySelector('[href="#' + menuIdSub + '"]'))
-									document.getElementById("two-column-menu").querySelector('[href="#' + menuIdSub + '"]').classList.add("active");
-							}
-							var menuId = parentCollapseDiv.parentElement.closest(".collapse.menu-dropdown").getAttribute("id");
-							if (document.getElementById("two-column-menu").querySelector('[href="#' + menuId + '"]'))
-								document.getElementById("two-column-menu").querySelector('[href="#' + menuId + '"]').classList.add("active");
-						} else {
-							a.closest(".collapse.menu-dropdown").parentElement.classList.add("twocolumn-item-show");
-							var menuId = parentCollapseDiv.getAttribute("id");
-							if (document.getElementById("two-column-menu").querySelector('[href="#' + menuId + '"]'))
-								document.getElementById("two-column-menu").querySelector('[href="#' + menuId + '"]').classList.add("active");
-						}
-					} else {
-						a.classList.add("active");
-						var parentCollapseDiv = a.closest('.collapse.menu-dropdown');
-
-						if (parentCollapseDiv) {
-							parentCollapseDiv.classList.add("show");
-							parentCollapseDiv.parentElement.children[0].classList.add("active");
-							parentCollapseDiv.parentElement.children[0].setAttribute("aria-expanded", "true");
-							if (parentCollapseDiv.parentElement.closest('.collapse.menu-dropdown')) {
-								parentCollapseDiv.parentElement.closest(".collapse").classList.add("show");
-								if (parentCollapseDiv.parentElement.closest(".collapse").previousElementSibling)
-									parentCollapseDiv.parentElement.closest(".collapse").previousElementSibling.classList.add("active");
-							}
-						}
-					}
-				}
-			}
-			if (page == "javascript: void(0);") return false;
+			event.preventDefault();
 			call_ajax_page(page);
 		});
-	})
-}
-
-var currentPageUnload = null; // 이전 페이지 cleanup 함수 저장
-function call_ajax_page(page) {
-	if (typeof currentPageUnload === "function") {
-		try {
-			currentPageUnload();
-		} catch (e) {
-			console.error(e);
-		}
-		currentPageUnload = null;
-	}
-
-	$.ajax({
-		url: "/ajax/" + page,
-		cache: false,
-		dataType: "html",
-		type: "GET",
-		success: function (data) {
-			window.location.hash = page;
-			$("#ajaxresult").empty();
-			$("#ajaxresult").html(data);
-			$(window).scrollTop(0);
-
-			var hooks = window.pageHooks && window.pageHooks[page];
-			if (hooks) {
-				if (typeof hooks.onLoad === "function") {
-					try {
-						hooks.onLoad();
-					} catch (e) {
-						console.error("onLoad error: ", e);
-					}
-				}
-				if (typeof hooks.onUnload === "function") {
-					currentPageUnload = hooks.onUnload;
-				}
-			}
-		}
 	});
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-	// DOM이 준비된 후 setupLayout() 호출
+document.addEventListener("DOMContentLoaded", function () {
 	setupLayout();
-
-	var currentPage = document.location.hash;
-	if (currentPage) {
-		currentPage = currentPage.replace("#", "");
-		document.querySelector("#navbar-nav a[href='" + currentPage + "']") ? document.querySelector("#navbar-nav a[href='" + currentPage + "']").click() : call_ajax_page("pages-armedis-overview.html");
-	} else {
-		call_ajax_page("pages-armedis-overview.html");
-	}
+	routeFromLocation();
 });
 
-document.body.addEventListener("click", function (e) {
-	if(!e.target.closest("#navbar-nav")) {
-		if(e.target.hash) {
-			var urlHash = e.target.hash.replace("#", '');
-			if(document.querySelector("#navbar-nav a[href='" + urlHash + "']"))
-				document.querySelector("#navbar-nav a[href='" + urlHash + "']").click()
-		} else if(e.target.getAttribute("href")) {
-			if(document.querySelector("#navbar-nav a[href='" + e.target.getAttribute("href") + "']"))
-				document.querySelector("#navbar-nav a[href='" + e.target.getAttribute("href") + "']").click()
-		}
+window.addEventListener("popstate", routeFromLocation);
+window.addEventListener("hashchange", routeFromLocation);
+
+document.body.addEventListener("click", function (event) {
+	var link = event.target.closest("a[href]");
+	if (!link || link.closest("#navbar-nav")) {
+		return;
+	}
+
+	var page = link.hash ? link.hash.replace("#", "") : link.getAttribute("href");
+	var navLink = page && document.querySelector("#navbar-nav a[href='" + CSS.escape(page) + "']");
+	if (navLink) {
+		event.preventDefault();
+		call_ajax_page(page);
 	}
 });
-
