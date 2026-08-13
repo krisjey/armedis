@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 
 import com.github.armedis.ArmedisServer;
 import com.github.armedis.http.service.AbstractRedisServerTest;
+import com.github.armedis.http.service.management.configs.AllowedConfigCommands;
 import com.linecorp.armeria.common.AggregatedHttpResponse;
 import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpRequest;
@@ -28,6 +29,8 @@ class RedisConfigsServiceTest extends AbstractRedisServerTest {
 
     @Test
     void testConfigsGet() {
+        AllowedConfigCommands.get("maxmemory").setCurrentValueFromDB("1gb");
+
         // TODO data 응답 크기 제한 필요.
 
         String responseString = null;
@@ -66,6 +69,9 @@ class RedisConfigsServiceTest extends AbstractRedisServerTest {
         assertThatJson(responseString)
                 .inPath("$.configKeys[?(@.key=='maxmemory')].currentValue")
                 .isArray();
+
+        assertThat(AllowedConfigCommands.get("maxmemory").getCurrentValue())
+                .matches("^\\d+(\\(\\+\\))?$");
 
         assertThatJson(responseString)
                 .inPath("$.configKeys[?(@['key'] == 'timeout')]")

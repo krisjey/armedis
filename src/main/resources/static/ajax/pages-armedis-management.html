@@ -145,6 +145,55 @@
     var currentEdit = null;
 	var kvMap = {};
 	var editEventObject = null; //클릭 이벤트 객체
+
+    function normalizeRedisMemoryValue(value) {
+        var text = value === null || value === undefined ? "" : String(value).trim();
+        var mixed = text.endsWith("(+)");
+        if (mixed) {
+            text = text.slice(0, -3).trim();
+        }
+
+        if (/^\d+$/.test(text)) {
+            var bytes = BigInt(text);
+            var units = [
+                { suffix: "gb", bytes: 1073741824n },
+                { suffix: "g", bytes: 1000000000n },
+                { suffix: "mb", bytes: 1048576n },
+                { suffix: "m", bytes: 1000000n },
+                { suffix: "kb", bytes: 1024n },
+                { suffix: "k", bytes: 1000n }
+            ];
+
+            if (bytes === 0n) {
+                text = "0";
+            } else {
+                for (var i = 0; i < units.length; i++) {
+                    if (bytes >= units[i].bytes && bytes % units[i].bytes === 0n) {
+                        text = `${bytes / units[i].bytes}${units[i].suffix}`;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return { value: text.toLowerCase(), mixed: mixed };
+    }
+
+    function getRedisMemoryInputValue(value) {
+        return normalizeRedisMemoryValue(value).value;
+    }
+
+    function formatRedisMemoryValue(value) {
+        var normalized = normalizeRedisMemoryValue(value);
+        if (!normalized.value) {
+            return "-";
+        }
+        return normalized.value + (normalized.mixed ? " (+)" : "");
+    }
+
+    function formatConfigValue(config, value) {
+        return config.dataType === "memoryunit" ? formatRedisMemoryValue(value) : value;
+    }
     
 	// 테이블 렌더링
 	function renderTable(category="All", filter="") {
@@ -158,7 +207,7 @@
                     var tr = document.createElement("tr");
                     tr.innerHTML = `
                         <td>${i.key}</td>
-                        <td><span class="current-value" data-key="${i.key}">${i.dataType === "memoryunit" ? getMemoryCapacityUnit(i.currentValue, "kbyte") : i.currentValue}</span></td>
+                        <td><span class="current-value" data-key="${i.key}">${formatConfigValue(i, i.currentValue)}</span></td>
                         <td><button class="btn btn-sm btn-outline-primary edit-btn" data-key="${i.key}" data-cat="${i.category}">✏️</button></td>
                         <td>${i.description}</td>
                         `;
@@ -215,7 +264,7 @@
                 
                 switch(currentEdit.dataType) {
                     case "memoryunit":
-                        $("#modalCurrent").text(getMemoryCapacityUnit(currentVal, "kbyte"));
+                        $("#modalCurrent").text(formatRedisMemoryValue(currentVal));
                         break;
                     default:
                         $("#modalCurrent").text(viewCurrentVal);
@@ -244,7 +293,7 @@
         var html = "";
         switch(cfg.dataType) {
             case "integer":
-                html = `<input id="modalInput" type="number" class="form-control" value="${curr}">`;
+                html = `<input id="modalInput" type="number" step="1" class="form-control" value="${curr}">`;
                 break;
             case "dropdown":
                 html = `<select id="modalInput" class="form-select">${cfg.options.map(o=>`<option value="${o}"${o===curr?' selected':''}>${o}</option>`).join('')}</select>`;
@@ -262,7 +311,7 @@
                 html = `<div id="kvContainer" class="mb-2"></div><button id="addKvBtn" class="btn btn-sm btn-outline-secondary mb-3">+ 추가</button>`;
                 break;
             case "memoryunit":
-                html = `<input id="modalInput" type="text" class="form-control" value="${getMemoryCapacityUnit(curr, "kbyte")}">`;
+                html = `<input id="modalInput" type="text" class="form-control" value="${getRedisMemoryInputValue(curr)}">`;
                 break;
         }
         cont.innerHTML = html;
@@ -302,6 +351,28 @@
         renderKV();
     }
 
+    function refreshCurrentConfigValue(config) {
+        return fetch("/v1/management/settings/config/" + config.key)
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(res.statusText);
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (!data.result || !Object.prototype.hasOwnProperty.call(data.result, config.key)) {
+                    throw new Error("Invalid config response");
+                }
+
+                var currentValue = data.result[config.key];
+                config.currentValue = currentValue;
+                var currentValueElement = document.querySelector(`.current-value[data-key="${config.key}"]`);
+                if (currentValueElement) {
+                    currentValueElement.textContent = formatConfigValue(config, currentValue);
+                }
+            });
+    }
+
     // 저장 처리
     document.getElementById("saveBtn").onclick=()=>{
         var val;
@@ -315,15 +386,17 @@
         }
         
         if (currentEdit.dataType === "integer") {
-            if (isNaN(val)) {
-                alert("숫자(0~9)만 입력 가능합니다.");
+            val = val.trim();
+            if (!/^-?\d+$/.test(val)) {
+                alert("정수만 입력 가능합니다.");
                 return;
             }
         }
 
         if (currentEdit.key === 'maxmemory') {
-            var memoryPattern = /^\s*\d+?\s*(k|m|g|t)(b)?$/i;
-            if (val != 0 && !memoryPattern.test(val)) {
+            val = val.trim();
+            var memoryPattern = /^\d+(k|kb|m|mb|g|gb)?$/i;
+            if (!memoryPattern.test(val)) {
                 alert("memory 단위의 값이 아닙니다. 다시 입력해주세요.");
                 return;
             }
@@ -340,6 +413,7 @@
         if (currentEdit.dataType === "toggle") val = document.getElementById("modalInput").checked ? "yes":"no";
         else if (currentEdit.dataType === "keyvalue") val = JSON.stringify(kvMap);
         else val = document.getElementById("modalInput").value;
+        if (currentEdit.key === "maxmemory") val = val.trim();
 
         var id = document.getElementById("username").value;
         var pwd = document.getElementById("password-input").value;
@@ -376,11 +450,16 @@
                 })
                 .then(res => res.json())
                 .then(saveRes => {
-                    document.querySelector(`.current-value[data-key="${currentEdit.key}"]`).textContent = val;
-                    loginModal.hide();
-                    editModal.hide();
                     if (saveRes.hasOwnProperty("result") && saveRes.result.toUpperCase() === "OK") {
-                        alert("저장 성공하였습니다");
+                        refreshCurrentConfigValue(currentEdit)
+                            .then(() => {
+                                loginModal.hide();
+                                editModal.hide();
+                                alert("저장 성공하였습니다");
+                            })
+                            .catch(err => {
+                                alert("저장 후 조회 실패하였습니다: " + err);
+                            });
                     } else {
                         alert("저장 실패하였습니다");
                     }
@@ -416,18 +495,19 @@
         var categories = data.map(item => item.category);
         var uniqueCategory = [...new Set(categories)];
         var ul = document.getElementById("categoryTabs");
-        var html = `<li class="nav-item"><a class="nav-link active" data-cat="All" href="#">전체</a></li>`;
+        var html = `<li class="nav-item"><button type="button" class="nav-link active" data-cat="All">전체</button></li>`;
         uniqueCategory.forEach(category => {
-            html += `<li class="nav-item"><a class="nav-link" data-cat="${category}" href="#">${category}</a></li>`;
+            html += `<li class="nav-item"><button type="button" class="nav-link" data-cat="${category}">${category}</button></li>`;
         })
         ul.innerHTML = html;
 
 		// 탭 & 검색 이벤트
         ul.addEventListener("click", e => {
-            if(e.target && e.target.matches(".nav-link")) {
+            var tab = e.target.closest(".nav-link");
+            if(tab && ul.contains(tab)) {
                 document.querySelectorAll("#categoryTabs .nav-link").forEach(t=>t.classList.remove("active")); 
-                e.target.classList.add("active"); 
-                renderTable(e.target.dataset.cat, document.getElementById("searchInput").value);
+                tab.classList.add("active");
+                renderTable(tab.dataset.cat, document.getElementById("searchInput").value);
             }
         })
     }
