@@ -44,20 +44,18 @@ public class RedisConfigsService extends BaseService {
 
         String result = null;
         try {
+            for (ConfigCommand configCommand : AllowedConfigCommands.all()) {
+                redisRequest.setKey(Optional.of(configCommand.getKey()));
+                RedisCommandExecuteResult commandResult = executeCommand(redisRequest);
+                ObjectNode loopResult = commandResult.toObjectNode();
+
+                configCommand.setCurrentValueFromDB(configCommand.parseValue(loopResult.get(RedisCommandExecuteResult.RESULT_KEY)));
+            }
+
             if (AllowedConfigCommands.isInitialized()) {
                 // do nothing
             }
             else {
-                for (ConfigCommand configCommand : AllowedConfigCommands.all()) {
-                    redisRequest.setKey(Optional.of(configCommand.getKey()));
-                    RedisCommandExecuteResult commandResult = executeCommand(redisRequest);
-                    ObjectNode loopResult = commandResult.toObjectNode();
-
-                    configCommand.setCurrentValueFromDB(configCommand.parseValue(loopResult.get(RedisCommandExecuteResult.RESULT_KEY)));
-
-                    System.out.println(configCommand.getKey() + " " + configCommand.parseValue(loopResult.get(RedisCommandExecuteResult.RESULT_KEY)));
-                }
-
                 AllowedConfigCommands.initialized();
             }
 

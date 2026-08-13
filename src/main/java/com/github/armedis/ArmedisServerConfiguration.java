@@ -126,14 +126,14 @@ public class ArmedisServerConfiguration {
             FileServiceBuilder fileServiceBuilder = FileService.builder(cl, "/static");
 
             // Specify cache control directives.
-            ServerCacheControl cc = ServerCacheControl.builder().maxAgeSeconds(86400).cachePublic().build();
-            fileServiceBuilder.cacheControl(cc); // /* http cache "max-age=86400, public" */
+            ServerCacheControl cc = staticFileCacheControl();
+            fileServiceBuilder.cacheControl(cc);
             fileServiceBuilder.autoIndex(false);
             fileServiceBuilder.autoDecompress(true);
             fileServiceBuilder.serveCompressedFiles(true); // for compress
             FileService fileService = fileServiceBuilder.build();
 
-            HttpFile index = HttpFile.of(cl, "/static/index.htm");
+            HttpFile index = HttpFile.of(cl, "/static/index.html");
 
             builder.serviceUnder("/", fileService.orElse(index.asService()));
 
@@ -142,6 +142,13 @@ public class ArmedisServerConfiguration {
 
 //			builder.decorator(DecodingService.newDecorator());
         };
+    }
+
+    static ServerCacheControl staticFileCacheControl() {
+        return ServerCacheControl.builder()
+                .noCache()
+                .mustRevalidate()
+                .build();
     }
 
     private void addShutdownHook(int listenPort) {

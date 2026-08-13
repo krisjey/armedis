@@ -88,6 +88,9 @@ class AllowedConfigCommandsTest {
         assertTrue(cmd.isValid("512m"));
         assertTrue(cmd.isValid("2gb"));
         assertTrue(cmd.isValid("1GB"));
+        assertTrue(cmd.isValid("1g"));
+        assertTrue(cmd.isValid("1mb"));
+        assertTrue(cmd.isValid("1000000000"));
     }
 
     @Test
@@ -98,6 +101,9 @@ class AllowedConfigCommandsTest {
         assertFalse(cmd.isValid("abc"));
         assertFalse(cmd.isValid("1x"));
         assertFalse(cmd.isValid("-100"));
+        assertFalse(cmd.isValid("1b"));
+        assertFalse(cmd.isValid("1tb"));
+        assertFalse(cmd.isValid("1.5gb"));
     }
 
     @Test

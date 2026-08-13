@@ -54,10 +54,17 @@ public class RedisConfigCommandRunner extends AbstractRedisCommandRunner {
         else {
             Optional<String> value = this.redisRequest.getValue();
 
-            this.redisMultiNodeCommander.setConfigValue(key, value.get());
+            if (value == null || value.isEmpty() || !AllowedConfigCommands.get(key).isValid(value.get())) {
+                throw new IllegalArgumentException("Invalid value for '" + key + "'");
+            }
+
+            boolean updated = this.redisMultiNodeCommander.setConfigValue(key, value.get());
+            if (!updated) {
+                throw new IllegalStateException("Failed to update Redis config '" + key + "'");
+            }
 
             // 업데이트 시 내부 값 업데이트
-            AllowedConfigCommands.get(key).setCurrentValueFromDB(value.get());
+            AllowedConfigCommands.get(key).setCurrentValueFromDB(this.redisMultiNodeCommander.getConfigValue(key));
 
             // String simple-string-reply: OK when the configuration was set properly.
             // connection.sync().configSet("", "");

@@ -153,6 +153,11 @@
     var prevStatsData = [];
     var redisStatDatas = [];
     var statsData = [];
+    var realtimePollTimeoutId = null;
+    var realtimePollInFlight = false;
+    var realtimePageActive = false;
+    var realtimeStatsController = null;
+    var hiddenAt = null;
     var tpsSeries = [{ name: "TPS", data: [] }];
     var hitRateSeries = [{ name: "HitRate", data: [] }];
     var memorySeries = [
@@ -429,8 +434,7 @@
     }
 
     // 차트 초기설정
-    async function initChart() {
-        await getStats();
+    function initChart() {
         setTPSData();
         createChartCard("tpsCard", _.cloneDeep(tpsSeries));
         
@@ -771,10 +775,20 @@
 
     // Redis 정보 조회
     async function getStats() {
-        var response = await fetch("/v1/redis/stats");
-        if (!response.ok) throw new Error("HTTP " + res.status);
-
-        statsData = await response.json();
+        var controller = new AbortController();
+        realtimeStatsController = controller;
+        try {
+            var response = await fetch("/v1/redis/stats", { signal: controller.signal });
+            if (!response.ok) {
+                throw new Error("HTTP " + response.status);
+            }
+            var data = await response.json();
+            statsData = Array.isArray(data) ? data : [];
+        } finally {
+            if (realtimeStatsController === controller) {
+                realtimeStatsController = null;
+            }
+        }
     }
 
     // Instance Information 데이터 설정
@@ -885,24 +899,6 @@
         }
     }
 
-    async function intervalInit() {
-        await getStats();
-        setTPSData();
-        addDataPoint("tpsCard", tpsSeries)
-
-        setHitRateData();
-        addDataPoint("hitRateCard", hitRateSeries);
-        
-        setMemory();
-        addDataPoint("memoryCard", memorySeries);
-        
-        setReceivedConnectionsData();
-        addDataPoint("receivedConnectionsCard", receivedConnectionsSeries);
-
-        setRedisStat();
-        setInstanceInfo();
-    }
-
     function clearIntervalIds() {
         if (window.globalIntervalIds.length > 0) {
             window.globalIntervalIds.forEach(id => clearInterval(id));
@@ -910,42 +906,127 @@
         }
     }
 
-    // Life Cycle START
-    var hiddenAt = null; // 최소화 시작 시간 기록
-    window.pageHooks = window.pageHooks || {};
-    window.pageHooks["pages-armedis-realtime-stats.html"] = {
-        // 페이지가 로드 됐을 때
-        onLoad: function () {
-            initCard();
-            initChart();
-            initTableHeader();
-            
-            // 기존 interval 모두 제거
-            clearIntervalIds();
-            var intervalId = setInterval(intervalInit, 1000);
-            window.globalIntervalIds.push(intervalId);
-        },
-        // 페이지를 떠날 때
-        onUnload: function () {
-            clearIntervalIds();
+    function scheduleRealtimePoll() {
+        if (!realtimePageActive || document.hidden) {
+            return;
         }
-    };
+        if (realtimePollTimeoutId) {
+            clearTimeout(realtimePollTimeoutId);
+        }
+        realtimePollTimeoutId = setTimeout(intervalInit, 1000);
+    }
 
-    document.addEventListener("visibilitychange", function() {
+    async function intervalInit() {
+        if (!realtimePageActive || document.hidden || realtimePollInFlight) {
+            return;
+        }
+
+        realtimePollInFlight = true;
+        try {
+            await getStats();
+            if (!realtimePageActive || document.hidden) {
+                return;
+            }
+
+            setTPSData();
+            addDataPoint("tpsCard", tpsSeries);
+
+            setHitRateData();
+            addDataPoint("hitRateCard", hitRateSeries);
+
+            setMemory();
+            addDataPoint("memoryCard", memorySeries);
+
+            setReceivedConnectionsData();
+            addDataPoint("receivedConnectionsCard", receivedConnectionsSeries);
+
+            setRedisStat();
+            setInstanceInfo();
+        } catch (error) {
+            if (error.name !== "AbortError") {
+                console.error("Realtime 데이터 갱신 실패:", error);
+            }
+        } finally {
+            realtimePollInFlight = false;
+            scheduleRealtimePoll();
+        }
+    }
+
+    async function initializeRealtimePage() {
+        realtimePollInFlight = true;
+        try {
+            await getStats();
+            if (!realtimePageActive || document.hidden) {
+                return;
+            }
+            initChart();
+            setRedisStat();
+            setInstanceInfo();
+        } catch (error) {
+            if (error.name !== "AbortError") {
+                console.error("Realtime 초기화 실패:", error);
+            }
+        } finally {
+            realtimePollInFlight = false;
+            scheduleRealtimePoll();
+        }
+    }
+
+    function handleRealtimeVisibilityChange() {
+        if (!realtimePageActive) {
+            return;
+        }
+
         if (document.hidden) {
             hiddenAt = Date.now();
-        } else {
-            var hiddenDuration = (Date.now() - hiddenAt) / 1000;
-            console.log(`브라우저가 ${hiddenDuration}초 동안 비활성화됨`);
-
-            // 특정 시간 이상일 때만 실행
-            if (hiddenDuration > 60) {
-                console.log("차트 재랜더링!");
-                
-                // 차트 제거 후 재랜더링
-                destroyChart();
+            if (realtimePollTimeoutId) {
+                clearTimeout(realtimePollTimeoutId);
+                realtimePollTimeoutId = null;
             }
+            if (realtimeStatsController) {
+                realtimeStatsController.abort();
+            }
+            return;
         }
-    });
-    // Life Cycle END
+
+        var hiddenDuration = hiddenAt === null ? 0 : (Date.now() - hiddenAt) / 1000;
+        hiddenAt = null;
+        if (Object.keys(charts).length === 0) {
+            initializeRealtimePage();
+            return;
+        }
+        if (hiddenDuration > 60) {
+            destroyChart();
+        }
+        intervalInit();
+    }
+
+    function destroyRealtimeResources() {
+        realtimePageActive = false;
+        if (realtimePollTimeoutId) {
+            clearTimeout(realtimePollTimeoutId);
+            realtimePollTimeoutId = null;
+        }
+        if (realtimeStatsController) {
+            realtimeStatsController.abort();
+            realtimeStatsController = null;
+        }
+        document.removeEventListener("visibilitychange", handleRealtimeVisibilityChange);
+        clearIntervalIds();
+    }
+
+    window.pageHooks = window.pageHooks || {};
+    window.pageHooks["pages-armedis-realtime-stats.html"] = {
+        onLoad: function () {
+            initCard();
+            initTableHeader();
+            clearIntervalIds();
+            realtimePageActive = true;
+            document.addEventListener("visibilitychange", handleRealtimeVisibilityChange);
+            initializeRealtimePage();
+        },
+        onUnload: function () {
+            destroyRealtimeResources();
+        }
+    };
 </script>

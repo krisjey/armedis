@@ -6,6 +6,8 @@ package com.github.armedis.http.service.management;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -13,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import com.github.armedis.ArmedisServer;
 import com.github.armedis.http.service.AbstractRedisServerTest;
 import com.github.armedis.redis.command.RedisCommandExecuteResult;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linecorp.armeria.common.AggregatedHttpResponse;
 import com.linecorp.armeria.common.HttpData;
 import com.linecorp.armeria.common.HttpMethod;
@@ -24,7 +27,43 @@ import com.linecorp.armeria.common.RequestHeaders;
 @SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = ArmedisServer.class)
 class RedisConfigServiceTest extends AbstractRedisServerTest {
 
-    private static final String MAXMEMORY_VALUE = "100MB";
+    private static final String MAXMEMORY_VALUE = "0";
+    private String originalMaxmemory;
+
+    @BeforeEach
+    void rememberMaxmemory() throws Exception {
+        RequestHeaders headers = RequestHeaders.builder()
+                .method(HttpMethod.GET)
+                .path("/v1/management/settings/config/maxmemory")
+                .contentType(MediaType.FORM_DATA)
+                .build();
+
+        AggregatedHttpResponse response = client.execute(HttpRequest.of(headers)).aggregate().join();
+        originalMaxmemory = new ObjectMapper()
+                .readTree(response.content().toStringUtf8())
+                .path(RedisCommandExecuteResult.RESULT_KEY)
+                .path("maxmemory")
+                .asText();
+    }
+
+    @AfterEach
+    void restoreMaxmemory() {
+        if (originalMaxmemory == null || !originalMaxmemory.matches("^\\d+$")) {
+            return;
+        }
+
+        RequestHeaders headers = RequestHeaders.builder()
+                .method(HttpMethod.POST)
+                .path("/v1/management/settings/config/maxmemory")
+                .contentType(MediaType.FORM_DATA)
+                .build();
+
+        HttpRequest request = HttpRequest.of(headers, HttpData.ofUtf8("value=" + originalMaxmemory));
+        AggregatedHttpResponse response = client.execute(request).aggregate().join();
+        assertThatJson(response.content().toStringUtf8())
+                .node(RedisCommandExecuteResult.RESULT_KEY)
+                .isEqualTo("OK");
+    }
 
     /**
      * activedefrag
@@ -117,5 +156,20 @@ class RedisConfigServiceTest extends AbstractRedisServerTest {
                 .as("Check result field in result json")
                 .node(RedisCommandExecuteResult.RESULT_KEY).isPresent()
                 .isEqualTo("OK");
+    }
+
+    @Test
+    void testMaxmemorySetRejectsUnsupportedUnit() {
+        RequestHeaders headers = RequestHeaders.builder()
+                .method(HttpMethod.POST)
+                .path("/v1/management/settings/config/maxmemory")
+                .contentType(MediaType.FORM_DATA)
+                .build();
+
+        HttpRequest request = HttpRequest.of(headers, HttpData.ofUtf8("value=1tb"));
+        AggregatedHttpResponse response = client.execute(request).aggregate().join();
+
+        assertThat(response.status()).isEqualTo(HttpStatus.OK);
+        assertThat(response.content().toStringUtf8()).isEqualTo("{}");
     }
 }

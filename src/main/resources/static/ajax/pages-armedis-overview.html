@@ -375,6 +375,10 @@
 
     var charts = {};
     var statsData = [];
+    var overviewPollTimeoutId = null;
+    var overviewPollInFlight = false;
+    var overviewPageActive = false;
+    var overviewAbortControllers = [];
     
     var networkInputSeries = {
         data: [0]
@@ -833,12 +837,26 @@
         setDataValue(cardId, lastStatsSumMemory.maxmemoryPolicy);
     }
 
+    async function fetchOverviewJson(url) {
+        var controller = new AbortController();
+        overviewAbortControllers.push(controller);
+        try {
+            var response = await fetch(url, { signal: controller.signal });
+            if (!response.ok) {
+                throw new Error("HTTP " + response.status);
+            }
+            return await response.json();
+        } finally {
+            overviewAbortControllers = overviewAbortControllers.filter(item => item !== controller);
+        }
+    }
+
     // Redis 정보 조회
     async function getStats() {
-        var response = await fetch("/v1/redis/stats");
-        if (!response.ok) throw new Error("HTTP " + res.status);
-
-        var data = await response.json();
+        var data = await fetchOverviewJson("/v1/redis/stats");
+        if (!overviewPageActive) {
+            return;
+        }
         statsData = data;
 
         setOpsPerSec();
@@ -856,10 +874,10 @@
     // Nodes 조회
     async function getNodes() {
         var rowCnt = 6;
-        var response = await fetch("/v1/management/nodelist");
-        if (!response.ok) throw new Error("HTTP " + res.status);
-
-        var data = await response.json();
+        var data = await fetchOverviewJson("/v1/management/nodelist");
+        if (!overviewPageActive) {
+            return;
+        }
         if (data.result.length > 0) {
             var datas = _.map(data.result, item => {
                 return {
@@ -883,10 +901,10 @@
     // Client connections 조회
     async function getClientConnections() {
         var rowCnt = 20;
-        var response = await fetch(`/v1/management/clientlist/${rowCnt}`);
-        if (!response.ok) throw new Error("HTTP " + res.status);
-
-        var data = await response.json();
+        var data = await fetchOverviewJson(`/v1/management/clientlist/${rowCnt}`);
+        if (!overviewPageActive) {
+            return;
+        }
         if (data.result.length > 0) {
             var last20Datas = _.takeRight(data.result, rowCnt);
             last20Datas = _.map(last20Datas, item => {
@@ -910,10 +928,10 @@
     // Command statistics 조회
     async function getCommandStatistics() {
         var rowCnt = 20;
-        var response = await fetch("/v1/management/commandstats");
-        if (!response.ok) throw new Error("HTTP " + res.status);
-
-        var data = await response.json();
+        var data = await fetchOverviewJson("/v1/management/commandstats");
+        if (!overviewPageActive) {
+            return;
+        }
         if (data.statsList.length > 0) {
             rowCnt = data.statsList.length;
             var datas = _.map(data.statsList, item => {
@@ -929,10 +947,10 @@
     // Slow queries log 조회
     async function getSlowlog() {
         var rowCnt = 20;
-        var response = await fetch(`/v1/management/slowlog/${rowCnt}`);
-        if (!response.ok) throw new Error("HTTP " + res.status);
-
-        var data = await response.json();
+        var data = await fetchOverviewJson(`/v1/management/slowlog/${rowCnt}`);
+        if (!overviewPageActive) {
+            return;
+        }
         if (data.result.length > 0) {
             var slowlogs = _.map(data.result, item => {
                 var cloned = _.clone(item);
@@ -1061,15 +1079,6 @@
         }
     }
 
-    // 페이지 로드됐을 때 interval Init
-    function intervalInit() {
-        getStats();
-        getNodes();
-        getClientConnections();
-        getCommandStatistics();
-        getSlowlog();
-    }
-
     function clearIntervalIds() {
         if (window.globalIntervalIds.length > 0) {
             window.globalIntervalIds.forEach(id => clearInterval(id));
@@ -1077,22 +1086,83 @@
         }
     }
 
+    function scheduleOverviewPoll() {
+        if (!overviewPageActive || document.hidden) {
+            return;
+        }
+        if (overviewPollTimeoutId) {
+            clearTimeout(overviewPollTimeoutId);
+        }
+        overviewPollTimeoutId = setTimeout(intervalInit, 5000);
+    }
+
+    async function intervalInit() {
+        if (!overviewPageActive || document.hidden || overviewPollInFlight) {
+            return;
+        }
+
+        overviewPollInFlight = true;
+        try {
+            var results = await Promise.allSettled([
+                getStats(),
+                getNodes(),
+                getClientConnections(),
+                getCommandStatistics(),
+                getSlowlog()
+            ]);
+            results.forEach(result => {
+                if (result.status === "rejected" && result.reason && result.reason.name !== "AbortError") {
+                    console.error("Overview 데이터 갱신 실패:", result.reason);
+                }
+            });
+        } finally {
+            overviewPollInFlight = false;
+            scheduleOverviewPoll();
+        }
+    }
+
+    function handleOverviewVisibilityChange() {
+        if (!overviewPageActive) {
+            return;
+        }
+
+        if (document.hidden) {
+            if (overviewPollTimeoutId) {
+                clearTimeout(overviewPollTimeoutId);
+                overviewPollTimeoutId = null;
+            }
+            overviewAbortControllers.forEach(controller => controller.abort());
+            overviewAbortControllers = [];
+            return;
+        }
+
+        intervalInit();
+    }
+
+    function destroyOverviewResources() {
+        overviewPageActive = false;
+        if (overviewPollTimeoutId) {
+            clearTimeout(overviewPollTimeoutId);
+            overviewPollTimeoutId = null;
+        }
+        overviewAbortControllers.forEach(controller => controller.abort());
+        overviewAbortControllers = [];
+        document.removeEventListener("visibilitychange", handleOverviewVisibilityChange);
+        clearIntervalIds();
+    }
+
     window.pageHooks = window.pageHooks || {};
     window.pageHooks["pages-armedis-overview.html"] = {
         onLoad: function () {
             initCard();
-            intervalInit();
             initChart();
-            
-            // 기존 interval 모두 제거
             clearIntervalIds();
-            var intervalId = setInterval(() => {
-                intervalInit();
-            }, 5000);
-            window.globalIntervalIds.push(intervalId);
+            overviewPageActive = true;
+            document.addEventListener("visibilitychange", handleOverviewVisibilityChange);
+            intervalInit();
         },
         onUnload: function () {
-            clearIntervalIds();
+            destroyOverviewResources();
         }
     };
 </script>

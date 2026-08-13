@@ -274,7 +274,7 @@ public final class AllowedConfigCommands {
 
     // ==== 표준 Validator / Normalizer 유틸 ====
     private static Predicate<String> memoryUnitValidator() {
-        return v -> v != null && v.trim().matches("(?i)^[0-9]+(b|k|kb|m|mb|g|gb)?$");
+        return v -> v != null && v.trim().matches("(?i)^[0-9]+(k|kb|m|mb|g|gb)?$");
     }
 
     private static Function<String, String> memoryUnitNormalizer() {

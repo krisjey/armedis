@@ -38,8 +38,14 @@ public class RedisConfigService extends BaseService {
 
     private static final String COMMAND_URL_WITH_KEY = COMMAND_URL + "/:key";
 
-    private boolean isAllowedConfigValue(RedisConfigRequest redisRequest) {
+    private boolean isAllowedConfigKey(RedisConfigRequest redisRequest) {
         return AllowedConfigCommands.contains(redisRequest.getKey());
+    }
+
+    private boolean isValidConfigValue(RedisConfigRequest redisRequest) {
+        return redisRequest.getValue() != null
+                && redisRequest.getValue().isPresent()
+                && AllowedConfigCommands.get(redisRequest.getKey()).isValid(redisRequest.getValue().get());
     }
 
     @Get
@@ -47,7 +53,7 @@ public class RedisConfigService extends BaseService {
     @Consumes(MediaTypeNames.FORM_DATA)
     public HttpResponse getUrlencodedWithKey(RedisConfigRequest redisRequest) {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
-        if (isAllowedConfigValue(redisRequest)) {
+        if (isAllowedConfigKey(redisRequest)) {
             // do nothing.
         }
         else {
@@ -80,11 +86,14 @@ public class RedisConfigService extends BaseService {
     @Consumes(MediaTypeNames.FORM_DATA)
     public HttpResponse urlencodedWithKey(RedisConfigRequest redisRequest) {
         logger.info("Text request " + REDIS_COMMAND + " command without key at URL " + redisRequest.toString());
-        if (isAllowedConfigValue(redisRequest)) {
+        if (isAllowedConfigKey(redisRequest)) {
             // do nothing.
         }
         else {
             return buildResponse(ResponseCode.NOTSUPPORTED_OPERATION, redisRequest);
+        }
+        if (!isValidConfigValue(redisRequest)) {
+            return buildResponse(ResponseCode.REQUEST_FIELD_ERROR, redisRequest);
         }
 
         // execute redis command by http request params.
